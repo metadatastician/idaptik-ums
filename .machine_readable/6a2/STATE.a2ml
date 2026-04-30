@@ -1,0 +1,39 @@
+; SPDX-License-Identifier: PMPL-1.0-or-later
+; STATE.a2ml — idaptik-ums
+
+[metadata]
+project = "idaptik-ums"
+version = "0.1.0-alpha"
+type = "modding-studio"
+last-updated = "2026-04-30"
+branch = "main"
+build-status = "scaffold"
+test-status = "pending — Zig FFI tests carry over from existing monorepo"
+
+[project-context]
+description = "Unified Modding Studio: procedural generation of characters/levels/objects/DLC for the game."
+shell-language = "affinescript"
+abi-language = "idris2"
+ffi-language = "zig"
+host = "gossamer"
+depends-on = ["idaptik-contracts", "idaptik-shared", "gossamer"]
+
+[component-status]
+scaffold = { percent = 25, notes = "README + STATE present." }
+shell-port = { percent = 0, notes = "Port from idaptik-ums/src/{App.res, editor/, abi/}." }
+abi = { percent = 95, notes = "17 Idris2 modules, 0 believe_me — carry over from existing monorepo (per audit STATE.a2ml)." }
+ffi = { percent = 95, notes = "11 Zig files, 20 tests — carry over." }
+proven-bridge = { percent = 30, notes = "Gated to experimental/; 2 typed holes; decision deferred per Recovery PR 4." }
+docs-tauri-purge = { percent = 0, notes = "Recovery PR 4 — 5 files mention Tauri; rewrite to Gossamer." }
+ums-game-bridge = { percent = 10, notes = "Schema declared in idaptik-contracts; codegen running. Generator side not yet wired." }
+
+[route-to-mvp]
+remaining = [
+  { item = "Recovery PR 4 — Tauri→Gossamer doc rewrite", priority = "critical" },
+  { item = "Recovery PR 4 — UMS-game smoke test passing", priority = "critical" },
+  { item = "Run scaffold-component.py to fill RSR + contractiles + remaining 6a2", priority = "high" },
+  { item = "Port shell from src/{App.res, editor/, abi/}", priority = "high" },
+  { item = "Carry over 17 Idris2 ABI modules", priority = "medium" },
+  { item = "Carry over 11 Zig FFI files", priority = "medium" },
+  { item = "ProvenBridge fate decision", priority = "medium" }
+]
