@@ -1,0 +1,39 @@
+{
+  "name": "Gray Code Generation",
+  "description": "Convert binary counter to Gray code. Gray code is a binary numeral system where adjacent values differ by only one bit - important in error correction and reversible circuits!",
+  "difficulty": "intermediate",
+  "initialState": {
+    "binary": 5,
+    "gray": 0,
+    "temp": 0
+  },
+  "goalState": {
+    "binary": 5,
+    "gray": 7,
+    "temp": 0
+  },
+  "maxMoves": 10,
+  "optimalMoves": 6,
+  "allowedInstructions": ["XOR", "ROL", "ROR", "ADD"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Gray code formula: gray = binary XOR (binary >> 1)"
+    },
+    {
+      "moveNumber": 3,
+      "text": "Use ROR to shift binary right, then XOR with original"
+    },
+    {
+      "moveNumber": 6,
+      "text": "Binary 5 (101) converts to Gray 7 (111)"
+    }
+  ],
+  "metadata": {
+    "author": "Claude AI",
+    "created": "2025-11-22",
+    "tags": ["gray-code", "binary", "encoding", "error-correction"],
+    "license": "CC-BY-4.0",
+    "version": "1.0.0"
+  }
+}

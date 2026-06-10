@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: MPL-2.0
+// NEGATE — involution. a = -a.
+import Vm.State as S
+
+module Vm.Instructions.Negate {
+  fn forward(a: ref String) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    S.write_reg(a, -av)
+  }
+  fn backward(a: ref String) -{S.VmState}-> () {
+    forward(a)
+  }
+}

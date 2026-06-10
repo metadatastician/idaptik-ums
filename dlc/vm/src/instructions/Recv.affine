@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: MPL-2.0
+// RECV — additive. reg += port_in[ptr]; ptr++.
+import Vm.State as S
+
+module Vm.Instructions.Recv {
+  fn forward(port: ref String, reg: ref String) -{S.VmState}-> () {
+    let ptr = S.port_in_pointer(port);
+    let v = S.read_port_in(port, ptr);
+    let rv = S.read_reg(reg);
+    S.write_reg(reg, rv + v);
+    S.set_port_in_pointer(port, ptr + 1)
+  }
+  fn backward(port: ref String, reg: ref String) -{S.VmState}-> () {
+    let ptr = S.port_in_pointer(port);
+    let new_ptr = ptr - 1;
+    let v = S.read_port_in(port, new_ptr);
+    let rv = S.read_reg(reg);
+    S.write_reg(reg, rv - v);
+    S.set_port_in_pointer(port, new_ptr)
+  }
+}

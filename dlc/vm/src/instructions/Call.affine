@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: MPL-2.0
+// CALL — compositional. Run body forward; reverse body inverses in reverse order.
+//
+// CALL appears as a single entry in the VM's history, so undo reverses the
+// entire subroutine atomically.
+import Vm.Instruction as I
+import Vm.State as S
+import Vm.Step
+
+module Vm.Instructions.Call {
+  fn forward(name: ref String, body: ref List[I.t]) -{S.VmState}-> () {
+    List.for_each(body, instr => Step.forward(instr))
+  }
+  fn backward(name: ref String, body: ref List[I.t]) -{S.VmState}-> () {
+    List.for_each(List.reverse(body), instr => Step.backward(instr))
+  }
+}

@@ -1,0 +1,34 @@
+; SPDX-License-Identifier: MPL-2.0
+(contractile :kind must :version 1)
+
+(must license-present :doc "LICENSE present." :cmd "test -f LICENSE")
+(must readme-present :doc "README.adoc present." :cmd "test -f README.adoc")
+(must security-md :doc "SECURITY.md present." :cmd "test -f SECURITY.md")
+(must changelog-present :doc "CHANGELOG.md present." :cmd "test -f CHANGELOG.md")
+(must stapeln-config :doc "stapeln.toml present." :cmd "test -f stapeln.toml")
+(must containerfile :doc "Containerfile fallback." :cmd "test -f Containerfile")
+
+(must dlc-manifest-present :doc "dlc-manifest.json declares this DLC to the game's loader." :cmd "test -f dlc-manifest.json")
+
+(must spdx-headers
+  :doc "Every .affine file carries SPDX."
+  :cmd "find src/ tests/ -name '*.affine' | xargs -r grep -L 'SPDX-License-Identifier' | wc -l | grep -q '^0$'")
+
+(must twenty-three-instructions
+  :doc "Exactly 23 instruction modules under src/instructions/."
+  :cmd "test $(find src/instructions/ -name '*.affine' -not -name 'mod.affine' | wc -l) -eq 23")
+
+(must affinescript-compiles
+  :doc "AffineScript checker passes on src/."
+  :cmd "affinescript check src/ 2>&1 | tee /tmp/check.log; ! grep -q 'error' /tmp/check.log")
+
+(must reversibility-property-runs
+  :doc "Reversibility round-trip property test passes."
+  :cmd "affinescript test tests/properties/reversibility.affine")
+
+(must per-instruction-modular
+  :doc "Audit-driven: no instruction module exceeds 200 LOC."
+  :cmd "find src/instructions/ -name '*.affine' | xargs wc -l | awk 'NR<NF && $1>200 {print; exit 1} END {exit 0}'")
+
+(must no-banned-files
+  :cmd "test ! -f Dockerfile && test ! -f Makefile && test ! -f .env")

@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: MPL-2.0
+// SWAP — involution. forward = backward.
+import Vm.State as S
+
+module Vm.Instructions.Swap {
+  fn forward(a: ref String, b: ref String) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    let bv = S.read_reg(b);
+    S.write_reg(a, bv);
+    S.write_reg(b, av)
+  }
+  fn backward(a: ref String, b: ref String) -{S.VmState}-> () {
+    forward(a, b)
+  }
+}

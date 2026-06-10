@@ -1,0 +1,33 @@
+{
+  "name": "Reversibility Proof",
+  "description": "Execute a complex sequence, then undo it perfectly to return to start.",
+  "difficulty": "expert",
+  "initialState": {
+    "a": 7,
+    "b": 13,
+    "c": 21
+  },
+  "goalState": {
+    "a": 7,
+    "b": 13,
+    "c": 21
+  },
+  "maxMoves": 20,
+  "optimalMoves": 14,
+  "allowedInstructions": ["ADD", "SUB", "SWAP", "NEGATE"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Do something complex in first 10 moves..."
+    },
+    {
+      "moveNumber": 10,
+      "text": "...then undo it all to return to the exact starting state!"
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["reversibility", "expert", "proof"]
+  }
+}

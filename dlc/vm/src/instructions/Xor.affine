@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: MPL-2.0
+// XOR — involution. a ^= b. backward = forward.
+//
+// The ReScript original used `lor(land(a, lnot(b)), land(lnot(a), b))` because
+// it was derived from a primitive set without a direct xor. AffineScript stdlib
+// has Bits.xor; we use it directly.
+import Vm.State as S
+import Std.Bits
+
+module Vm.Instructions.Xor {
+  fn forward(a: ref String, b: ref String) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    let bv = S.read_reg(b);
+    S.write_reg(a, Bits.xor(av, bv))
+  }
+  fn backward(a: ref String, b: ref String) -{S.VmState}-> () {
+    forward(a, b)
+  }
+}

@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: MPL-2.0
+// PUSH — paired with Pop. stack[sp] = reg; sp++; reg = 0.
+import Vm.State as S
+
+module Vm.Instructions.Push {
+  fn forward(reg: ref String) -{S.VmState}-> () {
+    let v = S.read_reg(reg);
+    let sp = S.stack_pointer();
+    S.write_stack(sp, v);
+    S.set_stack_pointer(sp + 1);
+    S.write_reg(reg, 0)
+  }
+  fn backward(reg: ref String) -{S.VmState}-> () {
+    let sp = S.stack_pointer();
+    let new_sp = sp - 1;
+    let v = S.read_stack(new_sp);
+    S.write_reg(reg, v);
+    S.write_stack(new_sp, 0);
+    S.set_stack_pointer(new_sp)
+  }
+}

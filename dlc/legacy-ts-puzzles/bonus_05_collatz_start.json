@@ -1,0 +1,33 @@
+{
+  "name": "Collatz Sequence (First Steps)",
+  "description": "Start the famous 3n+1 sequence. If even: divide by 2. If odd: multiply by 3 and add 1.",
+  "difficulty": "advanced",
+  "initialState": {
+    "n": 10,
+    "steps": 0,
+    "temp": 0
+  },
+  "goalState": {
+    "n": 5,
+    "steps": 1,
+    "temp": 0
+  },
+  "maxMoves": 20,
+  "optimalMoves": 8,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "n=10 is even, so divide by 2 to get 5."
+    },
+    {
+      "moveNumber": 5,
+      "text": "Use repeated subtraction to simulate division."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["collatz", "advanced", "sequences"]
+  }
+}

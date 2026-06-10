@@ -1,0 +1,33 @@
+{
+  "name": "Greatest Common Factor",
+  "description": "Find GCF of 48 and 18 using Euclidean algorithm (answer: 6).",
+  "difficulty": "advanced",
+  "initialState": {
+    "a": 48,
+    "b": 18,
+    "remainder": 0
+  },
+  "goalState": {
+    "a": 6,
+    "b": 0,
+    "remainder": 6
+  },
+  "maxMoves": 40,
+  "optimalMoves": 18,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Euclidean algorithm: repeatedly subtract smaller from larger."
+    },
+    {
+      "moveNumber": 10,
+      "text": "Continue until one number reaches zero."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["algorithms", "advanced", "gcd"]
+  }
+}

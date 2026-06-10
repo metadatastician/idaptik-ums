@@ -1,0 +1,106 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+= idaptik-dlc-vm
+:toc:
+
+A 23-instruction reversible virtual machine, packaged as a DLC for the
+idaptik game. Written in AffineScript; compiles to WasmGC via typed-wasm.
+
+== What changed from the ReScript original
+
+* *Reversibility is type-checked, not commented.* The ReScript port encoded
+  every instruction as `{execute, invert}` — two effectful closures whose
+  inverse relationship was a docstring. AffineScript lifts the instruction
+  set into a closed sum type; the exhaustiveness checker rejects any
+  addition that doesn't update both forward and backward.
+* *State access is an effect.* The ReScript `dict<int>` was implicitly
+  mutable. AffineScript routes every read/write through the `VmState`
+  effect; pure functions cannot touch state.
+* *Preconditions are refinements.* `POP target == 0`, `AND ancilla == 0` —
+  these were docstrings; they're now refinement predicates (parse-only in
+  the current AffineScript checker; live-gated as soon as
+  `TRefined`-predicate reduction lands upstream).
+* *Modularity per instruction.* `src/instructions/` has 23 files, one per
+  instruction. The audit's megafile-split recommendation is structurally
+  enforced: it is impossible to write a 2081-LOC LaptopGUI-style file
+  here.
+* *DLC packaging.* `dlc-manifest.json` declares this as a DLC the game
+  loads via its existing DLC loader. The other DLC packs (`dlc-iky`,
+  `dlc-reversibley`) collapse from "DLCs that re-implement VM bits" into
+  thin imports of this DLC + their own data.
+
+== Layout
+
+----
+idaptik-dlc-vm/
+├── src/
+│   ├── Instruction.affine     # the closed sum type (23 constructors)
+│   ├── State.affine           # VmState effect + handler signature
+│   ├── Step.affine            # forward/backward dispatcher
+│   ├── Vm.affine              # public API: make, run, undo, undo_all, ...
+│   └── instructions/          # one .affine module per instruction
+│       ├── Add.affine
+│       ├── Sub.affine
+│       ├── ...                # 23 total
+│       └── Recv.affine
+├── tests/
+│   └── properties/
+│       └── reversibility.affine
+├── dlc-manifest.json
+└── (RSR / stapeln / contractiles / 6a2 to be filled by scaffold-component.py)
+----
+
+== Reversibility classes
+
+Each instruction declares its reversibility class. The proof obligation
+varies per class:
+
+[cols="1,3,2"]
+|===
+| Class | Description | Members
+
+| `:involution`
+| `backward = forward`. Self-inverse.
+| Swap, Xor, Negate, Flip, Noop
+
+| `:paired`
+| `backward(X) = forward(pair(X))`. Two instructions that invert each other.
+| Add↔Sub, Push↔Pop, Send↔Recv, Rol↔Ror
+
+| `:additive`
+| Forward adds; backward subtracts. State accumulates linearly.
+| Load, Store, Mul (into c), Div (into q,r), Recv
+
+| `:precondition-guarded`
+| Forward asserts a precondition (e.g. ancilla == 0); backward restores it.
+| And, Or
+
+| `:janus-guarded`
+| Entry/exit guard registers swap roles under reversal.
+| IfZero, IfPos, Loop
+
+| `:compositional`
+| Backward runs body in reverse, each instruction inverted.
+| Call
+|===
+
+For each class, a property test asserts the round-trip identity. See
+`tests/properties/reversibility.affine`.
+
+== Status
+
+| Component | Status |
+|-----------|--------|
+| Instruction sum type | complete |
+| 23 instructions | complete (port from `vm/lib/ocaml/*.res`) |
+| Step dispatcher | complete |
+| Public API (Vm.run / Vm.undo / etc.) | complete |
+| Reversibility property tests | sketch (depend on AffineScript stdlib) |
+| RSR template floor | TODO via scaffold-component.py |
+| stapeln.toml | TODO via scaffold-component.py |
+| contractiles + 6a2 | TODO via scaffold-component.py |
+
+== License
+
+MPL-2.0.

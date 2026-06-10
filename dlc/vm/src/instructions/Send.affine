@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: MPL-2.0
+// SEND — paired with Recv. port_out[ptr] = reg; ptr++; reg = 0 (the ReScript
+// original did not zero reg — but the inverse cleared the port slot, which
+// only round-trips if reg is 0 going in. We make the symmetry explicit.).
+import Vm.State as S
+
+module Vm.Instructions.Send {
+  fn forward(port: ref String, reg: ref String) -{S.VmState}-> () {
+    let v = S.read_reg(reg);
+    let ptr = S.port_out_pointer(port);
+    S.write_port_out(port, ptr, v);
+    S.set_port_out_pointer(port, ptr + 1);
+    S.write_reg(reg, 0)
+  }
+  fn backward(port: ref String, reg: ref String) -{S.VmState}-> () {
+    let ptr = S.port_out_pointer(port);
+    let new_ptr = ptr - 1;
+    let v = S.read_port_out(port, new_ptr);
+    S.write_reg(reg, v);
+    S.write_port_out(port, new_ptr, 0);
+    S.set_port_out_pointer(port, new_ptr)
+  }
+}

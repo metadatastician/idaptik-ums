@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: MPL-2.0
+// SUB — paired with Add. forward: a -= b. backward: a += b.
+import Vm.State as S
+import Vm.Instructions.Add
+
+module Vm.Instructions.Sub {
+  // Sub is exactly Add backward. We re-export rather than duplicate.
+  fn forward(a: ref String, b: ref String) -{S.VmState}-> () {
+    Add.backward(a, b)
+  }
+  fn backward(a: ref String, b: ref String) -{S.VmState}-> () {
+    Add.forward(a, b)
+  }
+}

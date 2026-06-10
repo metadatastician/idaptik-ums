@@ -1,0 +1,47 @@
+{
+  "name": "Toffoli Gate (CCNOT)",
+  "description": "Implement the quantum Toffoli gate using classical reversible operations. Toffoli(a,b,c) flips c if both a and b are 1. This is a universal reversible gate!",
+  "difficulty": "expert",
+  "initialState": {
+    "a": 1,
+    "b": 1,
+    "c": 0,
+    "temp": 0,
+    "result": 0
+  },
+  "goalState": {
+    "a": 1,
+    "b": 1,
+    "c": 1,
+    "temp": 0,
+    "result": 0
+  },
+  "maxMoves": 15,
+  "optimalMoves": 7,
+  "allowedInstructions": ["AND", "XOR", "SUB"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Toffoli flips the target bit c if both control bits a and b are 1"
+    },
+    {
+      "moveNumber": 3,
+      "text": "First compute a AND b into temp (temp must start at 0)"
+    },
+    {
+      "moveNumber": 6,
+      "text": "Then XOR c with temp to conditionally flip c"
+    },
+    {
+      "moveNumber": 10,
+      "text": "Don't forget to uncompute temp back to 0 for full reversibility!"
+    }
+  ],
+  "metadata": {
+    "author": "Claude AI",
+    "created": "2025-11-22",
+    "tags": ["quantum", "toffoli", "ccnot", "universal-gate", "reversible"],
+    "license": "CC-BY-4.0",
+    "version": "1.0.0"
+  }
+}

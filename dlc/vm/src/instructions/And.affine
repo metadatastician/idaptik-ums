@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: MPL-2.0
+// AND — precondition-guarded ancilla.
+//
+// Forward: c = a AND b   (precondition: c == 0)
+// Backward: c = 0
+//
+// The precondition makes this Bennett-style reversible: forward only does
+// work when the ancilla is empty; backward simply clears the ancilla.
+//
+// In the ReScript port the precondition was a docstring. Here it lives in
+// the type via TRefined: { c: Reg | read_reg(c) == 0 }. Until refinement
+// predicates reduce in the AffineScript checker, the runtime check is
+// retained — it becomes redundant once the type system enforces it.
+import Vm.State as S
+import Std.Bits
+
+module Vm.Instructions.And {
+  fn forward(a: ref String, b: ref String, c: ref String) -{S.VmState}-> () {
+    // TODO(refinement): replace with refinement-typed precondition once
+    // Quantity.check_program_quantities admits refinement obligations.
+    assert(S.read_reg(c) == 0, "AND ancilla must be 0");
+    let av = S.read_reg(a);
+    let bv = S.read_reg(b);
+    S.write_reg(c, Bits.and(av, bv))
+  }
+  fn backward(a: ref String, b: ref String, c: ref String) -{S.VmState}-> () {
+    S.write_reg(c, 0)
+  }
+}

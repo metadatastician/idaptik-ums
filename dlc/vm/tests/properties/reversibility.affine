@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+//
+// reversibility.affine — property test asserting backward ∘ forward = id.
+//
+// This is the proof obligation that justifies calling the VM "reversible".
+// The previous ReScript encoding had no such test; reversibility was claimed
+// in docstrings.
+//
+// The property is stated per-instruction-class because some instructions
+// (Pop, And, Or) require a precondition (e.g. ancilla == 0) that the test
+// generator must respect.
+
+import Vm.Instruction as I
+import Vm.Step
+import Vm.State
+
+module Vm.Tests.Reversibility {
+
+  // For involutions, the simpler property forward = backward also holds.
+  property involutions_self_inverse() -> Bool {
+    forall (a: I.Reg, b: I.Reg, s: State) {
+      with_state(s) {
+        Vm.Step.forward(I.Swap(a, b));
+        snapshot_a()
+      } == with_state(s) {
+        Vm.Step.backward(I.Swap(a, b));
+        snapshot_b()
+      }
+    }
+  }
+
+  // The key invariant: backward undoes forward.
+  property backward_undoes_forward(i: I.t) -> Bool {
+    forall (s: State, i: I.t) when satisfies_precondition(i, s) {
+      let s_after_forward = with_state(s) { Vm.Step.forward(i); snapshot() };
+      let s_after_round_trip = with_state(s_after_forward) { Vm.Step.backward(i); snapshot() };
+      states_equal(s, s_after_round_trip)
+    }
+  }
+
+  // Per-class property entrypoints — easier to identify failures.
+  property push_pop_round_trip() -> Bool {
+    forall (reg: I.Reg, s: State) when read_reg_in(s, reg) == 0 {
+      backward_undoes_forward(I.Push(reg))
+    }
+  }
+
+  property add_sub_round_trip() -> Bool {
+    forall (a: I.Reg, b: I.Reg, s: State) {
+      backward_undoes_forward(I.Add(a, b))
+    }
+  }
+}

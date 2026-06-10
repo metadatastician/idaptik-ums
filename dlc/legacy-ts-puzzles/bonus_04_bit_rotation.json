@@ -1,0 +1,31 @@
+{
+  "name": "Bit Rotation Cipher",
+  "description": "Use ROL to scramble a number, then ROR to decrypt it back.",
+  "difficulty": "intermediate",
+  "initialState": {
+    "message": 0b10101010,
+    "key": 3
+  },
+  "goalState": {
+    "message": 0b10101010,
+    "key": 3
+  },
+  "maxMoves": 10,
+  "optimalMoves": 4,
+  "allowedInstructions": ["ROL", "ROR"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Rotate left 3 times to encrypt."
+    },
+    {
+      "moveNumber": 3,
+      "text": "Rotate right 3 times to decrypt back."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["rotation", "intermediate", "cipher"]
+  }
+}

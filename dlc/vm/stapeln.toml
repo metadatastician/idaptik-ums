@@ -1,0 +1,85 @@
+# SPDX-License-Identifier: MPL-2.0
+# stapeln.toml — layered Chainguard build for idaptik-dlc-vm.
+
+[metadata]
+name = "idaptik-dlc-vm"
+version = "0.1.0-alpha"
+description = "23-instruction reversible VM as a DLC pack."
+author = "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+license = "MPL-2.0"
+registry = "ghcr.io/hyperpolymath"
+
+[build]
+containerfile = "Containerfile"
+context = "."
+runtime = "podman"
+
+[layers.vm-base]
+description = "Chainguard Wolfi base for AffineScript build."
+from = "cgr.dev/chainguard/wolfi-base:latest"  # TODO: pin @sha256
+cache = true
+verify = true
+
+[layers.vm-toolchain]
+description = "AffineScript compiler."
+extends = "vm-base"
+packages = ["ocaml", "opam", "dune", "wabt", "git"]
+commands = [
+    "opam init --no-setup --disable-sandboxing",
+    "opam install -y dune sedlex menhir ppx_deriving cmdliner yojson",
+    "git clone --depth 1 https://github.com/hyperpolymath/affinescript /opt/affinescript",
+    "cd /opt/affinescript && dune build",
+]
+cache = true
+
+[layers.vm-build]
+description = "Compile all .affine modules to WasmGC."
+extends = "vm-toolchain"
+copy = [
+    { src = "src/", dst = "/build/src/" },
+    { src = "dlc-manifest.json", dst = "/build/dlc-manifest.json" },
+]
+commands = [
+    "/opt/affinescript/_build/default/bin/main.exe compile --target wasmgc --module-per-file -o dist/wasm/ src/Vm.affine",
+]
+artifacts = [
+    { src = "/build/dist/", dst = "/build/dist/" },
+    { src = "/build/dlc-manifest.json", dst = "/build/dlc-manifest.json" },
+]
+
+[layers.vm-runtime]
+description = "Static base for DLC distribution — pure WasmGC artifacts."
+from = "cgr.dev/chainguard/static:latest"  # TODO: pin @sha256
+copy-from = [
+    { layer = "vm-build", src = "/build/dist/", dst = "/dlc/wasm/" },
+    { layer = "vm-build", src = "/build/dlc-manifest.json", dst = "/dlc/dlc-manifest.json" },
+]
+
+[security]
+non-root = true
+read-only-root = true
+no-new-privileges = true
+cap-drop = ["ALL"]
+
+[security.signing]
+algorithm = "ML-DSA-87"
+provider = "cerro-torre"
+
+[security.sbom]
+format = "spdx-json"
+output = "sbom.spdx.json"
+include-deps = true
+
+[verify]
+vordr = true
+svalinn = true
+scan-on-build = true
+fail-on = ["critical", "high"]
+
+[targets.development]
+description = "Local DLC build."
+layers = ["vm-runtime"]
+
+[targets.production]
+description = "Production DLC artifact."
+layers = ["vm-runtime"]

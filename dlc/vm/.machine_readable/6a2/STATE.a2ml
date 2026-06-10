@@ -1,0 +1,49 @@
+; SPDX-License-Identifier: MPL-2.0
+; STATE.a2ml — idaptik-dlc-vm
+
+[metadata]
+project = "idaptik-dlc-vm"
+version = "0.1.0-alpha"
+type = "dlc-pack"
+last-updated = "2026-04-30"
+branch = "main"
+build-status = "scaffold + 23 instructions ported"
+test-status = "property tests authored, generators pending"
+
+[project-context]
+description = "Reversible VM as a DLC for the game. 23 instructions across 5 tiers."
+primary-language = "affinescript"
+target = "wasmgc"
+distribution = "DLC pack — game's existing DLC loader consumes dlc-manifest.json"
+depends-on = ["idaptik-contracts"]
+verification-posture = "reversibility type-checked via affine/QTT; refinements parse-only pending upstream affinescript reduction"
+
+[component-status]
+scaffold = { percent = 75, notes = "README, stapeln, Containerfile, Justfile, dlc-manifest, src/, tests/, STATE present. RSR floor + remaining 6a2 + contractiles via scaffold-component.py." }
+instruction-sum-type = { percent = 100, notes = "Vm.Instruction.t — 23 constructors, exhaustiveness-checked." }
+instruction-modules = { percent = 100, notes = "23 .affine modules in src/instructions/, one per instruction. Modular per audit's megafile-split rule." }
+state-effect = { percent = 80, notes = "VmState effect signature complete; backend handler signature only — implementation needs AffineScript stdlib Dict module which is incomplete." }
+step-dispatcher = { percent = 100, notes = "Forward + backward, exhaustive match." }
+public-api = { percent = 90, notes = "Vm.{make,run,undo,undo_all,define_subroutine,call_subroutine}." }
+property-tests = { percent = 50, notes = "Reversibility round-trip property authored; QuickCheck generators depend on AffineScript stdlib." }
+ci = { percent = 0, notes = "GitHub Actions workflow pending." }
+
+[route-to-mvp]
+remaining = [
+  { item = "Run scaffold-component.py to fill RSR floor + remaining 6a2 + contractiles", priority = "high" },
+  { item = "Implement StateBackend.affine — VmState handler over Dict<int>", priority = "high" },
+  { item = "Land first green compilation against current affinescript main", priority = "high" },
+  { item = "Wire CI: must-check + trust-verify + property tests", priority = "medium" },
+  { item = "Pin @sha256: digests on stapeln + Containerfile", priority = "medium" },
+  { item = "First DLC pack consumed by the (working) game", priority = "high" }
+]
+
+[upstream-pressure]
+; Issues this port surfaces against hyperpolymath/affinescript.
+; Each one is a candidate upstream PR.
+needs = [
+  { feature = "TRefined predicate reduction", motivation = "lift POP / AND / OR ancilla preconditions from runtime-asserted to type-checked" },
+  { feature = "effect-handler WASM lowering parity", motivation = "VmState handler must lower correctly to typed-wasm" },
+  { feature = "stdlib Dict / List with refinement-friendly signatures", motivation = "VM state and history" },
+  { feature = "stdlib Bits module", motivation = "Xor, Flip, Rol, Ror, And, Or" }
+]

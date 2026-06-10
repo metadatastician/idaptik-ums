@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+//
+// Vm.affine — the public VM API. The game (and other consumers) interact
+// with this module exclusively. Internal types (Instruction, State, Step,
+// instructions/*) are not part of the surface.
+
+import Vm.Instruction as I
+import Vm.State as S
+import Vm.Step
+
+module Vm {
+
+  // The VM holds:
+  //   - the current state (behind the VmState effect)
+  //   - the history of executed instructions (for undo)
+  //   - the subroutine registry
+  //
+  // All three are owned linearly. The VM cannot be shared; consumers thread
+  // it through their effect.
+  type t = own {
+    history: List[I.t],
+    subroutines: Dict[String, List[I.t]],
+  }
+
+  fn make() -> own t {
+    Vm { history: [], subroutines: Dict.new() }
+  }
+
+  // Run an instruction forward and record it in history.
+  fn run(@linear vm: own t, instr: I.t) -{S.VmState}-> own t {
+    Step.forward(instr);
+    Vm { history: List.append(vm.history, [instr]), subroutines: vm.subroutines }
+  }
+
+  // Undo the last instruction. Returns Some(instr) if there was history.
+  fn undo(@linear vm: own t) -{S.VmState}-> (own t, Option[I.t]) {
+    match List.last(vm.history) {
+      Some(last) => {
+        Step.backward(last);
+        let rest = List.init(vm.history);
+        (Vm { history: rest, subroutines: vm.subroutines }, Some(last))
+      }
+      None => (vm, None)
+    }
+  }
+
+  // Undo all history; returns the count.
+  fn undo_all(@linear vm: own t) -{S.VmState}-> (own t, Int) {
+    let mut count = 0;
+    let mut current = vm;
+    let mut going = true;
+    while going {
+      let (next, popped) = undo(current);
+      current = next;
+      match popped {
+        Some(_) => { count = count + 1 },
+        None => { going = false }
+      }
+    }
+    (current, count)
+  }
+
+  fn define_subroutine(@linear vm: own t, name: String, body: List[I.t]) -> own t {
+    Vm { history: vm.history, subroutines: Dict.set(vm.subroutines, name, body) }
+  }
+
+  fn call_subroutine(@linear vm: own t, name: String) -{S.VmState}-> (own t, Result[(), String]) {
+    match Dict.get(vm.subroutines, name) {
+      Some(body) => {
+        let next = run(vm, I.Call(name, body));
+        (next, Ok(()))
+      }
+      None => (vm, Err("Subroutine not defined: " ++ name))
+    }
+  }
+
+  fn history_length(vm: ref t) -> Int { List.length(vm.history) }
+  fn list_subroutines(vm: ref t) -> List[String] { Dict.keys(vm.subroutines) }
+}

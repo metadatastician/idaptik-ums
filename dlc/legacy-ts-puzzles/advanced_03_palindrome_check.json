@@ -1,0 +1,33 @@
+{
+  "name": "Palindrome Numbers",
+  "description": "Arrange numbers to be symmetric: a=c and b in middle.",
+  "difficulty": "advanced",
+  "initialState": {
+    "a": 5,
+    "b": 10,
+    "c": 15
+  },
+  "goalState": {
+    "a": 10,
+    "b": 5,
+    "c": 10
+  },
+  "maxMoves": 15,
+  "optimalMoves": 8,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Goal: a and c should be equal."
+    },
+    {
+      "moveNumber": 5,
+      "text": "Use b as a staging area."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["symmetry", "advanced"]
+  }
+}

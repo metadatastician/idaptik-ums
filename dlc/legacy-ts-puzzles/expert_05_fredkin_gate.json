@@ -1,0 +1,41 @@
+{
+  "name": "Fredkin Gate (CSWAP)",
+  "description": "Implement the Fredkin (Controlled-SWAP) gate. If control bit is 1, swap the two data bits. Another universal reversible gate used in quantum computing!",
+  "difficulty": "expert",
+  "initialState": {
+    "control": 1,
+    "data1": 0,
+    "data2": 1,
+    "temp": 0
+  },
+  "goalState": {
+    "control": 1,
+    "data1": 1,
+    "data2": 0,
+    "temp": 0
+  },
+  "maxMoves": 12,
+  "optimalMoves": 5,
+  "allowedInstructions": ["SWAP", "XOR", "AND"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Fredkin performs a controlled swap: if control=1, swap data1 and data2"
+    },
+    {
+      "moveNumber": 3,
+      "text": "In this case, control=1, so you need to swap data1 and data2"
+    },
+    {
+      "moveNumber": 6,
+      "text": "SWAP instruction is perfect for this! But can you make it conditional?"
+    }
+  ],
+  "metadata": {
+    "author": "Claude AI",
+    "created": "2025-11-22",
+    "tags": ["quantum", "fredkin", "cswap", "controlled-swap", "reversible"],
+    "license": "CC-BY-4.0",
+    "version": "1.0.0"
+  }
+}

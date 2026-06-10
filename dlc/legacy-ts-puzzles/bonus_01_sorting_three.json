@@ -1,0 +1,33 @@
+{
+  "name": "Sort Three Numbers",
+  "description": "Sort three numbers into ascending order: a ≤ b ≤ c.",
+  "difficulty": "expert",
+  "initialState": {
+    "a": 30,
+    "b": 10,
+    "c": 20
+  },
+  "goalState": {
+    "a": 10,
+    "b": 20,
+    "c": 30
+  },
+  "maxMoves": 25,
+  "optimalMoves": 12,
+  "allowedInstructions": ["ADD", "SUB", "SWAP", "NEGATE"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Compare pairs and swap if out of order."
+    },
+    {
+      "moveNumber": 8,
+      "text": "Use SUB to compute differences, then decide swaps."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["sorting", "expert", "algorithms"]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Swap Meet",
+  "description": "Exchange the values of two variables.",
+  "difficulty": "beginner",
+  "initialState": {
+    "a": 10,
+    "b": 20
+  },
+  "goalState": {
+    "a": 20,
+    "b": 10
+  },
+  "maxMoves": 3,
+  "optimalMoves": 1,
+  "allowedInstructions": ["SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "SWAP is perfect for this!"
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["swap", "beginner"]
+  }
+}

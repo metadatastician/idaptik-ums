@@ -1,0 +1,33 @@
+{
+  "name": "Fibonacci First Steps",
+  "description": "Generate the first few Fibonacci numbers: 0, 1, 1, 2, 3.",
+  "difficulty": "intermediate",
+  "initialState": {
+    "a": 0,
+    "b": 1,
+    "c": 0
+  },
+  "goalState": {
+    "a": 1,
+    "b": 2,
+    "c": 3
+  },
+  "maxMoves": 20,
+  "optimalMoves": 9,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Fibonacci: each number is the sum of the previous two."
+    },
+    {
+      "moveNumber": 5,
+      "text": "Use c as a temporary variable to compute sums."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["fibonacci", "intermediate", "sequences"]
+  }
+}

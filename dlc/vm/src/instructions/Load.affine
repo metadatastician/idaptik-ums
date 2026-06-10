@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: MPL-2.0
+// LOAD — additive. reg += memory[addr].
+import Vm.State as S
+
+module Vm.Instructions.Load {
+  fn forward(reg: ref String, addr: Int) -{S.VmState}-> () {
+    let rv = S.read_reg(reg);
+    let mv = S.read_memory(addr);
+    S.write_reg(reg, rv + mv)
+  }
+  fn backward(reg: ref String, addr: Int) -{S.VmState}-> () {
+    let rv = S.read_reg(reg);
+    let mv = S.read_memory(addr);
+    S.write_reg(reg, rv - mv)
+  }
+}

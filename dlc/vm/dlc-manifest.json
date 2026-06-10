@@ -1,0 +1,37 @@
+{
+  "$schema": "https://github.com/hyperpolymath/idaptik-game/blob/main/schemas/dlc-manifest.schema.json",
+  "id": "idaptik-dlc-vm",
+  "name": "Reversible VM",
+  "version": "0.1.0-alpha",
+  "description": "23-instruction reversible virtual machine with provable backward = forward^-1.",
+  "license": "MPL-2.0",
+  "author": "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
+  "kind": "gameplay-mechanic",
+  "loads": "on-puzzle-screen",
+  "exports": {
+    "vm-instance": "Vm.make",
+    "instruction-type": "Vm.Instruction.t",
+    "state-effect": "Vm.State.VmState"
+  },
+  "depends-on": {
+    "idaptik-contracts": "^0.1.0"
+  },
+  "compile-target": "wasmgc",
+  "wasm-modules": [
+    "dist/wasm/Vm.wasm",
+    "dist/wasm/Vm.Instruction.wasm",
+    "dist/wasm/Vm.State.wasm",
+    "dist/wasm/Vm.Step.wasm"
+  ],
+  "guarantees": [
+    "every-instruction-has-an-inverse",
+    "no-information-loss",
+    "history-rewindable",
+    "tier-0-pure",
+    "no-implicit-state-access (typed VmState effect)"
+  ],
+  "verification": {
+    "property-tests": "tests/properties/reversibility.affine",
+    "soundness-spec": "docs/SOUNDNESS.adoc"
+  }
+}

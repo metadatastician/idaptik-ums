@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+//
+// State.affine — the VM's mutable execution state, behind an effect.
+//
+// The previous ReScript encoding (`dict<int>` everywhere) made every read and
+// write implicit and untyped. Here we surface state access as the `VmState`
+// effect; functions that touch state must declare the effect in their type;
+// pure functions cannot touch it. This is what makes the audit's
+// "hiding I/O or mutation inside supposedly pure logic" anti-pattern
+// structurally impossible in this port.
+//
+// Internal keys and user registers are still represented by string keys to
+// match the wire format and to keep STATE.serializeState round-tripping
+// possible — but the discipline is now type-checked, not convention.
+
+import Contracts.Constants as K
+
+module Vm.State {
+
+  type Reg = String
+  type Addr = Int           // 0..K.memory_size()-1
+  type Port = String
+
+  // The state effect. All read/write operations route through this.
+  // QTT @1 means the State handler can be opened exactly once per VM
+  // (no aliasing). Compare this to the ReScript `mutable state: dict<int>`
+  // which was happily aliased.
+  effect VmState {
+    // User registers (plain names, no underscore prefix).
+    fn read_reg(r: ref Reg) -> Int;
+    fn write_reg(r: ref Reg, v: Int) -> ();
+
+    // Stack (operations on _sp + _s:N).
+    fn stack_pointer() -> Int;
+    fn set_stack_pointer(sp: Int) -> ();
+    fn read_stack(idx: Int) -> Int;
+    fn write_stack(idx: Int, v: Int) -> ();
+
+    // Memory (0..255).
+    fn read_memory(a: Addr) -> Int;
+    fn write_memory(a: Addr, v: Int) -> ();
+
+    // Ports.
+    fn port_in_pointer(p: ref Port) -> Int;
+    fn set_port_in_pointer(p: ref Port, ptr: Int) -> ();
+    fn read_port_in(p: ref Port, idx: Int) -> Int;
+    fn write_port_in(p: ref Port, idx: Int, v: Int) -> ();
+    fn port_out_pointer(p: ref Port) -> Int;
+    fn set_port_out_pointer(p: ref Port, ptr: Int) -> ();
+    fn read_port_out(p: ref Port, idx: Int) -> Int;
+    fn write_port_out(p: ref Port, idx: Int, v: Int) -> ();
+  }
+
+  // The handler that materialises VmState over a backing dictionary.
+  // Implementation lives in StateBackend.affine.
+  // (Signature here only; implementation needs the AffineScript stdlib's
+  //  Dict module which is currently incomplete for this signature.)
+}

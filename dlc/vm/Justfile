@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MPL-2.0
+set shell := ["bash", "-uc"]
+import? "contractile.just"
+
+default:
+    @just --list --unsorted
+
+bootstrap:
+    asdf install
+    opam install -y dune sedlex menhir ppx_deriving cmdliner yojson
+
+build:
+    affinescript compile --target wasmgc --module-per-file -o dist/wasm/ src/Vm.affine
+
+test:
+    affinescript test tests/
+
+properties:
+    affinescript test tests/properties/
+
+clean:
+    rm -rf dist target _build
+
+container:
+    podman build -t ghcr.io/hyperpolymath/idaptik-dlc-vm:latest -f Containerfile .
+
+container-stapeln:
+    stapeln build --target production

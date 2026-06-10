@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MPL-2.0
+FROM cgr.dev/chainguard/wolfi-base:latest AS build
+USER root
+RUN apk add --no-cache ocaml opam dune wabt git && \
+    opam init --no-setup --disable-sandboxing && \
+    opam install -y dune sedlex menhir ppx_deriving cmdliner yojson && \
+    git clone --depth 1 https://github.com/hyperpolymath/affinescript /opt/affinescript && \
+    cd /opt/affinescript && dune build
+
+WORKDIR /build
+COPY src ./src
+COPY dlc-manifest.json ./
+RUN /opt/affinescript/_build/default/bin/main.exe compile --target wasmgc --module-per-file -o dist/wasm/ src/Vm.affine
+
+FROM cgr.dev/chainguard/static:latest AS runtime
+COPY --from=build /build/dist /dlc/wasm
+COPY --from=build /build/dlc-manifest.json /dlc/

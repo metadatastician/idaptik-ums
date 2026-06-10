@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: MPL-2.0
+// ROL — paired with Ror. Rotate left by `bits`. backward = Ror.forward.
+import Vm.State as S
+import Std.Bits
+
+module Vm.Instructions.Rol {
+  fn forward(a: ref String, bits: Int) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    S.write_reg(a, Bits.or(Bits.shl(av, bits), Bits.lshr(av, 32 - bits)))
+  }
+  fn backward(a: ref String, bits: Int) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    S.write_reg(a, Bits.or(Bits.lshr(av, bits), Bits.shl(av, 32 - bits)))
+  }
+}

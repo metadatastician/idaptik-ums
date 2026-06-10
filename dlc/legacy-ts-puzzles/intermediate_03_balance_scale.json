@@ -1,0 +1,31 @@
+{
+  "name": "Balance the Scale",
+  "description": "Make two variables equal by redistributing their values.",
+  "difficulty": "intermediate",
+  "initialState": {
+    "left": 30,
+    "right": 10
+  },
+  "goalState": {
+    "left": 20,
+    "right": 20
+  },
+  "maxMoves": 10,
+  "optimalMoves": 4,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "You need to transfer 10 from left to right."
+    },
+    {
+      "moveNumber": 3,
+      "text": "Try creating a temporary variable to hold values."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["arithmetic", "intermediate", "balance"]
+  }
+}

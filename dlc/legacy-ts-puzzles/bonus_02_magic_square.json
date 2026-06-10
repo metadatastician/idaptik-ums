@@ -1,0 +1,45 @@
+{
+  "name": "Magic Square Start",
+  "description": "Arrange numbers so each row/column sums to 15 (3x3 magic square beginning).",
+  "difficulty": "expert",
+  "initialState": {
+    "a": 2,
+    "b": 9,
+    "c": 4,
+    "d": 7,
+    "e": 5,
+    "f": 3,
+    "g": 6,
+    "h": 1,
+    "i": 8
+  },
+  "goalState": {
+    "a": 2,
+    "b": 7,
+    "c": 6,
+    "d": 9,
+    "e": 5,
+    "f": 1,
+    "g": 4,
+    "h": 3,
+    "i": 8
+  },
+  "maxMoves": 40,
+  "optimalMoves": 18,
+  "allowedInstructions": ["SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Classic 3×3 magic square arrangement."
+    },
+    {
+      "moveNumber": 10,
+      "text": "2+7+6=15, 9+5+1=15, 4+3+8=15 in rows."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["magic-square", "expert", "puzzle"]
+  }
+}

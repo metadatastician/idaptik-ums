@@ -1,0 +1,29 @@
+{
+  "name": "Simple Addition",
+  "description": "Add two numbers together. Your first step into reversible computing!",
+  "difficulty": "beginner",
+  "initialState": {
+    "x": 5,
+    "y": 3,
+    "z": 0
+  },
+  "goalState": {
+    "x": 8,
+    "y": 3,
+    "z": 0
+  },
+  "maxMoves": 5,
+  "optimalMoves": 1,
+  "allowedInstructions": ["ADD", "SUB"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Try using ADD to combine x and y!"
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["arithmetic", "beginner", "tutorial"]
+  }
+}

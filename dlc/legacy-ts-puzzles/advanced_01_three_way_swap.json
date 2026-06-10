@@ -1,0 +1,33 @@
+{
+  "name": "Three-Way Rotation",
+  "description": "Rotate three values: a→b, b→c, c→a without using a fourth variable.",
+  "difficulty": "advanced",
+  "initialState": {
+    "a": 1,
+    "b": 2,
+    "c": 3
+  },
+  "goalState": {
+    "a": 3,
+    "b": 1,
+    "c": 2
+  },
+  "maxMoves": 12,
+  "optimalMoves": 4,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "This is tricky! Think about the order of swaps."
+    },
+    {
+      "moveNumber": 4,
+      "text": "Try: SWAP(a,b), SWAP(b,c), then adjust..."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["swap", "advanced", "rotation"]
+  }
+}

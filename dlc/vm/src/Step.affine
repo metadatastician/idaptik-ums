@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+//
+// Step.affine — instruction dispatcher.
+//
+// One match-case per constructor of Vm.Instruction.t for each direction.
+// AffineScript's exhaustiveness checker rejects any program that adds a
+// constructor without updating both forward and backward — the property
+// the ReScript original could not express. Per-instruction semantics live
+// in src/instructions/*.affine; this file only routes.
+
+import Vm.Instruction as I
+import Vm.State as S
+
+import Vm.Instructions.Add
+import Vm.Instructions.Sub
+import Vm.Instructions.Swap
+import Vm.Instructions.Xor
+import Vm.Instructions.Negate
+import Vm.Instructions.Flip
+import Vm.Instructions.Noop
+import Vm.Instructions.Rol
+import Vm.Instructions.Ror
+import Vm.Instructions.And
+import Vm.Instructions.Or
+import Vm.Instructions.Mul
+import Vm.Instructions.Div
+import Vm.Instructions.IfZero
+import Vm.Instructions.IfPos
+import Vm.Instructions.Loop
+import Vm.Instructions.Push
+import Vm.Instructions.Pop
+import Vm.Instructions.Load
+import Vm.Instructions.Store
+import Vm.Instructions.Call
+import Vm.Instructions.Send
+import Vm.Instructions.Recv
+
+module Vm.Step {
+
+  fn forward(i: ref I.t) -{S.VmState}-> () {
+    match i {
+      // Tier 0 — register arithmetic
+      I.Add(a, b)        => Add.forward(a, b),
+      I.Sub(a, b)        => Sub.forward(a, b),
+      I.Swap(a, b)       => Swap.forward(a, b),
+      I.Xor(a, b)        => Xor.forward(a, b),
+      I.Negate(a)        => Negate.forward(a),
+      I.Flip(a)          => Flip.forward(a),
+      I.Noop             => Noop.forward(),
+      I.Rol(a, bits)     => Rol.forward(a, bits),
+      I.Ror(a, bits)     => Ror.forward(a, bits),
+      I.And(a, b, c)     => And.forward(a, b, c),
+      I.Or(a, b, c)      => Or.forward(a, b, c),
+      I.Mul(a, b, c)     => Mul.forward(a, b, c),
+      I.Div(a, b, q, r)  => Div.forward(a, b, q, r),
+
+      // Tier 1 — control flow
+      I.IfZero(t, e, body)            => IfZero.forward(t, e, body),
+      I.IfPos(t, e, body)             => IfPos.forward(t, e, body),
+      I.Loop(eg, xg, body, step, mi)  => Loop.forward(eg, xg, body, step, mi),
+
+      // Tier 2 — stack and memory
+      I.Push(reg)        => Push.forward(reg),
+      I.Pop(reg)         => Pop.forward(reg),
+      I.Load(reg, addr)  => Load.forward(reg, addr),
+      I.Store(addr, reg) => Store.forward(addr, reg),
+
+      // Tier 3 — subroutines
+      I.Call(name, body) => Call.forward(name, body),
+
+      // Tier 4 — I/O
+      I.Send(port, reg)  => Send.forward(port, reg),
+      I.Recv(port, reg)  => Recv.forward(port, reg),
+    }
+  }
+
+  fn backward(i: ref I.t) -{S.VmState}-> () {
+    match i {
+      I.Add(a, b)        => Add.backward(a, b),
+      I.Sub(a, b)        => Sub.backward(a, b),
+      I.Swap(a, b)       => Swap.backward(a, b),
+      I.Xor(a, b)        => Xor.backward(a, b),
+      I.Negate(a)        => Negate.backward(a),
+      I.Flip(a)          => Flip.backward(a),
+      I.Noop             => Noop.backward(),
+      I.Rol(a, bits)     => Rol.backward(a, bits),
+      I.Ror(a, bits)     => Ror.backward(a, bits),
+      I.And(a, b, c)     => And.backward(a, b, c),
+      I.Or(a, b, c)      => Or.backward(a, b, c),
+      I.Mul(a, b, c)     => Mul.backward(a, b, c),
+      I.Div(a, b, q, r)  => Div.backward(a, b, q, r),
+
+      I.IfZero(t, e, body)            => IfZero.backward(t, e, body),
+      I.IfPos(t, e, body)             => IfPos.backward(t, e, body),
+      I.Loop(eg, xg, body, step, mi)  => Loop.backward(eg, xg, body, step, mi),
+
+      I.Push(reg)        => Push.backward(reg),
+      I.Pop(reg)         => Pop.backward(reg),
+      I.Load(reg, addr)  => Load.backward(reg, addr),
+      I.Store(addr, reg) => Store.backward(addr, reg),
+
+      I.Call(name, body) => Call.backward(name, body),
+
+      I.Send(port, reg)  => Send.backward(port, reg),
+      I.Recv(port, reg)  => Recv.backward(port, reg),
+    }
+  }
+}

@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: MPL-2.0
+// IF_ZERO — janus-guarded conditional.
+//
+// Forward:  if testReg == 0 then [thenBranch] else [elseBranch]
+//           postcondition: exitReg == 0 iff then-branch was taken
+// Backward: if exitReg == 0 then reverse(thenBranch) else reverse(elseBranch)
+//
+// The exit-guard register lets backward reconstruct which branch ran without
+// storing a flag. This is the Janus pattern — both branches must establish
+// the postcondition that distinguishes them.
+import Vm.Instruction as I
+import Vm.State as S
+import Vm.Step  // mutual recursion: branches are arbitrary instructions
+
+module Vm.Instructions.IfZero {
+  fn forward(test: ref String, exit_guard: ref String, body: ref List[I.t]) -{S.VmState}-> () {
+    let tv = S.read_reg(test);
+    if tv == 0 {
+      List.for_each(body, instr => Step.forward(instr))
+    }
+    // else-branch is empty in our encoding; the parser produces empty
+    // `else` lists. If a non-empty else is needed, the program reshapes to
+    // explicit two-IfZero form.
+  }
+  fn backward(test: ref String, exit_guard: ref String, body: ref List[I.t]) -{S.VmState}-> () {
+    let ev = S.read_reg(exit_guard);
+    if ev == 0 {
+      List.for_each(List.reverse(body), instr => Step.backward(instr))
+    }
+  }
+}

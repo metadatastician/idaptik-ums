@@ -1,0 +1,13 @@
+{
+  "name": "Vault 7",
+  "description": "A symmetric lock that toggles between two states.",
+  "steps": [
+    { "op": "flip", "target": "bit0" },
+    { "op": "flip", "target": "bit1" },
+    { "op": "swap", "targets": ["bit0", "bit1"] }
+  ],
+  "state": {
+    "bit0": 0,
+    "bit1": 1
+  }
+}

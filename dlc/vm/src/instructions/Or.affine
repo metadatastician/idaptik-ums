@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: MPL-2.0
+// OR — precondition-guarded ancilla. Same shape as And.
+import Vm.State as S
+import Std.Bits
+
+module Vm.Instructions.Or {
+  fn forward(a: ref String, b: ref String, c: ref String) -{S.VmState}-> () {
+    assert(S.read_reg(c) == 0, "OR ancilla must be 0");
+    let av = S.read_reg(a);
+    let bv = S.read_reg(b);
+    S.write_reg(c, Bits.or(av, bv))
+  }
+  fn backward(a: ref String, b: ref String, c: ref String) -{S.VmState}-> () {
+    S.write_reg(c, 0)
+  }
+}

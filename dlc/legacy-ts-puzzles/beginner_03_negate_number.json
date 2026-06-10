@@ -1,0 +1,25 @@
+{
+  "name": "Sign Flip",
+  "description": "Turn a positive number negative.",
+  "difficulty": "beginner",
+  "initialState": {
+    "x": 42
+  },
+  "goalState": {
+    "x": -42
+  },
+  "maxMoves": 3,
+  "optimalMoves": 1,
+  "allowedInstructions": ["NEGATE"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "NEGATE flips the sign of a number."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["negate", "beginner"]
+  }
+}

@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: MPL-2.0
+// NOOP — involution. Does nothing.
+import Vm.State as S
+
+module Vm.Instructions.Noop {
+  fn forward() -{S.VmState}-> () { () }
+  fn backward() -{S.VmState}-> () { () }
+}

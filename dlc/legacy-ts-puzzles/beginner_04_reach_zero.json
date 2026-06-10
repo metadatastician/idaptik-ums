@@ -1,0 +1,27 @@
+{
+  "name": "Road to Zero",
+  "description": "Use subtraction to reach exactly zero.",
+  "difficulty": "beginner",
+  "initialState": {
+    "x": 15,
+    "y": 15
+  },
+  "goalState": {
+    "x": 0,
+    "y": 15
+  },
+  "maxMoves": 5,
+  "optimalMoves": 1,
+  "allowedInstructions": ["ADD", "SUB"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "What happens when you subtract a number from itself?"
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["arithmetic", "beginner"]
+  }
+}

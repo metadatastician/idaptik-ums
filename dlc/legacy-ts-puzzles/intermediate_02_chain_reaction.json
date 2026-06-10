@@ -1,0 +1,35 @@
+{
+  "name": "Chain Reaction",
+  "description": "Propagate a value through multiple variables.",
+  "difficulty": "intermediate",
+  "initialState": {
+    "a": 100,
+    "b": 0,
+    "c": 0,
+    "d": 0
+  },
+  "goalState": {
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "d": 100
+  },
+  "maxMoves": 15,
+  "optimalMoves": 6,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Move the value step by step through the chain."
+    },
+    {
+      "moveNumber": 5,
+      "text": "Use SWAP to transfer without losing values."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["swap", "intermediate", "transfer"]
+  }
+}

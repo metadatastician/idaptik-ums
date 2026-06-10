@@ -1,0 +1,31 @@
+{
+  "name": "Double Trouble",
+  "description": "Double a number using only ADD operations.",
+  "difficulty": "intermediate",
+  "initialState": {
+    "x": 7,
+    "helper": 7
+  },
+  "goalState": {
+    "x": 14,
+    "helper": 7
+  },
+  "maxMoves": 8,
+  "optimalMoves": 1,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "How can you add a number to itself?"
+    },
+    {
+      "moveNumber": 3,
+      "text": "You might need to use a helper variable!"
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["arithmetic", "intermediate", "doubling"]
+  }
+}

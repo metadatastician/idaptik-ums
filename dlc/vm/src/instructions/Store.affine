@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: MPL-2.0
+// STORE — additive. memory[addr] += reg.
+import Vm.State as S
+
+module Vm.Instructions.Store {
+  fn forward(addr: Int, reg: ref String) -{S.VmState}-> () {
+    let rv = S.read_reg(reg);
+    let mv = S.read_memory(addr);
+    S.write_memory(addr, mv + rv)
+  }
+  fn backward(addr: Int, reg: ref String) -{S.VmState}-> () {
+    let rv = S.read_reg(reg);
+    let mv = S.read_memory(addr);
+    S.write_memory(addr, mv - rv)
+  }
+}

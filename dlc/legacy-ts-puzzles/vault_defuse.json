@@ -1,0 +1,14 @@
+{
+  "name": "Vault Detonation Prevention",
+  "description": "Disarm the bomb by restoring a symmetric state. One wrong flip and it's over.",
+  "state": {
+    "bit0": 0,
+    "bit1": 1,
+    "bit2": 1
+  },
+  "steps": [
+    { "op": "flip", "target": "bit0" },
+    { "op": "xor", "targets": ["bit0", "bit1"], "result": "bit2" },
+    { "op": "swap", "targets": ["bit2", "bit0"] }
+  ]
+}

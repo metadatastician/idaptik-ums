@@ -1,0 +1,49 @@
+{
+  "name": "Binary Search",
+  "description": "Implement binary search using reversible operations. Find the target value's index in a sorted array represented as variables.",
+  "difficulty": "advanced",
+  "initialState": {
+    "arr0": 1,
+    "arr1": 3,
+    "arr2": 5,
+    "arr3": 7,
+    "arr4": 9,
+    "target": 5,
+    "index": 0,
+    "found": 0
+  },
+  "goalState": {
+    "arr0": 1,
+    "arr1": 3,
+    "arr2": 5,
+    "arr3": 7,
+    "arr4": 9,
+    "target": 5,
+    "index": 2,
+    "found": 1
+  },
+  "maxMoves": 20,
+  "optimalMoves": 12,
+  "allowedInstructions": ["ADD", "SUB", "SWAP", "XOR"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Binary search divides the search space in half each iteration"
+    },
+    {
+      "moveNumber": 5,
+      "text": "Compare target with middle element (arr2)"
+    },
+    {
+      "moveNumber": 10,
+      "text": "Use XOR for comparisons without destroying values"
+    }
+  ],
+  "metadata": {
+    "author": "Claude AI",
+    "created": "2025-11-22",
+    "tags": ["algorithms", "search", "binary-search", "reversible"],
+    "license": "CC-BY-4.0",
+    "version": "1.0.0"
+  }
+}

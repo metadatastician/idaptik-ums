@@ -1,0 +1,29 @@
+{
+  "name": "Sign Dance",
+  "description": "Flip the signs of multiple variables in sequence.",
+  "difficulty": "intermediate",
+  "initialState": {
+    "a": 10,
+    "b": 20,
+    "c": 30
+  },
+  "goalState": {
+    "a": -10,
+    "b": -20,
+    "c": -30
+  },
+  "maxMoves": 8,
+  "optimalMoves": 3,
+  "allowedInstructions": ["NEGATE"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Negate each variable one at a time."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["negate", "intermediate"]
+  }
+}

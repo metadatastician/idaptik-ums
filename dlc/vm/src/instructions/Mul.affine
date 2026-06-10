@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: MPL-2.0
+// MUL — additive ancilla. c += a * b.
+//
+// Reversible because additive: backward subtracts a*b from c. a and b must
+// not change between forward and backward calls.
+//
+// The ReScript port also exposes makeInPlace as an "intentional flaw" used
+// for teaching reversibility failures. We do NOT port that here — the
+// AffineScript port is the production-correct VM; the educational variant
+// belongs in a separate teaching module if anywhere.
+import Vm.State as S
+
+module Vm.Instructions.Mul {
+  fn forward(a: ref String, b: ref String, c: ref String) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    let bv = S.read_reg(b);
+    let cv = S.read_reg(c);
+    S.write_reg(c, cv + av * bv)
+  }
+  fn backward(a: ref String, b: ref String, c: ref String) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    let bv = S.read_reg(b);
+    let cv = S.read_reg(c);
+    S.write_reg(c, cv - av * bv)
+  }
+}

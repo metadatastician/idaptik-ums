@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+//
+// Instruction.affine — the reversible-VM instruction sum type.
+//
+// Design vs. the previous ReScript encoding (`Instruction.t = {execute, invert}`):
+//
+//   The old encoding stored two effectful closures per instruction. Reversibility
+//   was a comment ("Pop.res:13-19 ... docstring-only POP/LOOP guards") rather
+//   than a checked invariant.
+//
+//   Here we lift the instruction set into a closed sum type. The forward and
+//   backward semantics are derived in `Step.affine` from a single specification
+//   per constructor. The reversibility property — backward ∘ forward = id on
+//   the precondition-satisfying state space — becomes a per-constructor proof
+//   obligation that `Quantity.check_program_quantities` (the live QTT gate in
+//   AffineScript) plus a small set of property tests discharge mechanically.
+
+import Contracts.Instruction as Tag      // generated from idaptik-contracts
+import Contracts.Constants as K          // state-key prefixes
+import Contracts.SecurityLevel           // unused here; imported for the trait
+
+module Vm.Instruction {
+
+  type Reg = String
+
+  // The closed instruction sum. Constructor names match Contracts.Instruction.t
+  // exactly so a trivial bijection codegen could materialise the wire form.
+  // 23 user-facing constructors across 5 tiers; LOOP is constructed
+  // programmatically (block-structured) and not parsed from the REPL.
+  type t =
+    // Tier 0
+    | Add(a: Reg, b: Reg)
+    | Sub(a: Reg, b: Reg)
+    | Swap(a: Reg, b: Reg)
+    | Xor(a: Reg, b: Reg)
+    | Negate(a: Reg)
+    | Flip(a: Reg)
+    | Noop
+    | Rol(a: Reg, bits: Int)
+    | Ror(a: Reg, bits: Int)
+    | And(a: Reg, b: Reg, c: Reg)         // c is the ancilla
+    | Or(a: Reg, b: Reg, c: Reg)          // c is the ancilla
+    | Mul(a: Reg, b: Reg, c: Reg)         // c is the additive accumulator
+    | Div(a: Reg, b: Reg, q: Reg, r: Reg)
+
+    // Tier 1
+    | IfZero(test: Reg, exit_guard: Reg, body: List[t])
+    | IfPos(test: Reg, exit_guard: Reg, body: List[t])
+    | Loop(entry_guard: Reg, exit_guard: Reg, body: List[t], step: List[t], max_iter: Int)
+
+    // Tier 2
+    | Push(reg: Reg)
+    | Pop(reg: Reg)
+    | Load(reg: Reg, addr: Int)           // additive: reg += memory[addr]
+    | Store(addr: Int, reg: Reg)          // additive: memory[addr] += reg
+
+    // Tier 3
+    | Call(name: String, body: List[t])
+
+    // Tier 4
+    | Send(port: String, reg: Reg)
+    | Recv(port: String, reg: Reg)
+
+  // Tier classification used by the parser, the UI, and the proof obligation
+  // dispatcher (see Step.affine § reversibility-class).
+  fn tier(i: ref t) -> Tag.InstructionTier {
+    match i {
+      Add(_,_) | Sub(_,_) | Swap(_,_) | Xor(_,_) | Negate(_) | Flip(_)
+        | Noop | Rol(_,_) | Ror(_,_) | And(_,_,_) | Or(_,_,_)
+        | Mul(_,_,_) | Div(_,_,_,_) => Tag.Tier0,
+
+      IfZero(_,_,_) | IfPos(_,_,_) | Loop(_,_,_,_,_) => Tag.Tier1,
+
+      Push(_) | Pop(_) | Load(_,_) | Store(_,_) => Tag.Tier2,
+
+      Call(_,_) => Tag.Tier3,
+
+      Send(_,_) | Recv(_,_) => Tag.Tier4,
+    }
+  }
+}

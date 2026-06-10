@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: MPL-2.0
+// FLIP — involution. a = ~a (bitwise NOT).
+import Vm.State as S
+import Std.Bits
+
+module Vm.Instructions.Flip {
+  fn forward(a: ref String) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    S.write_reg(a, Bits.not(av))
+  }
+  fn backward(a: ref String) -{S.VmState}-> () {
+    forward(a)
+  }
+}

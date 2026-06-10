@@ -1,0 +1,35 @@
+{
+  "name": "Prime Factorization",
+  "description": "Factor 24 into its prime components: 2×2×2×3 = 8×3.",
+  "difficulty": "expert",
+  "initialState": {
+    "number": 24,
+    "factor1": 0,
+    "factor2": 0,
+    "temp": 2
+  },
+  "goalState": {
+    "number": 0,
+    "factor1": 8,
+    "factor2": 3,
+    "temp": 0
+  },
+  "maxMoves": 50,
+  "optimalMoves": 28,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Divide by 2 repeatedly (using subtraction)."
+    },
+    {
+      "moveNumber": 20,
+      "text": "Track how many times you divided."
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["primes", "expert", "factorization"]
+  }
+}

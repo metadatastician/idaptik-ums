@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: MPL-2.0
+// LOOP — Janus from-do-loop-until.
+//
+//   from <entry_guard> == 0 do [body] loop [step] until <exit_guard> == 0
+//
+// Forward:
+//   1. assert entry_guard == 0 (first iteration)
+//   2. execute body
+//   3. if exit_guard == 0 stop
+//   4. execute step; goto 2 (entry assertion no longer required)
+//
+// Backward:
+//   1. assert exit_guard == 0 (we're at the end)
+//   2. reverse body
+//   3. if entry_guard == 0 stop
+//   4. reverse step; goto 2
+//
+// The entry/exit guards swap role under reversal — that's what makes Loop
+// deterministically reversible without storing iteration count in history.
+//
+// Safety: max_iter prevents pathological non-terminating loops.
+import Vm.Instruction as I
+import Vm.State as S
+import Vm.Step
+
+module Vm.Instructions.Loop {
+  fn forward(
+    entry_guard: ref String,
+    exit_guard: ref String,
+    body: ref List[I.t],
+    step: ref List[I.t],
+    max_iter: Int,
+  ) -{S.VmState}-> () {
+    assert(S.read_reg(entry_guard) == 0, "LOOP entry guard must be 0");
+    List.for_each(body, instr => Step.forward(instr));
+    let mut i = 1;
+    while S.read_reg(exit_guard) != 0 && i < max_iter {
+      List.for_each(step, instr => Step.forward(instr));
+      List.for_each(body, instr => Step.forward(instr));
+      i = i + 1
+    }
+  }
+
+  fn backward(
+    entry_guard: ref String,
+    exit_guard: ref String,
+    body: ref List[I.t],
+    step: ref List[I.t],
+    max_iter: Int,
+  ) -{S.VmState}-> () {
+    assert(S.read_reg(exit_guard) == 0, "LOOP exit guard must be 0 on reverse entry");
+    let rev_body = List.reverse(body);
+    let rev_step = List.reverse(step);
+    List.for_each(rev_body, instr => Step.backward(instr));
+    let mut i = 1;
+    while S.read_reg(entry_guard) != 0 && i < max_iter {
+      List.for_each(rev_step, instr => Step.backward(instr));
+      List.for_each(rev_body, instr => Step.backward(instr));
+      i = i + 1
+    }
+  }
+}

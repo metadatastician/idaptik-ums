@@ -1,0 +1,29 @@
+{
+  "name": "Efficiency Expert",
+  "description": "Reach the goal in exactly the optimal number of moves. No more, no less.",
+  "difficulty": "expert",
+  "initialState": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "goalState": {
+    "x": 100,
+    "y": 50,
+    "z": 25
+  },
+  "maxMoves": 8,
+  "optimalMoves": 6,
+  "allowedInstructions": ["ADD", "SUB", "SWAP"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "Every move must count. Plan ahead!"
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["optimization", "expert"]
+  }
+}

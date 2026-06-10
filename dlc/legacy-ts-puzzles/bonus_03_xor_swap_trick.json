@@ -1,0 +1,35 @@
+{
+  "name": "XOR Swap Trick",
+  "description": "Swap two numbers using XOR without a temp variable (classic CS trick).",
+  "difficulty": "advanced",
+  "initialState": {
+    "a": 42,
+    "b": 17
+  },
+  "goalState": {
+    "a": 17,
+    "b": 42
+  },
+  "maxMoves": 10,
+  "optimalMoves": 3,
+  "allowedInstructions": ["XOR"],
+  "hints": [
+    {
+      "moveNumber": 0,
+      "text": "XOR pattern: a^=b, b^=a, a^=b"
+    },
+    {
+      "moveNumber": 1,
+      "text": "After first XOR: a = a⊕b"
+    },
+    {
+      "moveNumber": 2,
+      "text": "After second: b = (a⊕b)⊕b = a"
+    }
+  ],
+  "metadata": {
+    "author": "Idaptik Team",
+    "created": "2025-11-22",
+    "tags": ["xor", "advanced", "bitwise", "swap"]
+  }
+}

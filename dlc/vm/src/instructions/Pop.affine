@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: MPL-2.0
+// POP — paired with Push. Precondition: read_reg(reg) == 0.
+import Vm.State as S
+import Vm.Instructions.Push
+
+module Vm.Instructions.Pop {
+  fn forward(reg: ref String) -{S.VmState}-> () {
+    // Refinement: { r: Reg | read_reg(r) == 0 }. See note in And.affine.
+    assert(S.read_reg(reg) == 0, "POP target register must be 0");
+    Push.backward(reg)
+  }
+  fn backward(reg: ref String) -{S.VmState}-> () {
+    Push.forward(reg)
+  }
+}

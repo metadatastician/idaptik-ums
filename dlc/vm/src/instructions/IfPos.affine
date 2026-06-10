@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: MPL-2.0
+// IF_POS — janus-guarded conditional. Same shape as IfZero but predicate > 0.
+import Vm.Instruction as I
+import Vm.State as S
+import Vm.Step
+
+module Vm.Instructions.IfPos {
+  fn forward(test: ref String, exit_guard: ref String, body: ref List[I.t]) -{S.VmState}-> () {
+    let tv = S.read_reg(test);
+    if tv > 0 {
+      List.for_each(body, instr => Step.forward(instr))
+    }
+  }
+  fn backward(test: ref String, exit_guard: ref String, body: ref List[I.t]) -{S.VmState}-> () {
+    let ev = S.read_reg(exit_guard);
+    if ev > 0 {
+      List.for_each(List.reverse(body), instr => Step.backward(instr))
+    }
+  }
+}

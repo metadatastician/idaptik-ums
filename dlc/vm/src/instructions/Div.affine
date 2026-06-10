@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: MPL-2.0
+// DIV — additive into both q and r.
+//
+// Forward:  q += a / b; r += a mod b   (b == 0 routes everything into r)
+// Backward: q -= a / b; r -= a mod b   (b == 0 routes everything out of r)
+//
+// Note: the ReScript original is structurally identical but ALSO clears q/r
+// in invert (which is wrong — it loses information). We fix that here:
+// backward subtracts the exact amount forward added, restoring the precise
+// prior values of q and r without assuming they were 0.
+import Vm.State as S
+
+module Vm.Instructions.Div {
+  fn forward(a: ref String, b: ref String, q: ref String, r: ref String) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    let bv = S.read_reg(b);
+    let qv = S.read_reg(q);
+    let rv = S.read_reg(r);
+    if bv == 0 {
+      S.write_reg(r, rv + av)
+    } else {
+      S.write_reg(q, qv + av / bv);
+      S.write_reg(r, rv + av % bv)
+    }
+  }
+  fn backward(a: ref String, b: ref String, q: ref String, r: ref String) -{S.VmState}-> () {
+    let av = S.read_reg(a);
+    let bv = S.read_reg(b);
+    let qv = S.read_reg(q);
+    let rv = S.read_reg(r);
+    if bv == 0 {
+      S.write_reg(r, rv - av)
+    } else {
+      S.write_reg(q, qv - av / bv);
+      S.write_reg(r, rv - av % bv)
+    }
+  }
+}
