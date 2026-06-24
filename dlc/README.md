@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # DLC (UMS payload)
 
 - `vm/`              — 23-instruction reversible VM in AffineScript with

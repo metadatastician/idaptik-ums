@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Legacy TS puzzles (preserved from `hyperpolymath/idaptik-dlc-iky`)
 
 These 27 puzzle JSON files were authored against the TypeScript/ReScript
