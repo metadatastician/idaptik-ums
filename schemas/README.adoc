@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= UMS <-> game bridge contracts
+
+UMS produces generated content — characters, levels, objects, DLC — as
+artifacts the game's DLC loader consumes. This directory holds the formal
+contracts for those artifacts; `just dlc-check` (scripts/validate_dlc.py,
+stdlib-only) is the executable smoke test that keeps `dlc/` honest against
+them.
+
+== Ownership split
+
+* *Envelope* (`dlc-manifest.schema.json`) — owned here. Every artifact ships a
+  `dlc-manifest.json` naming what it is (`kind`), what it exports, what it
+  depends on, and what it guarantees. The loader never needs payload knowledge
+  to decide whether and where to mount an artifact.
+* *Puzzle payloads* (`puzzle.schema.json`) — owned here, because the
+  reversible-VM puzzle format was born in this repo (`dlc/vm`,
+  `dlc/legacy-ts-puzzles`). Two formats: register puzzles and vault sequences.
+* *Scenario and actor payloads* — owned by the game engine.
+  `kind: scenario-definition` (buildings/levels: Ghost Lobby, the Exchange
+  House) and `kind: actor-pack` (archetype + modifier registries) declare a
+  versioned `payload.format` tag (for example `idaptik-scenario/1`), and the
+  typed loaders in IDApTIK's `idaptik-core` are the source of truth for what
+  is inside. UMS validates the envelope only, so the two repos can evolve
+  payload internals without lockstep releases.
+
+== Invariants beyond the schema language
+
+`scripts/validate_dlc.py` additionally enforces, per register puzzle:
+`initialState`/`goalState` share one register set, `optimalMoves <= maxMoves`,
+instructions come from the VM's 23-instruction set; per vault sequence: step
+operands are named bits of the declared state.

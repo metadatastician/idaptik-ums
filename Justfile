@@ -19,9 +19,9 @@ set positional-arguments := true
 import? "build/contractile.just"
 
 # Project metadata — customize these
-project := "rsr-template-repo"
-OWNER := "hyperpolymath"
-REPO := "rsr-template-repo"
+project := "idaptik-ums"
+OWNER := "metadatastician"
+REPO := "idaptik-ums"
 version := "0.1.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 
@@ -251,6 +251,11 @@ lint:
     #   cargo clippy -- -D warnings
     #   mix credo --strict
     #   gleam check
+
+# Validate every DLC artifact against the bridge contracts in schemas/
+# (manifest envelopes, puzzle payloads, cross-field invariants).
+dlc-check:
+    python3 scripts/validate_dlc.py
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # RUN & EXECUTE

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/dlc-manifest.schema.json",
+  "title": "IDApTIK DLC manifest",
+  "description": "Envelope for every UMS-produced DLC artifact. The game's DLC loader consumes this envelope; payload internals (puzzle files, scenario definitions, wasm modules) are validated by their own schemas or by the engine that owns the payload type.",
+  "type": "object",
+  "required": ["id", "name", "version", "description", "license", "kind"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Stable lowercase-kebab identifier, unique across installed DLC."
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$",
+      "description": "Semantic version."
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "license": { "type": "string", "minLength": 1, "description": "SPDX license expression." },
+    "author": { "type": "string" },
+    "kind": {
+      "enum": [
+        "gameplay-mechanic",
+        "puzzle-pack",
+        "scenario-definition",
+        "actor-pack",
+        "asset-pack"
+      ],
+      "description": "What the artifact is to the game. scenario-definition payloads (buildings/levels, e.g. the Exchange House) and actor-pack payloads (archetype + modifier registries) are validated by idaptik-core's typed loaders — the Rust types are the source of truth for payload internals."
+    },
+    "loads": {
+      "type": "string",
+      "description": "Load point hint for the game loader (e.g. on-puzzle-screen, on-scenario-select)."
+    },
+    "exports": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Named entry points the payload exposes."
+    },
+    "depends-on": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Dependency name to semver range."
+    },
+    "compile-target": { "enum": ["wasmgc", "wasm32", "none"] },
+    "wasm-modules": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths (relative to the manifest) of compiled modules."
+    },
+    "payload": {
+      "type": "object",
+      "required": ["format", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "type": "string",
+          "pattern": "^idaptik-(scenario|actors|puzzles|assets)/\\d+$",
+          "description": "Payload wire-format tag, e.g. idaptik-scenario/1. Versioned independently of the manifest."
+        },
+        "path": { "type": "string", "description": "Payload file relative to the manifest." }
+      },
+      "description": "Where the typed payload lives for scenario-definition / actor-pack / asset-pack kinds."
+    },
+    "guarantees": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Machine-checkable claims the payload makes (free-form tags backed by verification)."
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Pointers to the evidence for each guarantee (test suites, soundness docs)."
+    }
+  }
+}

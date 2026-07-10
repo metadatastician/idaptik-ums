@@ -1,5 +1,5 @@
 {
-  "$schema": "https://github.com/hyperpolymath/idaptik-game/blob/main/schemas/dlc-manifest.schema.json",
+  "$schema": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/dlc-manifest.schema.json",
   "id": "idaptik-dlc-vm",
   "name": "Reversible VM",
   "version": "0.1.0-alpha",
