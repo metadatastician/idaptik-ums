@@ -7,3 +7,7 @@
 - `legacy-ts-puzzles/` — Authored puzzle JSON preserved from the retired
                          `hyperpolymath/idaptik-dlc-iky` repo. Loadable by
                          `vm/` (instruction set is a superset).
+
+Every artifact here is held to the bridge contracts in `../schemas/`
+(manifest envelope + puzzle payload schemas). Run `just dlc-check` to
+validate the lot; a failure means the bridge to the game is broken.
