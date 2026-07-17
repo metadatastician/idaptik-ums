@@ -1,0 +1,201 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0001: AI-edit as a Kautz type-6 neurosymbolic system over a miniKanren kernel
+:toc: preamble
+
+Status: Accepted +
+Date: 2026-07-17 +
+Deciders: @hyperpolymath
+
+== Context
+
+The Unified Modding Studio needs an AI-edit capability: a way for an AI
+assistant to take *direct action* on the contents of a level — characters,
+NPCs, objects, devices, wiring — rather than merely emitting prose
+suggestions a human then transcribes. The archive editor
+(idaptik-archive/idaptik-ums) already established two things we refuse to
+lose:
+
+* a small, closed *verb surface* (its C ABI: `create_level`, `add_zone`,
+  `add_device`, `add_guard`, `add_dog`, `add_drone`, `set_mission`,
+  `set_physical`, `validate_level`, `serialize_level`, `deserialize_level`);
+* five cross-domain *validity proofs* (Idris2): GuardsInZones,
+  DefenceTargets, ZonesOrdered, PBXConsistent, DevicesExist.
+
+An LLM proposing edits freehand satisfies neither: it can invent verbs and
+it can violate invariants. The question this ADR answers is how to give a
+neural proposer direct edit authority without surrendering the guarantees.
+
+== Decision
+
+We build the AI-edit capability as a *neurosymbolic* system in the sense of
+Henry Kautz's taxonomy, targeting *type 6*, with a miniKanren relational
+engine as the symbolic kernel and a new `edit-script` DLC kind as the wire
+contract. The reference implementation is the stdlib-only Python package
+`ai_edit/` in this repository.
+
+=== Taxonomy positioning: why type 6
+
+Kautz's six neurosymbolic architecture types, briefly:
+
+[cols="1,3,4"]
+|===
+| Type | Shape | Example
+
+| 1 | `symbolic Neuro symbolic` | A standard deep net whose inputs and outputs happen to be symbols (e.g. an LLM as used naively).
+| 2 | `Symbolic[Neuro]` | A symbolic solver that calls neural subroutines (e.g. AlphaGo: tree search invoking a policy net).
+| 3 | `Neuro; Symbolic` | A pipeline: a net feeds a separate symbolic reasoner (e.g. perception then planning).
+| 4 | `Neuro: Symbolic -> Neuro` | Symbolic knowledge compiled into the training of a net (e.g. training on rule traces).
+| 5 | `Neuro_{Symbolic}` | Symbolic constraints embedded as differentiable regularisers inside the net (e.g. logic tensor networks).
+| 6 | `Neuro[Symbolic]` | A fully-integrated system: a true symbolic reasoning engine embedded *inside* the neural agent's action loop, invoked as part of deciding, not as a downstream filter.
+|===
+
+This design is positioned as *type 6*: the relational engine is not a
+post-hoc validator bolted after generation (which would be type 3, a
+pipeline). It sits inside the proposer's action loop. The proposer does not
+emit a finished edit and hope; it emits a *partial* edit — a relational goal
+with fresh logic variables — and the symbolic kernel *completes or refutes
+it* as part of the same act. Deciding "add a guard somewhere sensible" and
+verifying "guards stand in zones" are one search, not two stages.
+
+*Honest caveat.* What runs today is the symbolic kernel plus an
+LLM-as-proposer calling `solve()` over a seam — operationally closer to
+type 2/3 while the proposer lives outside the process boundary. Type 6 is
+the *target architecture* the seam is shaped for: the kernel's API is
+already "goal in, models out", so tightening the loop (proposer consults the
+kernel mid-generation, token by token or tool call by tool call) changes
+integration depth, not contracts. We state this plainly rather than
+claiming an integration we have not yet wired.
+
+=== The symbolic kernel: miniKanren
+
+`ai_edit/microkanren.py` is a clean microKanren core (Hemann & Friedman):
+logic variables, substitution walk, unification over tuples/lists/dicts,
+`eq`, `conj`/`disj`/`conde`, `fresh`, delayed goals for recursion, and
+interleaving stream search, exposed through `run(n, goal)`. It is
+dependency-free and around two hundred lines — deliberately small enough to
+be the reference kernel other languages port from.
+
+The *facts* are the level/scenario object graph — the archive's `LevelData`
+shape (`zones`, `devices`, `guards`, `dogs`, `drones`, `assassins`, `items`,
+`wiring`, `zoneTransitions`, `deviceDefences`, `mission`, `physical`,
+`hasPBX`, `pbxIp`, `pbxWorldX`) as an immutable dict.
+
+The *relations* are the edit verbs (`ai_edit/verbs.py`): each verb is a
+state-in/state-out relation — direct action on characters, objects and
+NPCs, mirroring the archive verb surface. States are never mutated;
+each verb relates a state to its successor, so history is replayable and
+every intermediate state is addressable.
+
+The *finite vocabularies* (`ai_edit/vocab.py`) are the archive ABI's closed
+worlds — twelve DeviceKinds, eight GuardRanks, three DogBreeds, three
+DroneArchetypes, five WiringTypes — expressed as data plus `membero`-style
+domain relations. Closed worlds are what make generation decidable.
+
+=== The constraint layer: the five proofs as goals
+
+`ai_edit/constraints.py` re-expresses the archive's five validity proofs as
+relational goals over a state term:
+
+* `guards_in_zones` — every mobile actor stands in a declared zone;
+* `defence_targets_exist` — every device defence targets a real device;
+* `zones_ordered` — zone worldX intervals are well-formed and disjoint, and
+  security tiers do not decrease with depth;
+* `pbx_consistent` — `hasPBX` implies a PBX IP, a PBX position and a
+  PhoneSystem device (and no dangling PBX fields otherwise);
+* `devices_exist` — devices sit in declared zones; wiring runs have known
+  WiringTypes and connect existing devices.
+
+An AI-proposed edit is only emitted if a model satisfying *all five* exists
+for the resulting state. This is *edit-as-goal-satisfaction*: in
+`ai_edit/engine.py`, `solve(state, goal_spec, n)` takes a partial edit whose
+finite-domain arguments are fresh logic variables ("add a guard in SOME
+zone"), conjoins the domain relations, the verb relation and the five
+constraint goals into one search, and enumerates concrete satisfying edits —
+generate-and-narrow via fresh variables, not generate-then-filter. The
+checking direction, `apply_edit_script`, replays a script verb by verb and
+rejects it at the first verb whose result state has no satisfying model.
+
+`solve()` is the seam where the neural proposer plugs in: the proposer
+supplies intent, identifiers and geometry; the kernel supplies (or refuses)
+everything the closed worlds and proofs govern.
+
+=== The wire contract: `edit-script` DLC
+
+Edits are *data*. A new manifest kind `edit-script` with
+`payload.format: idaptik-edit/1` (`schemas/edit-script.schema.json`) carries
+an ordered list of verbs: homoiconic (the script is in the same shape the
+engine's relations consume), replayable (apply it to the same base state
+and get the same level) and auditable (review the edit, not a binary diff).
+The game/UMS consumes it exactly like every other DLC payload through the
+`dlc-manifest.json` envelope; `scripts/validate_dlc.py` and `just dlc-check`
+enforce the schema and the cross-field invariants, and `just ai-edit-check`
+replays the sample artifact (`dlc/examples/ai-edit-sample`) through the
+engine. UMS owns this payload format, as the editor authority.
+
+=== Universality
+
+One engine covers the whole editable surface, because everything is a
+relation over the same object graph:
+
+* *characters and NPCs* — guards, dogs, drones (and, in loaded levels,
+  assassins) over the actor-pack vocabularies;
+* *objects and devices* — the twelve DeviceKinds placed in zones;
+* *plumbing* — wiring and power: WiringTypes, device defences and the PBX
+  triple, all constraint-checked;
+* *missions and physical setup* — `set_mission` / `set_physical` blocks
+  whose internals remain game-owned.
+
+*Forward compatibility: floors and portals.* Today's geometry is 1-D
+(`worldX` intervals per zone), matching the archive `LevelData`. When the
+game's `BuildingDefinition` lands (IDApTIK issue #8), zones gain floors and
+portals gain inter-floor topology. The relational design absorbs this
+without re-architecture: `zones_ordered` becomes a per-floor goal plus a
+portal-connectivity relation, and `add_zone` grows a floor argument — new
+relations over the same kernel, versioned as `idaptik-edit/2`. Nothing in
+the kernel, the stream search or the wire envelope assumes one dimension.
+
+=== Fit with the guarantees culture
+
+The reversible VM's manifest declares machine-checkable `guarantees`
+(`every-instruction-has-an-inverse`, `history-rewindable`, ...) backed by
+`verification` pointers. Edit-script artifacts do the same:
+
+* `constraint-checked-edits` — every intermediate state of the script has a
+  model satisfying the five proofs (evidence: `tests/test_ai_edit.py`, and
+  replaying the script through `python3 -m ai_edit check`);
+* `replayable-edit-history` — verbs are pure state-in/state-out relations
+  over immutable states, so the script is its own replay log.
+
+miniKanren is the right substrate for this culture: a guarantee is a goal,
+and "the guarantee holds" is "the goal has a model" — checkable by the same
+engine that generated the edit.
+
+== Consequences
+
+* The LLM never holds edit authority alone: no edit reaches the wire unless
+  the kernel found a satisfying model. Vocabulary hallucinations and
+  invariant violations are refused mechanically, per verb, with the failing
+  verb named in the report.
+* Edits are reviewable artifacts in `dlc/`, validated in CI like every
+  other payload, rather than opaque tool-call side effects.
+* Two honest costs: the constraint layer re-checks whole states per verb
+  (fine at level scale; incremental checking is an optimisation, not a
+  redesign), and the Python kernel is a reference implementation — ports
+  (AffineScript, or Rust beside `idaptik-core`) inherit its test suite
+  semantics.
+* The type-6 claim is aspirational until the proposer loop is wired through
+  `solve()` in-process; the seam and contracts are built so that closing
+  that gap changes no schema, no verb and no proof.
+
+== References
+
+* Henry Kautz, "The Third AI Summer" (AAAI Robert S. Engelmore Memorial
+  Lecture, 2020) — the six neurosymbolic architecture types.
+* Jason Hemann and Daniel P. Friedman, "microKanren: A Minimal Functional
+  Core for Relational Programming" (Scheme Workshop 2013).
+* Archive verb surface and proofs: idaptik-archive/idaptik-ums (Idris2
+  `Types.idr` ABI; C ABI editor functions).
+* Wire contract: `schemas/dlc-manifest.schema.json`,
+  `schemas/edit-script.schema.json`, `schemas/README.adoc`.
+* IDApTIK issue #8 — BuildingDefinition (floors/portals).

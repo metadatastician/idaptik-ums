@@ -28,9 +28,10 @@
         "puzzle-pack",
         "scenario-definition",
         "actor-pack",
-        "asset-pack"
+        "asset-pack",
+        "edit-script"
       ],
-      "description": "What the artifact is to the game. scenario-definition payloads (buildings/levels, e.g. the Exchange House) and actor-pack payloads (archetype + modifier registries) are validated by idaptik-core's typed loaders — the Rust types are the source of truth for payload internals."
+      "description": "What the artifact is to the game. scenario-definition payloads (buildings/levels, e.g. the Exchange House) and actor-pack payloads (archetype + modifier registries) are validated by idaptik-core's typed loaders — the Rust types are the source of truth for payload internals. edit-script payloads (ordered, replayable edit verbs targeting a scenario, produced by the AI-edit engine) are validated by schemas/edit-script.schema.json — UMS owns the payload as the editor authority."
     },
     "loads": {
       "type": "string",
@@ -59,8 +60,8 @@
       "properties": {
         "format": {
           "type": "string",
-          "pattern": "^idaptik-(scenario|actors|puzzles|assets)/\\d+$",
-          "description": "Payload wire-format tag, e.g. idaptik-scenario/1. Versioned independently of the manifest."
+          "pattern": "^idaptik-(scenario|actors|puzzles|assets|edit)/\\d+$",
+          "description": "Payload wire-format tag, e.g. idaptik-scenario/1 or idaptik-edit/1. Versioned independently of the manifest."
         },
         "path": { "type": "string", "description": "Payload file relative to the manifest." }
       },

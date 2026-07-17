@@ -257,6 +257,13 @@ lint:
 dlc-check:
     python3 scripts/validate_dlc.py
 
+# Run the AI-edit engine suite (miniKanren kernel, verbs, validity proofs)
+# and replay the sample edit script against an empty level
+# (docs/adr/0001-ai-edit-kautz6-nesy.adoc).
+ai-edit-check:
+    python3 -m unittest discover -s tests
+    python3 -m ai_edit check dlc/examples/ai-edit-sample/edit-script.json
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # RUN & EXECUTE
 # ═══════════════════════════════════════════════════════════════════════════════

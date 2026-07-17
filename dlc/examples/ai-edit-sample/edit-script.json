@@ -1,0 +1,17 @@
+{
+  "$schema": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/edit-script.schema.json",
+  "format-note": "idaptik-edit/1 — ordered, replayable edit verbs; every intermediate state satisfies the five validity proofs",
+  "target": "exchange-house",
+  "edits": [
+    { "verb": "add_zone", "id": "lobby", "securityTier": 0, "worldXStart": 0, "worldXEnd": 40 },
+    { "verb": "add_zone", "id": "server-room", "securityTier": 2, "worldXStart": 40, "worldXEnd": 80 },
+    { "verb": "add_device", "id": "pbx-1", "kind": "PhoneSystem", "zone": "lobby", "worldX": 12 },
+    { "verb": "add_device", "id": "rack-server-1", "kind": "Server", "zone": "server-room", "worldX": 52 },
+    { "verb": "add_device", "id": "cam-lobby-1", "kind": "Camera", "zone": "lobby", "worldX": 4 },
+    { "verb": "add_guard", "id": "guard-1", "rank": "Sentinel", "zone": "server-room" },
+    { "verb": "add_dog", "id": "dog-1", "breed": "Patrol", "zone": "lobby" },
+    { "verb": "add_drone", "id": "drone-1", "archetype": "Hunter", "zone": "server-room" },
+    { "verb": "set_mission", "mission": { "objective": "exfiltrate-ledger", "targetDevice": "rack-server-1" } },
+    { "verb": "set_physical", "physical": { "hasPBX": true, "pbxIp": "10.20.30.40", "pbxWorldX": 12 } }
+  ]
+}

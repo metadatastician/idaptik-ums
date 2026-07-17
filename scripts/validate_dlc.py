@@ -3,9 +3,9 @@
 """UMS <-> game bridge smoke test.
 
 Validates every DLC artifact in dlc/ against the contracts in schemas/:
-manifest envelopes (dlc-manifest.schema.json) and puzzle payloads
-(puzzle.schema.json), including the cross-field invariants the schema
-language cannot express. Stdlib only, so `just dlc-check` works on a bare
+manifest envelopes (dlc-manifest.schema.json), puzzle payloads
+(puzzle.schema.json) and edit scripts (edit-script.schema.json), including
+the cross-field invariants the schema language cannot express. Stdlib only, so `just dlc-check` works on a bare
 Debian/CI box.
 
 Exit code 0 = every artifact valid; 1 = at least one violation (all are
@@ -26,7 +26,7 @@ SEMVER = re.compile(r"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$")
 KEBAB = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 IDENT = re.compile(r"^[a-z][a-z0-9_]*$")
 ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-PAYLOAD_FORMAT = re.compile(r"^idaptik-(scenario|actors|puzzles|assets)/\d+$")
+PAYLOAD_FORMAT = re.compile(r"^idaptik-(scenario|actors|puzzles|assets|edit)/\d+$")
 
 MANIFEST_KINDS = {
     "gameplay-mechanic",
@@ -34,6 +34,7 @@ MANIFEST_KINDS = {
     "scenario-definition",
     "actor-pack",
     "asset-pack",
+    "edit-script",
 }
 COMPILE_TARGETS = {"wasmgc", "wasm32", "none"}
 MANIFEST_REQUIRED = {"id", "name", "version", "description", "license", "kind"}
@@ -55,6 +56,37 @@ PUZZLE_REQUIRED = {
 METADATA_ALLOWED = {"author", "created", "tags", "license", "version"}
 VAULT_REQUIRED = {"name", "description", "state", "steps"}
 VAULT_OPS = {"flip", "xor", "swap"}
+
+# Edit scripts (idaptik-edit/1, schemas/edit-script.schema.json). The verb
+# vocabularies mirror ai_edit/vocab.py.
+DEVICE_KINDS = {
+    "Laptop", "Desktop", "Server", "Router", "Switch", "Firewall",
+    "Camera", "AccessPoint", "PatchPanel", "PowerSupply", "PhoneSystem",
+    "FibreHub",
+}
+GUARD_RANKS = {
+    "BasicGuard", "Enforcer", "AntiHacker", "Sentinel", "Assassin",
+    "EliteGuard", "SecurityChief", "RivalHacker",
+}
+DOG_BREEDS = {"Patrol", "Bloodhound", "RoboDog"}
+DRONE_ARCHETYPES = {"Helper", "Hunter", "Killer"}
+EDIT_SCRIPT_REQUIRED = {"target", "edits"}
+EDIT_SCRIPT_ALLOWED = EDIT_SCRIPT_REQUIRED | {"$schema", "format-note"}
+EDIT_VERB_ARGS = {
+    "add_zone": {"id", "securityTier", "worldXStart", "worldXEnd"},
+    "add_device": {"id", "kind", "zone", "worldX"},
+    "add_guard": {"id", "rank", "zone"},
+    "add_dog": {"id", "breed", "zone"},
+    "add_drone": {"id", "archetype", "zone"},
+    "set_mission": {"mission"},
+    "set_physical": {"physical"},
+}
+EDIT_VERB_ENUMS = {
+    "kind": DEVICE_KINDS,
+    "rank": GUARD_RANKS,
+    "breed": DOG_BREEDS,
+    "archetype": DRONE_ARCHETYPES,
+}
 
 
 def is_register_state(value, bits_only=False):
@@ -114,6 +146,14 @@ def check_manifest(doc, errors):
             path = payload.get("path")
             if not (isinstance(path, str) and path):
                 errors.append("payload.path must be a non-empty string")
+            if isinstance(fmt, str):
+                is_edit_format = fmt.startswith("idaptik-edit/")
+                if doc.get("kind") == "edit-script" and not is_edit_format:
+                    errors.append("kind edit-script requires payload.format idaptik-edit/<n>")
+                if is_edit_format and doc.get("kind") != "edit-script":
+                    errors.append("payload.format idaptik-edit/<n> requires kind edit-script")
+    elif doc.get("kind") == "edit-script":
+        errors.append("kind edit-script requires a payload block")
 
 
 def check_register_puzzle(doc, errors):
@@ -237,9 +277,95 @@ def check_vault_sequence(doc, errors):
                         errors.append(f"steps[{i}] references unknown bit '{bit}'")
 
 
+def check_edit_script(doc, errors):
+    missing = EDIT_SCRIPT_REQUIRED - doc.keys()
+    if missing:
+        errors.append(f"edit script missing required fields: {sorted(missing)}")
+    unknown = doc.keys() - EDIT_SCRIPT_ALLOWED
+    if unknown:
+        errors.append(f"edit script has unknown fields: {sorted(unknown)}")
+    target = doc.get("target")
+    if target is not None and not (isinstance(target, str) and KEBAB.match(target)):
+        errors.append("target must be lowercase-kebab")
+    edits = doc.get("edits")
+    if edits is None:
+        return
+    if not (isinstance(edits, list) and edits):
+        errors.append("edits must be a non-empty array")
+        return
+    # Zones referenced by a later verb must be declared earlier in the
+    # script; zones the script never declares are assumed to pre-exist on
+    # the target scenario (the engine re-checks against the real level).
+    declared_zones = {}
+    declared_ids = {"zones": set(), "entities": set()}
+    for i, edit in enumerate(edits):
+        if not isinstance(edit, dict) or edit.get("verb") not in EDIT_VERB_ARGS:
+            errors.append(f"edits[{i}].verb must be one of {sorted(EDIT_VERB_ARGS)}")
+            continue
+        verb = edit["verb"]
+        expected = EDIT_VERB_ARGS[verb] | {"verb"}
+        if edit.keys() != expected:
+            errors.append(f"edits[{i}]: {verb} takes exactly {sorted(expected - {'verb'})}")
+            continue
+        if "id" in edit and not (isinstance(edit["id"], str) and KEBAB.match(edit["id"])):
+            errors.append(f"edits[{i}].id must be lowercase-kebab")
+        for field, allowed in EDIT_VERB_ENUMS.items():
+            if field in edit and edit[field] not in allowed:
+                errors.append(f"edits[{i}].{field} must be one of {sorted(allowed)}")
+        if verb == "add_zone":
+            for field in ("worldXStart", "worldXEnd"):
+                if not _is_number(edit.get(field)):
+                    errors.append(f"edits[{i}].{field} must be a number")
+            tier = edit.get("securityTier")
+            if not (isinstance(tier, int) and not isinstance(tier, bool) and tier >= 0):
+                errors.append(f"edits[{i}].securityTier must be an integer >= 0")
+            zone_id = edit.get("id")
+            if zone_id in declared_zones:
+                errors.append(f"edits[{i}] redeclares zone '{zone_id}'")
+            elif isinstance(zone_id, str):
+                declared_zones[zone_id] = i
+        elif verb == "add_device" and not _is_number(edit.get("worldX")):
+            errors.append(f"edits[{i}].worldX must be a number")
+        elif verb in ("set_mission", "set_physical"):
+            block = edit.get("mission" if verb == "set_mission" else "physical")
+            if not isinstance(block, dict):
+                errors.append(f"edits[{i}].{verb[4:]} must be an object")
+            elif verb == "set_physical" and block.get("hasPBX"):
+                ip, world_x = block.get("pbxIp"), block.get("pbxWorldX")
+                if not (isinstance(ip, str) and ip and _is_number(world_x)):
+                    errors.append(
+                        f"edits[{i}]: hasPBX requires pbxIp (string) and pbxWorldX (number)"
+                    )
+        if "id" in edit and verb != "add_zone":
+            entity_id = edit["id"]
+            if entity_id in declared_ids["entities"]:
+                errors.append(f"edits[{i}] reuses entity id '{entity_id}'")
+            elif isinstance(entity_id, str):
+                declared_ids["entities"].add(entity_id)
+        zone_ref = edit.get("zone")
+        if isinstance(zone_ref, str):
+            declared_at = next(
+                (j for j, e in enumerate(edits)
+                 if isinstance(e, dict) and e.get("verb") == "add_zone"
+                 and e.get("id") == zone_ref),
+                None,
+            )
+            if declared_at is not None and declared_at > i:
+                errors.append(
+                    f"edits[{i}] references zone '{zone_ref}' declared later "
+                    f"(edits[{declared_at}])"
+                )
+
+
+def _is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
 def classify_and_check(path, doc, errors):
     if path.name == "dlc-manifest.json":
         check_manifest(doc, errors)
+    elif "edits" in doc:
+        check_edit_script(doc, errors)
     elif "steps" in doc or "state" in doc:
         check_vault_sequence(doc, errors)
     else:
