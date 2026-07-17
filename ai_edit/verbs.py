@@ -20,7 +20,7 @@ state must be built fails rather than embedding variables in a state.
 from __future__ import annotations
 
 from . import vocab
-from .microkanren import Var, conj, eq, fail, is_ground, project
+from .microkanren import conj, eq, fail, is_ground, project
 
 #: Keys of the level object graph (the archive editor's LevelData).
 LEVEL_KEYS = (
