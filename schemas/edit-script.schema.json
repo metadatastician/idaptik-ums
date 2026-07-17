@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/edit-script.schema.json",
+  "title": "IDApTIK edit script (idaptik-edit/1)",
+  "description": "Payload for kind: edit-script DLC artifacts. An ordered list of edit verbs over a scenario's level object graph, produced by the UMS AI-edit engine (ai_edit/). Edits are data: replayable, auditable, and constraint-checked — the engine only emits a script when every intermediate state satisfies the five validity proofs (guards-in-zones, defence-targets, zones-ordered, pbx-consistent, devices-exist). UMS owns this payload format as the editor authority. Architecture: docs/adr/0001-ai-edit-kautz6-nesy.adoc.",
+  "type": "object",
+  "required": ["target", "edits"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "format-note": {
+      "type": "string",
+      "description": "Human-readable reminder of the wire format, e.g. 'idaptik-edit/1'."
+    },
+    "target": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Id of the scenario the script edits (a scenario-definition artifact id, or a new scenario id when the script builds a level from empty)."
+    },
+    "edits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/add_zone" },
+          { "$ref": "#/$defs/add_device" },
+          { "$ref": "#/$defs/add_guard" },
+          { "$ref": "#/$defs/add_dog" },
+          { "$ref": "#/$defs/add_drone" },
+          { "$ref": "#/$defs/set_mission" },
+          { "$ref": "#/$defs/set_physical" }
+        ]
+      },
+      "description": "Verbs applied in order. Zones referenced by later verbs must be declared earlier in the script or already exist on the target scenario."
+    }
+  },
+  "$defs": {
+    "entityId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Lowercase-kebab identifier, unique within its collection."
+    },
+    "add_zone": {
+      "type": "object",
+      "required": ["verb", "id", "securityTier", "worldXStart", "worldXEnd"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "add_zone" },
+        "id": { "$ref": "#/$defs/entityId" },
+        "securityTier": { "type": "integer", "minimum": 0 },
+        "worldXStart": { "type": "number" },
+        "worldXEnd": { "type": "number" }
+      }
+    },
+    "add_device": {
+      "type": "object",
+      "required": ["verb", "id", "kind", "zone", "worldX"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "add_device" },
+        "id": { "$ref": "#/$defs/entityId" },
+        "kind": {
+          "enum": [
+            "Laptop", "Desktop", "Server", "Router", "Switch", "Firewall",
+            "Camera", "AccessPoint", "PatchPanel", "PowerSupply",
+            "PhoneSystem", "FibreHub"
+          ]
+        },
+        "zone": { "$ref": "#/$defs/entityId" },
+        "worldX": { "type": "number" }
+      }
+    },
+    "add_guard": {
+      "type": "object",
+      "required": ["verb", "id", "rank", "zone"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "add_guard" },
+        "id": { "$ref": "#/$defs/entityId" },
+        "rank": {
+          "enum": [
+            "BasicGuard", "Enforcer", "AntiHacker", "Sentinel", "Assassin",
+            "EliteGuard", "SecurityChief", "RivalHacker"
+          ]
+        },
+        "zone": { "$ref": "#/$defs/entityId" }
+      }
+    },
+    "add_dog": {
+      "type": "object",
+      "required": ["verb", "id", "breed", "zone"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "add_dog" },
+        "id": { "$ref": "#/$defs/entityId" },
+        "breed": { "enum": ["Patrol", "Bloodhound", "RoboDog"] },
+        "zone": { "$ref": "#/$defs/entityId" }
+      }
+    },
+    "add_drone": {
+      "type": "object",
+      "required": ["verb", "id", "archetype", "zone"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "add_drone" },
+        "id": { "$ref": "#/$defs/entityId" },
+        "archetype": { "enum": ["Helper", "Hunter", "Killer"] },
+        "zone": { "$ref": "#/$defs/entityId" }
+      }
+    },
+    "set_mission": {
+      "type": "object",
+      "required": ["verb", "mission"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "set_mission" },
+        "mission": {
+          "type": "object",
+          "description": "Mission block; internals are owned by the game's idaptik-core types."
+        }
+      }
+    },
+    "set_physical": {
+      "type": "object",
+      "required": ["verb", "physical"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "set_physical" },
+        "physical": {
+          "type": "object",
+          "properties": {
+            "hasPBX": { "type": "boolean" },
+            "pbxIp": { "type": "string", "minLength": 1 },
+            "pbxWorldX": { "type": "number" }
+          },
+          "description": "Physical block; hasPBX: true requires pbxIp and pbxWorldX (and a PhoneSystem device on the resulting level — enforced by the engine's pbx-consistent proof)."
+        }
+      }
+    }
+  }
+}

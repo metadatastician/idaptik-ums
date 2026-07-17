@@ -16,6 +16,14 @@ them.
 * *Puzzle payloads* (`puzzle.schema.json`) — owned here, because the
   reversible-VM puzzle format was born in this repo (`dlc/vm`,
   `dlc/legacy-ts-puzzles`). Two formats: register puzzles and vault sequences.
+* *Edit-script payloads* (`edit-script.schema.json`) — owned here, because
+  UMS is the editor authority: `kind: edit-script` artifacts
+  (`payload.format: idaptik-edit/1`) are ordered, replayable edit verbs over
+  a scenario's level object graph, produced by the AI-edit engine
+  (`ai_edit/`, docs/adr/0001-ai-edit-kautz6-nesy.adoc). The engine only
+  emits a script when every intermediate state has a model satisfying the
+  five validity proofs; `just ai-edit-check` replays the sample
+  (`dlc/examples/ai-edit-sample`) to keep that honest.
 * *Scenario and actor payloads* — owned by the game engine.
   `kind: scenario-definition` (buildings/levels: Ghost Lobby, the Exchange
   House) and `kind: actor-pack` (archetype + modifier registries) declare a
@@ -29,4 +37,9 @@ them.
 `scripts/validate_dlc.py` additionally enforces, per register puzzle:
 `initialState`/`goalState` share one register set, `optimalMoves <= maxMoves`,
 instructions come from the VM's 23-instruction set; per vault sequence: step
-operands are named bits of the declared state.
+operands are named bits of the declared state; per edit script: verbs and
+their argument shapes come from the vocabularies in `ai_edit/vocab.py`,
+zones referenced by a verb are declared earlier in the script (or assumed
+pre-existing on the target scenario), entity ids are not reused, and
+`hasPBX: true` carries `pbxIp` and `pbxWorldX`; per manifest:
+`kind: edit-script` and `payload.format: idaptik-edit/<n>` imply each other.
