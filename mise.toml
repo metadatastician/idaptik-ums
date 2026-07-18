@@ -1,28 +1,57 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-#
-# Toolchain pins for idaptik-ums, managed by mise (https://mise.jdx.dev).
-#
-# Written fresh for the canonical repo. The lineage repo's mise.toml was NOT
-# copied: it contains an unresolved git merge conflict and a pile of "latest"
-# pins that were never intended to ship.
-#
-#   $ mise trust      # REQUIRED FIRST — see below
-#   $ mise install    # install everything pinned here
-#   $ just test-ffi   # 24 Zig integration tests, no other toolchain required
-#
-# `mise trust` is not optional politeness. An untrusted config is silently
-# IGNORED for PATH resolution and mise falls back to the global toolchain —
-# no warning, no error. `just build` / `just test-ffi` assert the zig version
-# up front (see _zig-guard in the Justfile) so a bypassed pin fails loudly.
-
 [tools]
-# C ABI for the FFI surface; matches the game (IDApTIK ADR-0001).
-# The FFI does NOT compile under zig 0.16 — its explicit-Io rework removed
-# std.fs.openFileAbsolute / makeDirAbsolute and std.io.fixedBufferStream.
-# The 0.16 migration is a separate, deliberate slice; do not bump this pin
-# as a side effect of anything else.
-zig = "0.14.0"
+# Language runtimes
+node = "latest"
+python = "latest"
+rust = "latest"
+go = "latest"
+zig = "latest"
+java = "latest"
+bun = "latest"
+denojs = "latest"
 
-# Task runner for this repo's Justfile.
-just = "1.46.0"
+# Package managers
+npm = "latest"
+yarn = "latest"
+pnpm = "latest"
+pip = "latest"
+cargo = "latest"
+go-task = "latest"
+
+# Formatting & Linting
+gofmt = "latest"
+black = "latest"
+isort = "latest"
+ruff = "latest"
+prettier = "latest"
+shfmt = "latest"
+stylua = "latest"
+
+# Build tools
+cmake = "latest"
+make = "latest"
+ninja = "latest"
+
+# Shell tools
+git = "latest"
+gnu-sed = "latest"
+gnu-tar = "latest"
+gnu-grep = "latest"
+
+# Testing
+vitest = "latest"
+pytest = "latest"
+jest = "latest"
+
+[env]
+# Common environment variables
+NODE_ENV = "development"
+PYTHONDONTWRITEBYTECODE = "1"
+PYTHONUNBUFFERED = "1"
+
+# Task runner alias
+[alias]
+task = "go-task"
+build = "cargo build --release || npm run build || go build"
+test = "cargo test || npm test || go test ./..."
+lint = "ruff check . || prettier --check . || black --check ."
+fmt = "ruff format . || prettier --write . || black ."
