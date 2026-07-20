@@ -1,0 +1,4 @@
+# --- Zig FFI (ffi/zig) build output ---
+zig-out/
+.zig-cache/
+zig-cache/
