@@ -106,6 +106,35 @@ class VerbTests(unittest.TestCase):
         (state,) = _run_verb(goal)
         self.assertEqual(state["drones"][0]["archetype"], "Hunter")
 
+    def test_add_npc(self):
+        goal = lambda q: verbs.add_npc(_base_state(), "npc-1", "Doorman", "lobby", q)
+        (state,) = _run_verb(goal)
+        self.assertEqual(state["npcs"][0], {"id": "npc-1", "role": "Doorman", "zone": "lobby"})
+        bogus = lambda q: verbs.add_npc(_base_state(), "npc-2", "Wizard", "lobby", q)
+        self.assertEqual(_run_verb(bogus), [])
+
+    def test_add_character(self):
+        goal = lambda q: verbs.add_character(
+            _base_state(), "char-1", "Insider", "Undercover", "lobby", q)
+        (state,) = _run_verb(goal)
+        self.assertEqual(state["characters"][0], {
+            "id": "char-1", "archetype": "Insider",
+            "modifier": "Undercover", "zone": "lobby",
+        })
+        bad_archetype = lambda q: verbs.add_character(
+            _base_state(), "char-2", "Dragon", "Undercover", "lobby", q)
+        self.assertEqual(_run_verb(bad_archetype), [])
+        bad_modifier = lambda q: verbs.add_character(
+            _base_state(), "char-3", "Insider", "Sparkly", "lobby", q)
+        self.assertEqual(_run_verb(bad_modifier), [])
+
+    def test_add_item(self):
+        goal = lambda q: verbs.add_item(_base_state(), "item-1", "Keycard", "lobby", q)
+        (state,) = _run_verb(goal)
+        self.assertEqual(state["items"][0], {"id": "item-1", "category": "Keycard", "zone": "lobby"})
+        bogus = lambda q: verbs.add_item(_base_state(), "item-2", "Sandwich", "lobby", q)
+        self.assertEqual(_run_verb(bogus), [])
+
     def test_set_mission(self):
         mission = {"objective": "exfiltrate", "targetDevice": "rack-1"}
         goal = lambda q: verbs.set_mission(_base_state(), mission, q)
@@ -139,6 +168,30 @@ class ConstraintTests(unittest.TestCase):
         bad = _base_state()
         bad["guards"] = [{"id": "g", "rank": "Sentinel", "zone": "roof"}]
         self.assertFalse(self._holds(constraints.guards_in_zones, bad))
+
+    def test_guards_in_zones_covers_npcs_and_characters(self):
+        good = _base_state()
+        good["npcs"] = [{"id": "n", "role": "Doorman", "zone": "lobby"}]
+        good["characters"] = [
+            {"id": "c", "archetype": "Insider", "modifier": "Undercover", "zone": "server-room"},
+        ]
+        self.assertTrue(self._holds(constraints.guards_in_zones, good))
+        stray_npc = _base_state()
+        stray_npc["npcs"] = [{"id": "n", "role": "Doorman", "zone": "alley"}]
+        self.assertFalse(self._holds(constraints.guards_in_zones, stray_npc))
+        stray_char = _base_state()
+        stray_char["characters"] = [
+            {"id": "c", "archetype": "Insider", "modifier": "Undercover", "zone": "roof"},
+        ]
+        self.assertFalse(self._holds(constraints.guards_in_zones, stray_char))
+
+    def test_items_in_zones(self):
+        good = _base_state()
+        good["items"] = [{"id": "k", "category": "Keycard", "zone": "lobby"}]
+        self.assertTrue(self._holds(constraints.items_in_zones, good))
+        orphan = _base_state()
+        orphan["items"] = [{"id": "k", "category": "Keycard", "zone": "vault"}]
+        self.assertFalse(self._holds(constraints.items_in_zones, orphan))
 
     def test_defence_targets_exist(self):
         good = _base_state()
@@ -211,6 +264,58 @@ class EngineTests(unittest.TestCase):
         self.assertTrue(state["hasPBX"])
         self.assertIn("constraint-checked-edits", report["guarantees"])
 
+    def test_apply_edit_script_places_npcs_characters_and_items(self):
+        script = {
+            "target": "exchange-house",
+            "edits": [
+                {"verb": "add_zone", "id": "lobby", "securityTier": 0,
+                 "worldXStart": 0, "worldXEnd": 40},
+                {"verb": "add_npc", "id": "doorman-1", "role": "Doorman",
+                 "zone": "lobby"},
+                {"verb": "add_character", "id": "billy", "archetype": "Insider",
+                 "modifier": "Undercover", "zone": "lobby"},
+                {"verb": "add_item", "id": "keycard-1", "category": "Keycard",
+                 "zone": "lobby"},
+            ],
+        }
+        state, report = apply_edit_script(initial_state(), script)
+        self.assertTrue(report["ok"], report)
+        self.assertEqual(report["applied"], 4)
+        self.assertEqual(state["npcs"][0]["role"], "Doorman")
+        self.assertEqual(state["characters"][0]["archetype"], "Insider")
+        self.assertEqual(state["characters"][0]["modifier"], "Undercover")
+        self.assertEqual(state["items"][0]["category"], "Keycard")
+
+    def test_apply_edit_script_rejects_npc_outside_zones(self):
+        script = {
+            "target": "exchange-house",
+            "edits": [
+                {"verb": "add_zone", "id": "lobby", "securityTier": 0,
+                 "worldXStart": 0, "worldXEnd": 40},
+                {"verb": "add_npc", "id": "ghost-1", "role": "Pedestrian",
+                 "zone": "street"},
+            ],
+        }
+        state, report = apply_edit_script(initial_state(), script)
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["applied"], 1)
+        self.assertIn("no satisfying model", report["steps"][1]["reason"])
+        self.assertEqual(state["npcs"], [])
+
+    def test_apply_edit_script_rejects_item_outside_zones(self):
+        script = {
+            "target": "exchange-house",
+            "edits": [
+                {"verb": "add_zone", "id": "lobby", "securityTier": 0,
+                 "worldXStart": 0, "worldXEnd": 40},
+                {"verb": "add_item", "id": "loot-1", "category": "Loot",
+                 "zone": "vault"},
+            ],
+        }
+        _, report = apply_edit_script(initial_state(), script)
+        self.assertFalse(report["ok"])
+        self.assertFalse(report["steps"][1]["ok"])
+
     def test_apply_edit_script_rejects_guard_outside_zones(self):
         script = {
             "target": "exchange-house",
@@ -266,6 +371,33 @@ class EngineTests(unittest.TestCase):
         proposals = solve(_base_state(), goal_spec, n=None)
         ranks = {p["edit"]["rank"] for p in proposals}
         self.assertEqual(ranks, set(vocab.GUARD_RANKS))
+
+    def test_solve_enumerates_npc_roles(self):
+        goal_spec = {"verb": "add_npc", "id": "npc-9", "role": "?", "zone": "lobby"}
+        proposals = solve(_base_state(), goal_spec, n=None)
+        roles = {p["edit"]["role"] for p in proposals}
+        self.assertEqual(roles, set(vocab.NPC_ROLES))
+
+    def test_solve_enumerates_character_archetype_and_modifier_cross_product(self):
+        goal_spec = {"verb": "add_character", "id": "char-9",
+                     "archetype": "?", "modifier": "?", "zone": "lobby"}
+        proposals = solve(_base_state(), goal_spec, n=None)
+        pairs = {(p["edit"]["archetype"], p["edit"]["modifier"]) for p in proposals}
+        # Both finite domains are left fresh: the engine enumerates the full
+        # cross product, constraint-checked.
+        self.assertEqual(
+            pairs,
+            {(a, m) for a in vocab.CHARACTER_ARCHETYPES for m in vocab.CHARACTER_MODIFIERS},
+        )
+        for proposal in proposals:
+            self.assertEqual(proposal["state"]["characters"][-1]["id"], "char-9")
+
+    def test_solve_proposes_zones_for_an_item(self):
+        goal_spec = {"verb": "add_item", "id": "item-9", "category": "Loot",
+                     "zone": "?"}
+        proposals = solve(_base_state(), goal_spec, n=10)
+        zones = {p["edit"]["zone"] for p in proposals}
+        self.assertEqual(zones, {"lobby", "server-room"})
 
     def test_solve_refuses_fresh_arguments_without_a_domain(self):
         with self.assertRaises(ValueError):

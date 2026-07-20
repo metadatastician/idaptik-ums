@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/edit-script.schema.json",
   "title": "IDApTIK edit script (idaptik-edit/1)",
-  "description": "Payload for kind: edit-script DLC artifacts. An ordered list of edit verbs over a scenario's level object graph, produced by the UMS AI-edit engine (ai_edit/). Edits are data: replayable, auditable, and constraint-checked — the engine only emits a script when every intermediate state satisfies the five validity proofs (guards-in-zones, defence-targets, zones-ordered, pbx-consistent, devices-exist). UMS owns this payload format as the editor authority. Architecture: docs/adr/0001-ai-edit-kautz6-nesy.adoc.",
+  "description": "Payload for kind: edit-script DLC artifacts. An ordered list of edit verbs over a scenario's level object graph, produced by the UMS AI-edit engine (ai_edit/). Edits are data: replayable, auditable, and constraint-checked — the engine only emits a script when every intermediate state satisfies the validity proofs (guards-in-zones, defence-targets, zones-ordered, pbx-consistent, devices-exist, items-in-zones). UMS owns this payload format as the editor authority. Architecture: docs/adr/0001-ai-edit-kautz6-nesy.adoc.",
   "type": "object",
   "required": ["target", "edits"],
   "additionalProperties": false,
@@ -27,6 +27,9 @@
           { "$ref": "#/$defs/add_guard" },
           { "$ref": "#/$defs/add_dog" },
           { "$ref": "#/$defs/add_drone" },
+          { "$ref": "#/$defs/add_npc" },
+          { "$ref": "#/$defs/add_character" },
+          { "$ref": "#/$defs/add_item" },
           { "$ref": "#/$defs/set_mission" },
           { "$ref": "#/$defs/set_physical" }
         ]
@@ -105,6 +108,60 @@
         "verb": { "const": "add_drone" },
         "id": { "$ref": "#/$defs/entityId" },
         "archetype": { "enum": ["Helper", "Hunter", "Killer"] },
+        "zone": { "$ref": "#/$defs/entityId" }
+      }
+    },
+    "add_npc": {
+      "type": "object",
+      "required": ["verb", "id", "role", "zone"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "add_npc" },
+        "id": { "$ref": "#/$defs/entityId" },
+        "role": {
+          "enum": [
+            "Pedestrian", "Shopkeeper", "Resident", "Doorman",
+            "StreetVendor", "Busker", "Commuter", "Concierge"
+          ]
+        },
+        "zone": { "$ref": "#/$defs/entityId" }
+      }
+    },
+    "add_character": {
+      "type": "object",
+      "required": ["verb", "id", "archetype", "modifier", "zone"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "add_character" },
+        "id": { "$ref": "#/$defs/entityId" },
+        "archetype": {
+          "enum": [
+            "Protagonist", "Handler", "Fixer", "Contact", "Insider",
+            "Rival", "Mark", "Bystander"
+          ]
+        },
+        "modifier": {
+          "enum": [
+            "Unarmed", "Armed", "Disguised", "Alerted", "Wounded",
+            "Corrupt", "Loyal", "Undercover"
+          ]
+        },
+        "zone": { "$ref": "#/$defs/entityId" }
+      }
+    },
+    "add_item": {
+      "type": "object",
+      "required": ["verb", "id", "category", "zone"],
+      "additionalProperties": false,
+      "properties": {
+        "verb": { "const": "add_item" },
+        "id": { "$ref": "#/$defs/entityId" },
+        "category": {
+          "enum": [
+            "Keycard", "Document", "Weapon", "Tool", "Loot",
+            "Consumable", "Container", "Contraband"
+          ]
+        },
         "zone": { "$ref": "#/$defs/entityId" }
       }
     },

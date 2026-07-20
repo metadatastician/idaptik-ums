@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-"""The five cross-domain validity proofs as relational goals.
+"""The cross-domain validity proofs as relational goals.
 
 These re-express the archive editor's Idris2 proofs (GuardsInZones,
-DefenceTargets, ZonesOrdered, PBXConsistent, DevicesExist) as goals over a
-level-state term. An AI-proposed edit is only emitted if a model satisfying
-*all five* exists for the resulting state — constraint checking is part of
-the same search that generates the edit, not a post-hoc filter.
+DefenceTargets, ZonesOrdered, PBXConsistent, DevicesExist) — plus
+ItemsInZones for the UMS object collection — as goals over a level-state
+term. An AI-proposed edit is only emitted if a model satisfying *all* of
+them exists for the resulting state — constraint checking is part of the
+same search that generates the edit, not a post-hoc filter.
 
 Each constraint takes a state term (possibly a logic variable bound during
 the search) and fails on non-ground states, so goal ordering stays safe.
@@ -35,11 +36,15 @@ def _device_ids(state):
 
 
 def guards_in_zones(state):
-    """GuardsInZones: every mobile actor (guard, dog, drone, assassin)
-    stands in a declared zone."""
+    """GuardsInZones: every mobile actor — security actors (guard, dog,
+    drone, assassin) and inhabitants (NPCs, named characters) — stands in a
+    declared zone."""
     def goal(st):
         zone_ids = _zone_ids(st)
-        actors = st["guards"] + st["dogs"] + st["drones"] + st["assassins"]
+        actors = (
+            st["guards"] + st["dogs"] + st["drones"] + st["assassins"]
+            + st.get("npcs", []) + st.get("characters", [])
+        )
         return conj(*(membero(actor["zone"], zone_ids) for actor in actors))
     return _over_state(state, goal)
 
@@ -110,16 +115,28 @@ def devices_exist(state):
     return _over_state(state, goal)
 
 
-#: The five proofs, in the order the report lists them.
+def items_in_zones(state):
+    """ItemsInZones: every placed object/item sits in a declared zone (no
+    orphaned loot floating outside the level geometry)."""
+    def goal(st):
+        zone_ids = _zone_ids(st)
+        return conj(
+            *(membero(item["zone"], zone_ids) for item in st.get("items", []))
+        )
+    return _over_state(state, goal)
+
+
+#: The six proofs, in the order the report lists them.
 ALL_CONSTRAINTS = (
     guards_in_zones,
     defence_targets_exist,
     zones_ordered,
     pbx_consistent,
     devices_exist,
+    items_in_zones,
 )
 
 
 def all_constraints(state):
-    """Goal: the state satisfies all five validity proofs."""
+    """Goal: the state satisfies all six validity proofs."""
     return conj(*(constraint(state) for constraint in ALL_CONSTRAINTS))
