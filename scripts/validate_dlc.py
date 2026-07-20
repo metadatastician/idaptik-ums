@@ -21,6 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DLC = ROOT / "dlc"
+TAXONOMY_MAP = ROOT / "schemas" / "taxonomy-map.json"
 
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$")
 KEBAB = re.compile(r"^[a-z0-9][a-z0-9-]*$")
@@ -57,13 +58,97 @@ METADATA_ALLOWED = {"author", "created", "tags", "license", "version"}
 VAULT_REQUIRED = {"name", "description", "state", "steps"}
 VAULT_OPS = {"flip", "xor", "swap"}
 
-# Edit scripts (idaptik-edit/1, schemas/edit-script.schema.json). The verb
+TAXONOMY_FORMAT = re.compile(r"^idaptik-taxonomy-map/\d+$")
+
+
+def check_taxonomy_map(doc):
+    """Internal coherence of schemas/taxonomy-map.json; returns error strings.
+
+    The map is load-bearing: DEVICE_KINDS and GAME_SEGMENTS below are derived
+    from it, so an incoherent map must fail loudly rather than silently
+    loosening edit-script validation. Lockstep with ai_edit/vocab.py and the
+    JSON schemas is enforced by tests/test_taxonomy_map.py.
+    """
+    errors = []
+    fmt = doc.get("format")
+    if not (isinstance(fmt, str) and TAXONOMY_FORMAT.match(fmt)):
+        errors.append("format must match idaptik-taxonomy-map/<n>")
+    kinds = doc.get("device-kinds")
+    if not (
+        isinstance(kinds, dict)
+        and kinds
+        and all(isinstance(k, str) and isinstance(v, str) for k, v in kinds.items())
+    ):
+        errors.append("device-kinds must map UMS kind names to game kind names")
+        kinds = {}
+    game_kinds = doc.get("game-device-kinds")
+    if not (
+        isinstance(game_kinds, list)
+        and game_kinds
+        and all(isinstance(k, str) for k in game_kinds)
+        and len(set(game_kinds)) == len(game_kinds)
+    ):
+        errors.append("game-device-kinds must be a non-repeating array of strings")
+        game_kinds = []
+    unmapped = set(kinds.values()) - set(game_kinds)
+    if game_kinds and unmapped:
+        errors.append(f"device-kinds targets not in game-device-kinds: {sorted(unmapped)}")
+    if len(set(kinds.values())) != len(kinds):
+        errors.append("device-kinds must be 1:1 (no two UMS kinds may share a game kind)")
+    segments = doc.get("zone-segments")
+    if not (
+        isinstance(segments, list)
+        and segments
+        and all(isinstance(s, str) for s in segments)
+        and len(set(segments)) == len(segments)
+    ):
+        errors.append("zone-segments must be a non-repeating array of strings")
+        segments = []
+    bands = doc.get("zone-tier-bands")
+    if not (isinstance(bands, list) and bands):
+        errors.append("zone-tier-bands must be a non-empty array")
+        bands = []
+    last_tier = None
+    for i, band in enumerate(bands):
+        tier = band.get("min-tier") if isinstance(band, dict) else None
+        segment = band.get("segment") if isinstance(band, dict) else None
+        if not (
+            isinstance(band, dict)
+            and band.keys() == {"min-tier", "segment"}
+            and isinstance(tier, int)
+            and not isinstance(tier, bool)
+            and tier >= 0
+        ):
+            errors.append(f"zone-tier-bands[{i}] must be {{min-tier >= 0, segment}}")
+            continue
+        if segments and segment not in segments:
+            errors.append(f"zone-tier-bands[{i}].segment must be one of {sorted(segments)}")
+        if i == 0 and tier != 0:
+            errors.append("zone-tier-bands must start at min-tier 0 so every tier resolves")
+        if last_tier is not None and tier <= last_tier:
+            errors.append("zone-tier-bands min-tiers must be strictly increasing")
+        last_tier = tier
+    return errors
+
+
+def _load_taxonomy_map():
+    doc = json.loads(TAXONOMY_MAP.read_text(encoding="utf-8"))
+    errors = check_taxonomy_map(doc)
+    if errors:
+        raise ValueError(
+            "schemas/taxonomy-map.json is incoherent: " + "; ".join(errors)
+        )
+    return doc
+
+
+_TAXONOMY = _load_taxonomy_map()
+
+# Edit scripts (idaptik-edit/1, schemas/edit-script.schema.json). The device
+# vocabulary and the game segment names are derived from the taxonomy map so
+# the map cannot drift from what validation enforces; the other verb
 # vocabularies mirror ai_edit/vocab.py.
-DEVICE_KINDS = {
-    "Laptop", "Desktop", "Server", "Router", "Switch", "Firewall",
-    "Camera", "AccessPoint", "PatchPanel", "PowerSupply", "PhoneSystem",
-    "FibreHub",
-}
+DEVICE_KINDS = frozenset(_TAXONOMY["device-kinds"])
+GAME_SEGMENTS = frozenset(_TAXONOMY["zone-segments"])
 GUARD_RANKS = {
     "BasicGuard", "Enforcer", "AntiHacker", "Sentinel", "Assassin",
     "EliteGuard", "SecurityChief", "RivalHacker",
@@ -90,6 +175,7 @@ EDIT_SCRIPT_REQUIRED = {"target", "edits"}
 EDIT_SCRIPT_ALLOWED = EDIT_SCRIPT_REQUIRED | {"$schema", "format-note"}
 EDIT_VERB_ARGS = {
     "add_zone": {"id", "securityTier", "worldXStart", "worldXEnd"},
+    # required args only; per-verb optional args live in EDIT_VERB_OPT_ARGS.
     "add_device": {"id", "kind", "zone", "worldX"},
     "add_guard": {"id", "rank", "zone"},
     "add_dog": {"id", "breed", "zone"},
@@ -100,11 +186,18 @@ EDIT_VERB_ARGS = {
     "set_mission": {"mission"},
     "set_physical": {"physical"},
 }
+# Optional per-verb args: allowed but not required. `segment` on add_zone is
+# the per-zone override of the default securityTier -> game-segment banding in
+# schemas/taxonomy-map.json.
+EDIT_VERB_OPT_ARGS = {
+    "add_zone": {"segment"},
+}
 # Per-verb enum fields. Keyed by verb (not by bare field name) because the
 # same field name means different closed worlds across verbs — e.g.
 # `archetype` is a DroneArchetype on add_drone but a CharacterArchetype on
 # add_character.
 EDIT_VERB_ENUMS = {
+    "add_zone": {"segment": GAME_SEGMENTS},
     "add_device": {"kind": DEVICE_KINDS},
     "add_guard": {"rank": GUARD_RANKS},
     "add_dog": {"breed": DOG_BREEDS},
@@ -333,8 +426,11 @@ def check_edit_script(doc, errors):
             continue
         verb = edit["verb"]
         expected = EDIT_VERB_ARGS[verb] | {"verb"}
-        if edit.keys() != expected:
-            errors.append(f"edits[{i}]: {verb} takes exactly {sorted(expected - {'verb'})}")
+        optional = EDIT_VERB_OPT_ARGS.get(verb, set())
+        if (expected - edit.keys()) or (edit.keys() - expected - optional):
+            allowed = sorted(expected - {"verb"})
+            suffix = f" (plus optional {sorted(optional)})" if optional else ""
+            errors.append(f"edits[{i}]: {verb} takes exactly {allowed}{suffix}")
             continue
         if "id" in edit and not (isinstance(edit["id"], str) and KEBAB.match(edit["id"])):
             errors.append(f"edits[{i}].id must be lowercase-kebab")
@@ -406,7 +502,10 @@ def main():
         print(f"error: {DLC} does not exist", file=sys.stderr)
         return 1
     failures = 0
-    checked = 0
+    checked = 1
+    # The taxonomy map validated at import (module load fails loudly if it is
+    # incoherent); record it so the seam contract shows up in the tally.
+    print(f"ok   {TAXONOMY_MAP.relative_to(ROOT)}")
     for path in sorted(DLC.rglob("*.json")):
         rel = path.relative_to(ROOT)
         checked += 1

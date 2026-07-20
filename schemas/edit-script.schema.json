@@ -52,7 +52,14 @@
         "id": { "$ref": "#/$defs/entityId" },
         "securityTier": { "type": "integer", "minimum": 0 },
         "worldXStart": { "type": "number" },
-        "worldXEnd": { "type": "number" }
+        "worldXEnd": { "type": "number" },
+        "segment": {
+          "enum": [
+            "Lan", "Dmz", "Internal", "Iot", "Management", "Scada", "Isp",
+            "Service"
+          ],
+          "description": "Optional per-zone override of the game network segment this zone grounds to. When absent, the zone's securityTier is mapped through the default tier bands in schemas/taxonomy-map.json (a default pending a human ruling)."
+        }
       }
     },
     "add_device": {
