@@ -79,38 +79,49 @@ be the reference kernel other languages port from.
 The *facts* are the level/scenario object graph — the archive's `LevelData`
 shape (`zones`, `devices`, `guards`, `dogs`, `drones`, `assassins`, `items`,
 `wiring`, `zoneTransitions`, `deviceDefences`, `mission`, `physical`,
-`hasPBX`, `pbxIp`, `pbxWorldX`) as an immutable dict.
+`hasPBX`, `pbxIp`, `pbxWorldX`), plus the UMS-owned `npcs` and `characters`
+collections, as an immutable dict.
 
 The *relations* are the edit verbs (`ai_edit/verbs.py`): each verb is a
 state-in/state-out relation — direct action on characters, objects and
-NPCs, mirroring the archive verb surface. States are never mutated;
-each verb relates a state to its successor, so history is replayable and
-every intermediate state is addressable.
+NPCs, mirroring the archive verb surface. Beyond the archive verbs, UMS adds
+`add_npc` (in-level house/street civilians on the way to the Ghost Lobby /
+Exchange House), `add_character` (named actors as the game's
+ActorArchetype + Modifier pair) and `add_item` (placed objects), so AI edits
+act directly on characters, objects and NPCs rather than only on devices and
+security actors. States are never mutated; each verb relates a state to its
+successor, so history is replayable and every intermediate state is
+addressable.
 
-The *finite vocabularies* (`ai_edit/vocab.py`) are the archive ABI's closed
-worlds — twelve DeviceKinds, eight GuardRanks, three DogBreeds, three
-DroneArchetypes, five WiringTypes — expressed as data plus `membero`-style
-domain relations. Closed worlds are what make generation decidable.
+The *finite vocabularies* (`ai_edit/vocab.py`) are the closed worlds —
+inherited from the archive ABI (twelve DeviceKinds, eight GuardRanks, three
+DogBreeds, three DroneArchetypes, five WiringTypes) and extended by UMS
+(eight NPCRoles, eight CharacterArchetypes, eight CharacterModifiers, eight
+ItemCategories) — expressed as data plus `membero`-style domain relations.
+Closed worlds are what make generation decidable.
 
-=== The constraint layer: the five proofs as goals
+=== The constraint layer: the validity proofs as goals
 
 `ai_edit/constraints.py` re-expresses the archive's five validity proofs as
-relational goals over a state term:
+relational goals over a state term, plus a sixth (`items_in_zones`) for the
+UMS object collection:
 
-* `guards_in_zones` — every mobile actor stands in a declared zone;
+* `guards_in_zones` — every mobile actor stands in a declared zone (extended
+  to cover NPCs and named characters as well as guards/dogs/drones/assassins);
 * `defence_targets_exist` — every device defence targets a real device;
 * `zones_ordered` — zone worldX intervals are well-formed and disjoint, and
   security tiers do not decrease with depth;
 * `pbx_consistent` — `hasPBX` implies a PBX IP, a PBX position and a
   PhoneSystem device (and no dangling PBX fields otherwise);
 * `devices_exist` — devices sit in declared zones; wiring runs have known
-  WiringTypes and connect existing devices.
+  WiringTypes and connect existing devices;
+* `items_in_zones` — every placed object/item sits in a declared zone.
 
-An AI-proposed edit is only emitted if a model satisfying *all five* exists
-for the resulting state. This is *edit-as-goal-satisfaction*: in
+An AI-proposed edit is only emitted if a model satisfying *all* of them
+exists for the resulting state. This is *edit-as-goal-satisfaction*: in
 `ai_edit/engine.py`, `solve(state, goal_spec, n)` takes a partial edit whose
 finite-domain arguments are fresh logic variables ("add a guard in SOME
-zone"), conjoins the domain relations, the verb relation and the five
+zone"), conjoins the domain relations, the verb relation and the
 constraint goals into one search, and enumerates concrete satisfying edits —
 generate-and-narrow via fresh variables, not generate-then-filter. The
 checking direction, `apply_edit_script`, replays a script verb by verb and
@@ -138,9 +149,12 @@ engine. UMS owns this payload format, as the editor authority.
 One engine covers the whole editable surface, because everything is a
 relation over the same object graph:
 
-* *characters and NPCs* — guards, dogs, drones (and, in loaded levels,
-  assassins) over the actor-pack vocabularies;
-* *objects and devices* — the twelve DeviceKinds placed in zones;
+* *characters and NPCs* — security actors (guards, dogs, drones, and, in
+  loaded levels, assassins), in-level civilian NPCs (`add_npc`) and named
+  characters (`add_character`, ActorArchetype + Modifier) over the
+  actor-pack vocabularies;
+* *objects and devices* — the twelve DeviceKinds placed in zones, and the
+  eight ItemCategories placed via `add_item`;
 * *plumbing* — wiring and power: WiringTypes, device defences and the PBX
   triple, all constraint-checked;
 * *missions and physical setup* — `set_mission` / `set_physical` blocks
@@ -162,7 +176,7 @@ The reversible VM's manifest declares machine-checkable `guarantees`
 `verification` pointers. Edit-script artifacts do the same:
 
 * `constraint-checked-edits` — every intermediate state of the script has a
-  model satisfying the five proofs (evidence: `tests/test_ai_edit.py`, and
+  model satisfying the validity proofs (evidence: `tests/test_ai_edit.py`, and
   replaying the script through `python3 -m ai_edit check`);
 * `replayable-edit-history` — verbs are pure state-in/state-out relations
   over immutable states, so the script is its own replay log.

@@ -1,0 +1,25 @@
+package idaptikums
+
+-- SPDX-License-Identifier: MPL-2.0
+
+version = 0.1.0
+authors = "Jonathan D.A. Jewell"
+
+sourcedir = "abi"
+
+modules = Primitives,
+          Types,
+          Devices,
+          Zones,
+          Inventory,
+          Guards,
+          Dogs,
+          Drones,
+          Assassin,
+          Mission,
+          Wiring,
+          Physical,
+          Level,
+          Validation,
+          Multiplayer,
+          GameSystems

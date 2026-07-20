@@ -22,11 +22,12 @@ from __future__ import annotations
 from . import vocab
 from .microkanren import conj, eq, fail, is_ground, project
 
-#: Keys of the level object graph (the archive editor's LevelData).
+#: Keys of the level object graph (the archive editor's LevelData, plus the
+#: UMS-owned `npcs` and `characters` collections for direct actor edits).
 LEVEL_KEYS = (
     "zones", "devices", "guards", "dogs", "drones", "assassins", "items",
-    "wiring", "zoneTransitions", "deviceDefences", "mission", "physical",
-    "hasPBX", "pbxIp", "pbxWorldX",
+    "npcs", "characters", "wiring", "zoneTransitions", "deviceDefences",
+    "mission", "physical", "hasPBX", "pbxIp", "pbxWorldX",
 )
 
 
@@ -34,8 +35,9 @@ def initial_state():
     """An empty level (the archive's create_level)."""
     return {
         "zones": [], "devices": [], "guards": [], "dogs": [], "drones": [],
-        "assassins": [], "items": [], "wiring": [], "zoneTransitions": [],
-        "deviceDefences": [], "mission": None, "physical": None,
+        "assassins": [], "items": [], "npcs": [], "characters": [],
+        "wiring": [], "zoneTransitions": [], "deviceDefences": [],
+        "mission": None, "physical": None,
         "hasPBX": False, "pbxIp": None, "pbxWorldX": None,
     }
 
@@ -97,6 +99,48 @@ def add_drone(s_in, drone_id, archetype, zone, s_out):
     return conj(
         vocab.drone_archetypeo(archetype),
         _append(s_in, s_out, "drones", record),
+    )
+
+
+def add_npc(s_in, npc_id, role, zone, s_out):
+    """Place an in-level NPC (house/street civilian) of an NPCRole in a zone.
+
+    These are the ambient characters the player passes on the way to the
+    Ghost Lobby / Exchange House — first-class edit targets, not scenery.
+    """
+    record = {"id": npc_id, "role": role, "zone": zone}
+    return conj(
+        vocab.npc_roleo(role),
+        _append(s_in, s_out, "npcs", record),
+    )
+
+
+def add_character(s_in, character_id, archetype, modifier, zone, s_out):
+    """Place a named character (the game's ActorArchetype + Modifier) in a zone.
+
+    Characters are actors-as-data: an archetype (story role) paired with a
+    trait modifier, both drawn from closed vocabularies so generation stays
+    decidable.
+    """
+    record = {
+        "id": character_id,
+        "archetype": archetype,
+        "modifier": modifier,
+        "zone": zone,
+    }
+    return conj(
+        vocab.character_archetypeo(archetype),
+        vocab.character_modifiero(modifier),
+        _append(s_in, s_out, "characters", record),
+    )
+
+
+def add_item(s_in, item_id, category, zone, s_out):
+    """Place an object/item of an ItemCategory in a zone."""
+    record = {"id": item_id, "category": category, "zone": zone}
+    return conj(
+        vocab.item_categoryo(category),
+        _append(s_in, s_out, "items", record),
     )
 
 

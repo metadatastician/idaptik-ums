@@ -22,7 +22,7 @@ them.
   a scenario's level object graph, produced by the AI-edit engine
   (`ai_edit/`, docs/adr/0001-ai-edit-kautz6-nesy.adoc). The engine only
   emits a script when every intermediate state has a model satisfying the
-  five validity proofs; `just ai-edit-check` replays the sample
+  validity proofs; `just ai-edit-check` replays the sample
   (`dlc/examples/ai-edit-sample`) to keep that honest.
 * *Scenario and actor payloads* — owned by the game engine.
   `kind: scenario-definition` (buildings/levels: Ghost Lobby, the Exchange
