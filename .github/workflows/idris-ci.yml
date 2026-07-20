@@ -6,15 +6,22 @@ on:
     paths:
       - 'abi/**'
       - 'idaptik-ums.ipkg'
+      - 'scripts/proven-min.ipkg'
       - '.github/workflows/idris-ci.yml'
   pull_request:
     paths:
       - 'abi/**'
       - 'idaptik-ums.ipkg'
+      - 'scripts/proven-min.ipkg'
       - '.github/workflows/idris-ci.yml'
   workflow_dispatch:
 permissions:
   contents: read
+env:
+  # hyperpolymath/proven main as of 2026-07-20. abi/ProvenBridge.idr is
+  # typechecked against exactly this commit; bump deliberately, and
+  # re-verify scripts/proven-min.ipkg's module closure when you do.
+  PROVEN_SHA: 0368e08f61d4cb6a39530f594b2bdf7c40ca1414
 jobs:
   typecheck:
     runs-on: ubuntu-latest
@@ -24,5 +31,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install proven (pinned minimal closure)
+        run: |
+          set -eux
+          idris2 --version
+          git init /tmp/proven
+          git -C /tmp/proven remote add origin https://github.com/hyperpolymath/proven
+          git -C /tmp/proven fetch --depth 1 origin "$PROVEN_SHA"
+          git -C /tmp/proven checkout FETCH_HEAD
+          # Register package `proven` from the 13-module import closure
+          # of abi/ProvenBridge.idr. scripts/proven-min.ipkg documents
+          # why the full proven.ipkg is not installable here.
+          cp scripts/proven-min.ipkg /tmp/proven/
+          # proven@PROVEN_SHA's SafeMath.Proofs compiles on no current
+          # toolchain (its `import Data.Nat.Division` is gone from
+          # base-0.8.0; idris2 0.7.0 rejects its ItIsSucc evidence).
+          # Nothing in this repo or SafeMath.idr uses Proofs names, so
+          # drop its lone re-export. Reported upstream as
+          # hyperpolymath/proven#184; remove this sed (and re-add the
+          # module to proven-min.ipkg) once fixed.
+          sed -i '/import public Proven.SafeMath.Proofs/d' /tmp/proven/src/Proven/SafeMath.idr
+          cd /tmp/proven && idris2 --install proven-min.ipkg
       - name: Typecheck ABI package
         run: idris2 --typecheck idaptik-ums.ipkg

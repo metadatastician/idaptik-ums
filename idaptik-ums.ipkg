@@ -22,4 +22,7 @@ modules = Primitives,
           Level,
           Validation,
           Multiplayer,
-          GameSystems
+          GameSystems,
+          ProvenBridge
+
+depends = proven
