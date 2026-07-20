@@ -32,6 +32,35 @@ WIRING_TYPES = (
     "PBXComms",
 )
 
+#: Roles for in-level, non-combatant NPCs — the house and street characters
+#: the player passes on the way to the Ghost Lobby / Exchange House. These
+#: are the ambient civilian actors, distinct from the guard/dog/drone
+#: security actors above.
+NPC_ROLES = (
+    "Pedestrian", "Shopkeeper", "Resident", "Doorman", "StreetVendor",
+    "Busker", "Commuter", "Concierge",
+)
+
+#: Named-character archetypes (the game's ActorArchetype), the story-role
+#: half of the actor-as-data model mirrored from idaptik-core.
+CHARACTER_ARCHETYPES = (
+    "Protagonist", "Handler", "Fixer", "Contact", "Insider", "Rival",
+    "Mark", "Bystander",
+)
+
+#: Character trait modifiers (the game's Modifier), the second half of the
+#: ActorArchetype + Modifier pair. Orthogonal to the archetype.
+CHARACTER_MODIFIERS = (
+    "Unarmed", "Armed", "Disguised", "Alerted", "Wounded", "Corrupt",
+    "Loyal", "Undercover",
+)
+
+#: Categories of placeable objects/items on a level.
+ITEM_CATEGORIES = (
+    "Keycard", "Document", "Weapon", "Tool", "Loot", "Consumable",
+    "Container", "Contraband",
+)
+
 
 def device_kindo(kind):
     """Goal: `kind` is a DeviceKind (enumerates all twelve when fresh)."""
@@ -56,3 +85,23 @@ def drone_archetypeo(archetype):
 def wiring_typeo(wiring_type):
     """Goal: `wiring_type` is a WiringType."""
     return membero(wiring_type, WIRING_TYPES)
+
+
+def npc_roleo(role):
+    """Goal: `role` is an NPCRole (an in-level civilian role)."""
+    return membero(role, NPC_ROLES)
+
+
+def character_archetypeo(archetype):
+    """Goal: `archetype` is a CharacterArchetype (the game's ActorArchetype)."""
+    return membero(archetype, CHARACTER_ARCHETYPES)
+
+
+def character_modifiero(modifier):
+    """Goal: `modifier` is a CharacterModifier (the game's Modifier)."""
+    return membero(modifier, CHARACTER_MODIFIERS)
+
+
+def item_categoryo(category):
+    """Goal: `category` is an ItemCategory."""
+    return membero(category, ITEM_CATEGORIES)

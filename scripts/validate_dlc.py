@@ -70,6 +70,22 @@ GUARD_RANKS = {
 }
 DOG_BREEDS = {"Patrol", "Bloodhound", "RoboDog"}
 DRONE_ARCHETYPES = {"Helper", "Hunter", "Killer"}
+NPC_ROLES = {
+    "Pedestrian", "Shopkeeper", "Resident", "Doorman", "StreetVendor",
+    "Busker", "Commuter", "Concierge",
+}
+CHARACTER_ARCHETYPES = {
+    "Protagonist", "Handler", "Fixer", "Contact", "Insider", "Rival",
+    "Mark", "Bystander",
+}
+CHARACTER_MODIFIERS = {
+    "Unarmed", "Armed", "Disguised", "Alerted", "Wounded", "Corrupt",
+    "Loyal", "Undercover",
+}
+ITEM_CATEGORIES = {
+    "Keycard", "Document", "Weapon", "Tool", "Loot", "Consumable",
+    "Container", "Contraband",
+}
 EDIT_SCRIPT_REQUIRED = {"target", "edits"}
 EDIT_SCRIPT_ALLOWED = EDIT_SCRIPT_REQUIRED | {"$schema", "format-note"}
 EDIT_VERB_ARGS = {
@@ -78,14 +94,27 @@ EDIT_VERB_ARGS = {
     "add_guard": {"id", "rank", "zone"},
     "add_dog": {"id", "breed", "zone"},
     "add_drone": {"id", "archetype", "zone"},
+    "add_npc": {"id", "role", "zone"},
+    "add_character": {"id", "archetype", "modifier", "zone"},
+    "add_item": {"id", "category", "zone"},
     "set_mission": {"mission"},
     "set_physical": {"physical"},
 }
+# Per-verb enum fields. Keyed by verb (not by bare field name) because the
+# same field name means different closed worlds across verbs — e.g.
+# `archetype` is a DroneArchetype on add_drone but a CharacterArchetype on
+# add_character.
 EDIT_VERB_ENUMS = {
-    "kind": DEVICE_KINDS,
-    "rank": GUARD_RANKS,
-    "breed": DOG_BREEDS,
-    "archetype": DRONE_ARCHETYPES,
+    "add_device": {"kind": DEVICE_KINDS},
+    "add_guard": {"rank": GUARD_RANKS},
+    "add_dog": {"breed": DOG_BREEDS},
+    "add_drone": {"archetype": DRONE_ARCHETYPES},
+    "add_npc": {"role": NPC_ROLES},
+    "add_character": {
+        "archetype": CHARACTER_ARCHETYPES,
+        "modifier": CHARACTER_MODIFIERS,
+    },
+    "add_item": {"category": ITEM_CATEGORIES},
 }
 
 
@@ -309,7 +338,7 @@ def check_edit_script(doc, errors):
             continue
         if "id" in edit and not (isinstance(edit["id"], str) and KEBAB.match(edit["id"])):
             errors.append(f"edits[{i}].id must be lowercase-kebab")
-        for field, allowed in EDIT_VERB_ENUMS.items():
+        for field, allowed in EDIT_VERB_ENUMS.get(verb, {}).items():
             if field in edit and edit[field] not in allowed:
                 errors.append(f"edits[{i}].{field} must be one of {sorted(allowed)}")
         if verb == "add_zone":

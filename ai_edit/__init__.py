@@ -3,7 +3,8 @@
 level object graph.
 
 Edits are data (idaptik-edit/1 payloads); verbs are state-in/state-out
-relations; the archive editor's five validity proofs are constraint goals,
+relations; the archive editor's validity proofs (extended with a UMS items
+rule) are constraint goals,
 so an edit is only emitted when a satisfying model exists. Architecture:
 docs/adr/0001-ai-edit-kautz6-nesy.adoc.
 """

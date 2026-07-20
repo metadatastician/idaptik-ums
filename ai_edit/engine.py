@@ -4,7 +4,7 @@
 Two directions over the same relational kernel:
 
 * `apply_edit_script(state, script)` — the checking direction. Applies the
-  script's verbs in order; after every verb the five validity proofs
+  script's verbs in order; after every verb the validity proofs
   (ai_edit.constraints) must have a satisfying model or the script is
   rejected at that verb.
 
@@ -64,13 +64,32 @@ VERB_SPECS = {
         ("id", "archetype", "zone"),
         {"archetype": lambda state: vocab.DRONE_ARCHETYPES, "zone": _zone_domain},
     ),
+    "add_npc": VerbSpec(
+        verbs.add_npc,
+        ("id", "role", "zone"),
+        {"role": lambda state: vocab.NPC_ROLES, "zone": _zone_domain},
+    ),
+    "add_character": VerbSpec(
+        verbs.add_character,
+        ("id", "archetype", "modifier", "zone"),
+        {
+            "archetype": lambda state: vocab.CHARACTER_ARCHETYPES,
+            "modifier": lambda state: vocab.CHARACTER_MODIFIERS,
+            "zone": _zone_domain,
+        },
+    ),
+    "add_item": VerbSpec(
+        verbs.add_item,
+        ("id", "category", "zone"),
+        {"category": lambda state: vocab.ITEM_CATEGORIES, "zone": _zone_domain},
+    ),
     "set_mission": VerbSpec(verbs.set_mission, ("mission",), {}),
     "set_physical": VerbSpec(verbs.set_physical, ("physical",), {}),
 }
 
 
 def _satisfiable(state):
-    """True when the five proofs have a model for `state`."""
+    """True when the validity proofs have a model for `state`."""
     return bool(run(1, lambda q: conj(constraints.all_constraints(state),
                                       eq(q, True))))
 
@@ -80,7 +99,7 @@ def apply_edit_script(state, script):
 
     `script` is an idaptik-edit/1 payload dict (or a bare list of edits).
     The input state is checked first; then each verb must leave a state for
-    which all five constraint goals have a satisfying model, or the script
+    which all constraint goals have a satisfying model, or the script
     is rejected at that verb and the last good state is returned.
     """
     edits = script.get("edits", []) if isinstance(script, dict) else list(script)
@@ -124,7 +143,8 @@ def apply_edit_script(state, script):
             step["reason"] = (
                 "no satisfying model: the edit violates the validity proofs "
                 "(guards-in-zones, defence-targets, zones-ordered, "
-                "pbx-consistent, devices-exist) or its vocabulary"
+                "pbx-consistent, devices-exist, items-in-zones) or its "
+                "vocabulary"
             )
             return current, report
 

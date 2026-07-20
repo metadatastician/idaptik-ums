@@ -11,6 +11,10 @@
     { "verb": "add_guard", "id": "guard-1", "rank": "Sentinel", "zone": "server-room" },
     { "verb": "add_dog", "id": "dog-1", "breed": "Patrol", "zone": "lobby" },
     { "verb": "add_drone", "id": "drone-1", "archetype": "Hunter", "zone": "server-room" },
+    { "verb": "add_npc", "id": "doorman-1", "role": "Doorman", "zone": "lobby" },
+    { "verb": "add_npc", "id": "vendor-1", "role": "StreetVendor", "zone": "lobby" },
+    { "verb": "add_character", "id": "billy", "archetype": "Insider", "modifier": "Undercover", "zone": "server-room" },
+    { "verb": "add_item", "id": "keycard-1", "category": "Keycard", "zone": "lobby" },
     { "verb": "set_mission", "mission": { "objective": "exfiltrate-ledger", "targetDevice": "rack-server-1" } },
     { "verb": "set_physical", "physical": { "hasPBX": true, "pbxIp": "10.20.30.40", "pbxWorldX": 12 } }
   ]
