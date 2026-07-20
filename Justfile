@@ -80,16 +80,14 @@ import? "build/just/assess.just"
 # BUILD & COMPILE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Build the project (debug mode)
-build *args:
-    @echo "Building {{project}} (debug)..."
-    # TODO: Replace with your build command
-    # Examples:
-    #   cargo build {{args}}                    # Rust
-    #   mix compile {{args}}                    # Elixir
-    #   zig build {{args}}                      # Zig
-    #   deno task build {{args}}                # Deno/ReScript
-    @echo "Build complete"
+# Build the Zig FFI shared + static library (debug).
+# Body lives here (just forbids duplicate recipe names); the rest of the Zig
+# FFI tooling (_zig-guard, test-ffi, zig_version) is in the ZIG FFI section
+# at the end of this file.
+build *args: _zig-guard
+    @echo "Building {{project}} FFI (debug)..."
+    cd ffi/zig && zig build {{args}}
+    @echo "Build complete — artefacts in ffi/zig/zig-out/lib/"
 
 # Build in release mode with optimizations
 build-release *args:
@@ -794,3 +792,34 @@ handover-human path=".":
 
 secret-scan-trufflehog:
     @command -v trufflehog >/dev/null && trufflehog filesystem . --only-verified || true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ZIG FFI (migrated from hyperpolymath/idaptik-ums lineage repo)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Must match mise.toml and .github/workflows/zig-ci.yml (IDApTIK ADR-0001:
+# same zig as the game).
+zig_version := "0.14.0"
+
+# Refuse to build on the wrong Zig. mise SILENTLY ignores an untrusted config and
+# falls back to the global toolchain, so the mise.toml pin can be bypassed with no
+# warning at all — a fresh worktree in the lineage repo resolved 0.16.0 while
+# `mise current zig` still reported 0.14.0 (fix: `mise trust`). This code does not
+# compile under 0.16, whose explicit-Io rework removed the std.fs/std.io calls the
+# FFI uses, and the resulting errors point at the stdlib rather than the real cause.
+_zig-guard:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    have=$(zig version 2>/dev/null || echo absent)
+    if [ "$have" != "{{zig_version}}" ]; then
+      echo "error: zig {{zig_version}} required, found '$have'" >&2
+      echo "  which zig: $(command -v zig 2>/dev/null || echo '<none on PATH>')" >&2
+      echo "  mise.toml pins {{zig_version}}. If mise is installed, this config is" >&2
+      echo "  probably untrusted — run 'mise trust' in the repo root, then retry." >&2
+      exit 1
+    fi
+
+# Zig FFI integration tests — 24 blocks in ffi/zig/test/integration_test.zig.
+test-ffi *args: _zig-guard
+    @echo "Running Zig FFI integration tests..."
+    cd ffi/zig && zig build test --summary all {{args}}
