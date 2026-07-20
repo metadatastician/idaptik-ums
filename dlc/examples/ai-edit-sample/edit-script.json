@@ -4,7 +4,7 @@
   "target": "exchange-house",
   "edits": [
     { "verb": "add_zone", "id": "lobby", "securityTier": 0, "worldXStart": 0, "worldXEnd": 40 },
-    { "verb": "add_zone", "id": "server-room", "securityTier": 2, "worldXStart": 40, "worldXEnd": 80 },
+    { "verb": "add_zone", "id": "server-room", "securityTier": 2, "worldXStart": 40, "worldXEnd": 80, "segment": "Internal" },
     { "verb": "add_device", "id": "pbx-1", "kind": "PhoneSystem", "zone": "lobby", "worldX": 12 },
     { "verb": "add_device", "id": "rack-server-1", "kind": "Server", "zone": "server-room", "worldX": 52 },
     { "verb": "add_device", "id": "cam-lobby-1", "kind": "Camera", "zone": "lobby", "worldX": 4 },

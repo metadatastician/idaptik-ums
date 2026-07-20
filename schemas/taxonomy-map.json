@@ -1,0 +1,37 @@
+{
+  "format": "idaptik-taxonomy-map/1",
+  "title": "UMS <-> IDApTIK game taxonomy map",
+  "description": "The versioned mapping at the DLC manifest seam between the UMS editor taxonomy (abi/Types.idr DeviceKind, abi/Zones.idr Zone) and the game taxonomy (idaptik-core device::DeviceKind, network::Zone). Device kinds: per the extend-the-enum ruling (docs/adr/0002), the game enum was extended to a superset of the UMS enum, so the map is a total 1:1 identity — kept as an explicit table so drift on either side is caught by scripts/validate_dlc.py and tests/test_taxonomy_map.py, which derive their vocabularies from this file. Zones: UMS zones are {name, securityTier}; the game has 8 named segments. zone-tier-bands is the DEFAULT securityTier -> segment banding (highest min-tier <= tier wins); an authored per-zone 'segment' field on add_zone overrides it. The zone half is a recommended default PENDING A HUMAN RULING (see zone-defaults-status).",
+  "device-kinds": {
+    "Laptop": "Laptop",
+    "Desktop": "Desktop",
+    "Server": "Server",
+    "Router": "Router",
+    "Switch": "Switch",
+    "Firewall": "Firewall",
+    "Camera": "Camera",
+    "AccessPoint": "AccessPoint",
+    "PatchPanel": "PatchPanel",
+    "PowerSupply": "PowerSupply",
+    "PhoneSystem": "PhoneSystem",
+    "FibreHub": "FibreHub"
+  },
+  "game-device-kinds": [
+    "Laptop", "Router", "Server", "IotCamera", "Terminal", "PowerStation",
+    "Ups", "Firewall", "SmartDoor", "Camera", "Lock", "Elevator", "Light",
+    "Sensor", "Substation", "PatchPanel", "FibreHub", "PhoneSystem",
+    "AccessPoint", "Switch", "Desktop", "PowerSupply"
+  ],
+  "zone-segments": [
+    "Lan", "Dmz", "Internal", "Iot", "Management", "Scada", "Isp", "Service"
+  ],
+  "zone-tier-bands": [
+    { "min-tier": 0, "segment": "Lan" },
+    { "min-tier": 1, "segment": "Dmz" },
+    { "min-tier": 2, "segment": "Internal" },
+    { "min-tier": 3, "segment": "Management" },
+    { "min-tier": 4, "segment": "Scada" }
+  ],
+  "zone-defaults-status": "default-pending-human-ruling",
+  "zone-notes": "Rationale for the default bands: tier 0 = public front of house (Lan), 1 = perimeter-exposed (Dmz), 2 = protected interior (Internal), 3 = restricted operations (Management), 4+ = critical plant (Scada). Iot, Isp and Service are functional categories rather than clearance bands, so no tier maps to them by default; a zone reaches them only via an explicit per-zone segment override on add_zone."
+}

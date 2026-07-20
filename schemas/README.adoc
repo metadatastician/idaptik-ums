@@ -24,6 +24,16 @@ them.
   emits a script when every intermediate state has a model satisfying the
   validity proofs; `just ai-edit-check` replays the sample
   (`dlc/examples/ai-edit-sample`) to keep that honest.
+* *Taxonomy map* (`taxonomy-map.json`, `idaptik-taxonomy-map/1`) — owned
+  here. The versioned UMS <-> game mapping at the manifest seam
+  (docs/adr/0002-ums-game-taxonomy-map.adoc): the 1:1 `device-kinds` table
+  (total by the extend-the-enum ruling; the game enum is a superset of
+  `abi/Types.idr`) and the DEFAULT `securityTier` -> game-segment
+  `zone-tier-bands` (pending a human ruling; a per-zone `segment` field on
+  `add_zone` overrides it). Load-bearing, not decorative:
+  `scripts/validate_dlc.py` derives its device and segment vocabularies
+  from this file, and `tests/test_taxonomy_map.py` pins it to
+  `ai_edit/vocab.py` and the schema enums.
 * *Scenario and actor payloads* — owned by the game engine.
   `kind: scenario-definition` (buildings/levels: Ghost Lobby, the Exchange
   House) and `kind: actor-pack` (archetype + modifier registries) declare a
