@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# DLC puzzle JSON well-formedness gate, ported from the lineage repo
+# (hyperpolymath/idaptik-ums .github/workflows/ci.yml, puzzle-data job).
+#
+# Deliberately a STANDALONE workflow, matching zig-ci / idris-ci /
+# licence-hygiene: the staged migration PRs each add their own file, so
+# nothing needs to merge into a shared ci.yml.
+#
+# Why this gate exists: bonus_04_bit_rotation.json used JS binary literals
+# (0b10101010) and had therefore never been parsed by anything. No loader
+# consumes these files yet, so this is the only CI keeping them honest.
+# (`just dlc-check` additionally schema-validates them, but that gate is
+# local-only for now — see READINESS.md.)
+
+name: Puzzle data
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'dlc/legacy-ts-puzzles/**'
+      - '.github/workflows/puzzle-data.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'dlc/legacy-ts-puzzles/**'
+      - '.github/workflows/puzzle-data.yml'
+  workflow_dispatch:
+
+jobs:
+  puzzle-data:
+    name: DLC puzzle JSON is valid
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          persist-credentials: false
+
+      - name: Validate
+        run: |
+          set -euo pipefail
+          rc=0
+          for f in dlc/legacy-ts-puzzles/*.json; do
+            python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f" \
+              || { echo "::error file=$f::invalid JSON"; rc=1; }
+          done
+          exit $rc

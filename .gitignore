@@ -5,3 +5,7 @@ zig-cache/
 
 # Idris2 build output
 build/
+
+# Python bytecode (just test / lint / dlc-check produce these)
+__pycache__/
+*.pyc
