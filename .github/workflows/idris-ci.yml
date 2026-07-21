@@ -6,12 +6,14 @@ on:
     paths:
       - 'abi/**'
       - 'idaptik-ums.ipkg'
+      - 'extractors-test.ipkg'
       - 'scripts/proven-min.ipkg'
       - '.github/workflows/idris-ci.yml'
   pull_request:
     paths:
       - 'abi/**'
       - 'idaptik-ums.ipkg'
+      - 'extractors-test.ipkg'
       - 'scripts/proven-min.ipkg'
       - '.github/workflows/idris-ci.yml'
   workflow_dispatch:
@@ -56,3 +58,10 @@ jobs:
           cd /tmp/proven && idris2 --install proven-min.ipkg
       - name: Typecheck ABI package
         run: idris2 --typecheck idaptik-ums.ipkg
+      - name: Build and run extractor tests
+        # Executes the ProvenBridge JSON extractors against a fixture
+        # covering every LevelData section plus negative fixtures —
+        # typechecking alone never runs the extraction code.
+        run: |
+          idris2 --build extractors-test.ipkg
+          ./build/exec/extractors-test

@@ -97,6 +97,7 @@ For each class, a property test asserts the round-trip identity. See
 | Step dispatcher | complete |
 | Public API (Vm.run / Vm.undo / etc.) | complete |
 | Reversibility property tests | sketch (depend on AffineScript stdlib) |
+| Compile/test gate | **none — this port has never been compiled**; "complete" above means the source port is written, not verified. Blocked on an installable AffineScript toolchain (`just build` invokes `affinescript compile`, which is not in CI or on dev machines here). |
 | RSR template floor | TODO via scaffold-component.py |
 | stapeln.toml | TODO via scaffold-component.py |
 | contractiles + 6a2 | TODO via scaffold-component.py |
