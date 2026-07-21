@@ -83,7 +83,7 @@ class TaxonomyMapTests(unittest.TestCase):
         self.assertEqual(validate_dlc.GAME_SEGMENTS, set(self.map["zone-segments"]))
 
     def test_default_bands_resolve_every_tier(self):
-        # DEFAULT PENDING HUMAN RULING (zone-defaults-status): the banding must
+        # RATIFIED 2026-07-21 (zone-defaults-status): the banding must
         # still be total — the highest min-tier <= tier must exist for any Nat.
         bands = self.map["zone-tier-bands"]
         self.assertEqual(bands[0]["min-tier"], 0)
@@ -91,7 +91,7 @@ class TaxonomyMapTests(unittest.TestCase):
         self.assertEqual(tiers, sorted(set(tiers)), "bands strictly increasing")
         for band in bands:
             self.assertIn(band["segment"], self.map["zone-segments"])
-        self.assertEqual(self.map["zone-defaults-status"], "default-pending-human-ruling")
+        self.assertEqual(self.map["zone-defaults-status"], "ratified-2026-07-21")
 
 
 class SegmentOverrideValidationTests(unittest.TestCase):
