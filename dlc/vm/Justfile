@@ -27,5 +27,11 @@ container:
 container-stapeln:
     stapeln build --target production
 
+# Exit code propagates when trufflehog runs; a missing tool is a loud
+# skip, never a silent pass (the old `|| true` swallowed real findings).
 secret-scan-trufflehog:
-    @command -v trufflehog >/dev/null && trufflehog filesystem . --only-verified || true
+    @if command -v trufflehog >/dev/null; then \
+        trufflehog filesystem . --only-verified; \
+    else \
+        echo "trufflehog not installed — scan SKIPPED (not a pass)"; \
+    fi
