@@ -3,10 +3,9 @@
 = ADR 0002: The UMS <-> game taxonomy map at the DLC manifest seam
 :toc: preamble
 
-Status: Accepted (device kinds) / Proposed default pending a human ruling (zones) +
-Date: 2026-07-20 +
-Deciders: @hyperpolymath (device-kind ruling); zone banding is a recommended
-default awaiting the same
+Status: Accepted (device kinds 2026-07-20; zones ratified 2026-07-21) +
+Date: 2026-07-20 (zones ratified 2026-07-21) +
+Deciders: @hyperpolymath (device-kind ruling and zone ruling)
 
 == Context
 
@@ -46,11 +45,14 @@ kind vocabulary from the table (an incoherent map fails the validator at
 load), and `tests/test_taxonomy_map.py` pins the table to
 `ai_edit/vocab.py` and to the enums in `schemas/edit-script.schema.json`.
 
-=== Zones: default tier banding + per-zone override (DEFAULT PENDING HUMAN RULING)
+=== Zones: default tier banding + per-zone override (RATIFIED 2026-07-21)
 
-The zone half of the seam has *not* been ruled. This ADR ships the
-recommended default and marks it clearly, both here and in the map file
-(`zone-defaults-status: default-pending-human-ruling`):
+The zone half was ratified by the owner on 2026-07-21, adopting the
+recommended default *unchanged* on all three open questions: (1) the tier
+band ladder stands as shipped; (2) Iot/Isp/Service remain override-only —
+no tier ever maps to them; (3) an authored per-zone `segment` always wins
+over the banding. The map file records this
+(`zone-defaults-status: ratified-2026-07-21`):
 
 * *Default banding* (`zone-tier-bands` in `schemas/taxonomy-map.json`):
   a zone's `securityTier` selects the band with the highest `min-tier`
@@ -85,6 +87,8 @@ The banding is total (band 0 exists, tiers strictly increase), so every
 * Any future change to either taxonomy must go through
   `schemas/taxonomy-map.json` and will be caught by `just dlc-check` and
   the unittest suite if the copies disagree.
-* When the zone ruling lands, only `zone-tier-bands` (and possibly the
-  override policy for Iot/Isp/Service) changes, versioned by the map's
-  `format` tag; the manifest and script schemas are already shaped for it.
+* The zone ruling landed 2026-07-21 with zero changes to
+  `zone-tier-bands` or the override policy — the shipped default was
+  adopted as-is, so no content, schema or validator behaviour changed;
+  only the status markers did. Any *future* change to the banding is a
+  new ruling, versioned by the map's `format` tag.
