@@ -4,8 +4,14 @@
 -- ProvenBridge.idr — idaptik's use of the proven library.
 --
 -- Re-exports the five Safe* modules idaptik depends on, plus the
--- idaptik-domain extractors (LevelData / DeviceSpec / Zone / Guard /
--- ZoneTransition) and game-specific combinators built on them.
+-- idaptik-domain extractors (LevelData and every section it contains:
+-- devices / zones / guards / dogs / drones / assassins / items /
+-- wiring / mission / physical / zone transitions / device defences)
+-- and game-specific combinators built on them.
+--
+-- JSON field and enum spellings are snake_case, mirroring the Zig FFI
+-- layer (ffi/zig/src/types.zig) so both sides of the ABI accept the
+-- same level documents.
 --
 -- Before the proven dependency landed, this file was a 1658-line
 -- placeholder mirroring each proven module locally so idaptik could
@@ -255,6 +261,117 @@ extractGuardRank ctx json =
     Just "rival_hacker"   => Got RivalHacker
     Just other            => Errs [ctx ++ ": unknown guard rank '" ++ other ++ "'"]
 
+||| Parse a DogBreed from a JSON string.
+export
+extractDogBreed : String -> JsonValue -> Extracted DogBreed
+extractDogBreed ctx json =
+  case asString json of
+    Nothing           => Errs [ctx ++ ": expected string for dog breed"]
+    Just "patrol"     => Got Patrol
+    Just "bloodhound" => Got Bloodhound
+    Just "robo_dog"   => Got RoboDog
+    Just other        => Errs [ctx ++ ": unknown dog breed '" ++ other ++ "'"]
+
+||| Parse a DroneArchetype from a JSON string.
+export
+extractDroneArchetype : String -> JsonValue -> Extracted DroneArchetype
+extractDroneArchetype ctx json =
+  case asString json of
+    Nothing       => Errs [ctx ++ ": expected string for drone archetype"]
+    Just "helper" => Got Helper
+    Just "hunter" => Got Hunter
+    Just "killer" => Got Killer
+    Just other    => Errs [ctx ++ ": unknown drone archetype '" ++ other ++ "'"]
+
+||| Parse an ItemCondition from a JSON string.
+export
+extractItemCondition : String -> JsonValue -> Extracted ItemCondition
+extractItemCondition ctx json =
+  case asString json of
+    Nothing         => Errs [ctx ++ ": expected string for item condition"]
+    Just "pristine" => Got Pristine
+    Just "good"     => Got Good
+    Just "worn"     => Got Worn
+    Just "damaged"  => Got Damaged
+    Just "broken"   => Got Broken
+    Just other      => Errs [ctx ++ ": unknown item condition '" ++ other ++ "'"]
+
+||| Parse a WiringType from a JSON string. Constructors are qualified:
+||| `PatchPanel` also exists in DeviceKind, and both are in scope here.
+export
+extractWiringType : String -> JsonValue -> Extracted WiringType
+extractWiringType ctx json =
+  case asString json of
+    Nothing                  => Errs [ctx ++ ": expected string for wiring type"]
+    Just "patch_panel"       => Got Wiring.PatchPanel
+    Just "switch_backplane"  => Got SwitchBackplane
+    Just "server_rack"       => Got ServerRack
+    Just "fibre_splicing"    => Got FibreSplicing
+    Just "pbx_comms"         => Got PBXComms
+    Just other               => Errs [ctx ++ ": unknown wiring type '" ++ other ++ "'"]
+
+||| Parse a CableType from a JSON string.
+export
+extractCableType : String -> JsonValue -> Extracted CableType
+extractCableType ctx json =
+  case asString json of
+    Nothing          => Errs [ctx ++ ": expected string for cable type"]
+    Just "ethernet"  => Got Ethernet
+    Just "fibre_lc"  => Got FibreLC
+    Just "fibre_sc"  => Got FibreSC
+    Just "serial"    => Got Serial
+    Just "usb"       => Got USB
+    Just "universal" => Got Universal
+    Just other       => Errs [ctx ++ ": unknown cable type '" ++ other ++ "'"]
+
+||| Parse an AdapterType from a JSON string.
+export
+extractAdapterType : String -> JsonValue -> Extracted AdapterType
+extractAdapterType ctx json =
+  case asString json of
+    Nothing                  => Errs [ctx ++ ": expected string for adapter type"]
+    Just "ethernet_to_fibre" => Got EthernetToFibre
+    Just "usb_to_serial"     => Got USBToSerial
+    Just "media_converter"   => Got MediaConverter
+    Just other               => Errs [ctx ++ ": unknown adapter type '" ++ other ++ "'"]
+
+||| Parse a ToolType from a JSON string.
+export
+extractToolType : String -> JsonValue -> Extracted ToolType
+extractToolType ctx json =
+  case asString json of
+    Nothing           => Errs [ctx ++ ": expected string for tool type"]
+    Just "crimper"    => Got Crimper
+    Just "splicer"    => Got Splicer
+    Just "multimeter" => Got Multimeter
+    Just "wire_cutter" => Got WireCutter
+    Just "debugger"   => Got Debugger
+    Just other        => Errs [ctx ++ ": unknown tool type '" ++ other ++ "'"]
+
+||| Parse a ModuleType from a JSON string.
+export
+extractModuleType : String -> JsonValue -> Extracted ModuleType
+extractModuleType ctx json =
+  case asString json of
+    Nothing            => Errs [ctx ++ ": expected string for module type"]
+    Just "sfp"         => Got SFP
+    Just "gbic"        => Got GBIC
+    Just "qsfp"        => Got QSFP
+    Just "transceiver" => Got Transceiver
+    Just other         => Errs [ctx ++ ": unknown module type '" ++ other ++ "'"]
+
+||| Parse a ConsumableType from a JSON string.
+export
+extractConsumableType : String -> JsonValue -> Extracted ConsumableType
+extractConsumableType ctx json =
+  case asString json of
+    Nothing              => Errs [ctx ++ ": expected string for consumable type"]
+    Just "battery_pack"  => Got BatteryPack
+    Just "emp"           => Got EMP
+    Just "smoke_grenade" => Got SmokeGrenade
+    Just "decryptor"     => Got Decryptor
+    Just other           => Errs [ctx ++ ": unknown consumable type '" ++ other ++ "'"]
+
 ------------------------------------------------------------------------
 -- Record extraction
 ------------------------------------------------------------------------
@@ -349,6 +466,29 @@ extractList ctx extractor json =
            Errs es  => go xs (S idx) acc (es ++ errs)
 
 ------------------------------------------------------------------------
+-- Field-with-sub-extractor helpers
+------------------------------------------------------------------------
+
+||| Require a field and run a context-labelled sub-extractor on its
+||| value. Replaces the per-extractor (=<<)/maybeToExtracted where
+||| clauses for extractors written after it.
+export
+fieldWith : String -> String -> (String -> JsonValue -> Extracted a) -> JsonValue -> Extracted a
+fieldWith ctx fieldName sub json =
+  case get fieldName json of
+    Nothing  => Errs [ctx ++ ": missing required field '" ++ fieldName ++ "'"]
+    Just val => sub (ctx ++ "." ++ fieldName) val
+
+||| Optional field with a sub-extractor: an absent field yields the
+||| given default; a present field must extract cleanly.
+export
+fieldWithDefault : String -> String -> a -> (String -> JsonValue -> Extracted a) -> JsonValue -> Extracted a
+fieldWithDefault ctx fieldName dflt sub json =
+  case get fieldName json of
+    Nothing  => Got dflt
+    Just val => sub (ctx ++ "." ++ fieldName) val
+
+------------------------------------------------------------------------
 -- Mission / Physical extraction
 ------------------------------------------------------------------------
 
@@ -404,6 +544,162 @@ extractPhysical ctx json =
     (e1, e2, e3, e4, e5, e6) =>
       Errs (errsOf e1 ++ errsOf e2 ++ errsOf e3 ++ errsOf e4 ++ errsOf e5 ++ errsOf e6)
 
+------------------------------------------------------------------------
+-- Dogs / Drones / Assassins / Items / Wiring / Device defences
+------------------------------------------------------------------------
+
+||| Extract a DogPlacement from a JSON object.
+||| Schema: { "world_x": number, "breed": DogBreed, "patrol_radius": number }
+export
+extractDog : String -> JsonValue -> Extracted DogPlacement
+extractDog ctx json =
+  (\wx, b, pr => MkDogPlacement (MkWorldX wx) b pr)
+    <$> requireField ctx "world_x" asNumber json
+    <*> fieldWith ctx "breed" extractDogBreed json
+    <*> requireField ctx "patrol_radius" asNumber json
+
+||| Extract a DronePlacement from a JSON object.
+||| Schema: { "world_x": number, "archetype": DroneArchetype, "altitude": number }
+export
+extractDrone : String -> JsonValue -> Extracted DronePlacement
+extractDrone ctx json =
+  (\wx, a, alt => MkDronePlacement (MkWorldX wx) a alt)
+    <$> requireField ctx "world_x" asNumber json
+    <*> fieldWith ctx "archetype" extractDroneArchetype json
+    <*> requireField ctx "altitude" asNumber json
+
+||| Extract an AssassinConfig from a JSON object.
+||| Schema: { "spawn_x": number, "ambush_count": nat, "retreat_threshold": nat }
+export
+extractAssassin : String -> JsonValue -> Extracted AssassinConfig
+extractAssassin ctx json =
+  (\sx, ac, rt => MkAssassinConfig (MkWorldX sx) ac rt)
+    <$> requireField ctx "spawn_x" asNumber json
+    <*> requireField ctx "ambush_count" asNat json
+    <*> requireField ctx "retreat_threshold" asNat json
+
+||| Extract an ItemKind from a tagged JSON object. The encoding mirrors
+||| the Zig FFI's flattened tag + payload representation
+||| (ffi/zig/src/types.zig ItemKind):
+|||   { "type": "cable"|"adapter"|"tool"|"module"|"consumable",
+|||     "sub_type": <variant string> }
+|||   { "type": "storage", "capacity": nat }
+|||   { "type": "keycard", "zone": string }
+|||   { "type": "radio" }
+export
+extractItemKind : String -> JsonValue -> Extracted ItemKind
+extractItemKind ctx json =
+  case get "type" json of
+    Nothing => Errs [ctx ++ ": missing required field 'type'"]
+    Just tv =>
+      case asString tv of
+        Nothing => Errs [ctx ++ ": field 'type' has wrong type"]
+        Just "cable"      => Cable      <$> fieldWith ctx "sub_type" extractCableType json
+        Just "adapter"    => Adapter    <$> fieldWith ctx "sub_type" extractAdapterType json
+        Just "tool"       => Tool       <$> fieldWith ctx "sub_type" extractToolType json
+        Just "module"     => Module     <$> fieldWith ctx "sub_type" extractModuleType json
+        Just "storage"    => Storage    <$> requireField ctx "capacity" asNat json
+        Just "consumable" => Consumable <$> fieldWith ctx "sub_type" extractConsumableType json
+        Just "keycard"    => Keycard    <$> requireField ctx "zone" asString json
+        Just "radio"      => Got Radio
+        Just other        => Errs [ctx ++ ": unknown item kind '" ++ other ++ "'"]
+
+||| Extract an inventory Item from a JSON object.
+||| Schema: { "id": string, "kind": ItemKind, "name": string,
+|||           "weight": nat, "condition": ItemCondition,
+|||           "uses_remaining": nat }   -- optional
+export
+extractItem : String -> JsonValue -> Extracted Item
+extractItem ctx json =
+  MkItem
+    <$> requireField ctx "id" asString json
+    <*> fieldWith ctx "kind" extractItemKind json
+    <*> requireField ctx "name" asString json
+    <*> requireField ctx "weight" asNat json
+    <*> fieldWith ctx "condition" extractItemCondition json
+    <*> optionalField ctx "uses_remaining" asNat json
+
+||| Extract a WorldItem (an Item placed in a container device).
+||| Schema: { "item": Item, "world_x": number, "container": string }
+export
+extractWorldItem : String -> JsonValue -> Extracted WorldItem
+extractWorldItem ctx json =
+  (\it, wx, c => MkWorldItem it (MkWorldX wx) c)
+    <$> fieldWith ctx "item" extractItem json
+    <*> requireField ctx "world_x" asNumber json
+    <*> requireField ctx "container" asString json
+
+||| Extract a WiringChallenge from a JSON object.
+||| Schema: { "kind": WiringType, "device_ip": "a.b.c.d", "difficulty": nat }
+export
+extractWiringChallenge : String -> JsonValue -> Extracted WiringChallenge
+extractWiringChallenge ctx json =
+  MkWiringChallenge
+    <$> fieldWith ctx "kind" extractWiringType json
+    <*> fieldWith ctx "device_ip" extractIpAddress json
+    <*> requireField ctx "difficulty" asNat json
+
+||| Extract DefenceFlags from a JSON object. Every field is optional
+||| and defaults to its defaultDefenceFlags value (off / Nothing), so
+||| `{}` is a valid all-defences-off object.
+||| Schema: { "tamper_proof": bool, "decoy": bool, "canary": bool,
+|||           "one_way_mirror": bool, "kill_switch": bool,
+|||           "failover_target": ip, "cascade_trap": ip,
+|||           "mirror_target": ip, "instruction_whitelist": [string],
+|||           "time_bomb": nat, "undo_immunity": nat }
+export
+extractDefenceFlags : String -> JsonValue -> Extracted DefenceFlags
+extractDefenceFlags ctx json =
+  MkDefenceFlags
+    <$> flag "tamper_proof"
+    <*> flag "decoy"
+    <*> flag "canary"
+    <*> flag "one_way_mirror"
+    <*> flag "kill_switch"
+    <*> optIp "failover_target"
+    <*> optIp "cascade_trap"
+    <*> optIp "mirror_target"
+    <*> optWhitelist "instruction_whitelist"
+    <*> optionalField ctx "time_bomb" asNat json
+    <*> optionalField ctx "undo_immunity" asNat json
+  where
+    flag : String -> Extracted Bool
+    flag f =
+      case get f json of
+        Nothing => Got False
+        Just v  =>
+          case asBool v of
+            Just b  => Got b
+            Nothing => Errs [ctx ++ "." ++ f ++ ": expected boolean"]
+
+    optIp : String -> Extracted (Maybe IpAddress)
+    optIp f =
+      case get f json of
+        Nothing => Got Nothing
+        Just v  => Just <$> extractIpAddress (ctx ++ "." ++ f) v
+
+    strElem : String -> JsonValue -> Extracted String
+    strElem ec ev =
+      case asString ev of
+        Just s  => Got s
+        Nothing => Errs [ec ++ ": expected string"]
+
+    optWhitelist : String -> Extracted (Maybe (List String))
+    optWhitelist f =
+      case get f json of
+        Nothing => Got Nothing
+        Just v  => Just <$> extractList (ctx ++ "." ++ f) strElem v
+
+||| Extract a DeviceDefenceConfig from a JSON object. An absent
+||| "flags" object yields defaultDefenceFlags (all defences off).
+||| Schema: { "ip": "a.b.c.d", "flags": DefenceFlags }
+export
+extractDefence : String -> JsonValue -> Extracted DeviceDefenceConfig
+extractDefence ctx json =
+  MkDeviceDefenceConfig
+    <$> fieldWith ctx "ip" extractIpAddress json
+    <*> fieldWithDefault ctx "flags" defaultDefenceFlags extractDefenceFlags json
+
 ||| Default mission when the level JSON has no "mission" object.
 ||| Mirrors the [] defaults of the sibling list fields: an absent
 ||| optional section yields an empty-but-valid config, not an error.
@@ -427,15 +723,15 @@ defaultPhysicalConfig = MkPhysicalConfig 0.0 0.0 0.0 False False 0
 |||
 ||| Expected JSON schema (top-level object):
 |||   { "devices": [...], "zones": [...], "guards": [...],
+|||     "dogs": [...], "drones": [...], "assassins": [...],
+|||     "items": [...], "wiring": [...], "device_defences": [...],
 |||     "zone_transitions": [...], "has_pbx": bool, "pbx_ip": "a.b.c.d",
-|||     "pbx_world_x": number, "mission": {...}, "physical": {...},
-|||     ... }
+|||     "pbx_world_x": number, "mission": {...}, "physical": {...} }
 |||
-||| Fields not yet extracted (dogs, drones, assassins, items, wiring,
-||| device_defences) return empty defaults. These will be filled in as
-||| their respective extractors are implemented. `mission` and `physical`
-||| are extracted for real; when the section is absent the default
-||| config records are used (mirroring the [] defaults of list fields).
+||| Every section is optional: an absent list field yields [], an
+||| absent `mission`/`physical` object yields its default config, so
+||| `{}` is a minimal valid level. Element schemas are documented on
+||| the per-record extractors above.
 export
 parseLevelJson : String -> Either String LevelData
 parseLevelJson input =
@@ -457,6 +753,24 @@ parseLevelJson input =
           guardsR  = case get "guards" json of
                        Nothing => Got []
                        Just v  => extractList "guards" extractGuard v
+          dogsR    = case get "dogs" json of
+                       Nothing => Got []
+                       Just v  => extractList "dogs" extractDog v
+          dronesR  = case get "drones" json of
+                       Nothing => Got []
+                       Just v  => extractList "drones" extractDrone v
+          assassinsR = case get "assassins" json of
+                         Nothing => Got []
+                         Just v  => extractList "assassins" extractAssassin v
+          itemsR   = case get "items" json of
+                       Nothing => Got []
+                       Just v  => extractList "items" extractWorldItem v
+          wiringR  = case get "wiring" json of
+                       Nothing => Got []
+                       Just v  => extractList "wiring" extractWiringChallenge v
+          defencesR = case get "device_defences" json of
+                        Nothing => Got []
+                        Just v  => extractList "device_defences" extractDefence v
           ztR      = case get "zone_transitions" json of
                        Nothing => Got []
                        Just v  => extractList "zone_transitions" extractZoneTransition v
@@ -479,36 +793,16 @@ parseLevelJson input =
           physicalR = case get "physical" json of
                         Nothing => Got defaultPhysicalConfig
                         Just v  => extractPhysical "physical" v
-      -- Applicative chain (not a 9-tuple case): the error-accumulating
+      -- Applicative chain (not a 15-tuple case): the error-accumulating
       -- Applicative Extracted collects errors from every failed field
       -- while staying within the elaborator's comfort zone for nested
-      -- pairs.
-      in mk <$> devicesR <*> zonesR <*> guardsR <*> ztR <*> hasPbxR
-            <*> pbxIpR <*> pbxWxR <*> missionR <*> physicalR
-      where
-        ||| Assemble a LevelData from the successfully extracted fields.
-        ||| The remaining list fields are stubbed to [] pending their
-        ||| extractors (documented forward work).
-        mk : List DeviceSpec -> List Zone -> List GuardPlacement
-           -> List ZoneTransition -> Bool -> IpAddress -> WorldX
-           -> MissionConfig -> PhysicalConfig -> LevelData
-        mk devs zs gs zt hp pip pwx mis phy =
-          MkLevelData
-            devs          -- devices
-            zs            -- zones
-            gs            -- guards
-            []            -- dogs (TODO: implement extractDog)
-            []            -- drones (TODO: implement extractDrone)
-            []            -- assassins (TODO: implement extractAssassin)
-            []            -- items (TODO: implement extractItem)
-            []            -- wiring (TODO: implement extractWiring)
-            mis           -- mission
-            phy           -- physical
-            zt            -- zoneTransitions
-            []            -- deviceDefences (TODO: implement extractDefence)
-            hp            -- hasPBX
-            pip           -- pbxIp
-            pwx           -- pbxWorldX
+      -- pairs. Argument order follows MkLevelData exactly.
+      in MkLevelData
+           <$> devicesR <*> zonesR <*> guardsR
+           <*> dogsR <*> dronesR <*> assassinsR
+           <*> itemsR <*> wiringR
+           <*> missionR <*> physicalR <*> ztR <*> defencesR
+           <*> hasPbxR <*> pbxIpR <*> pbxWxR
 
 ------------------------------------------------------------------------
 -- validateAndReport: human-readable validation diagnostics
