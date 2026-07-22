@@ -27,8 +27,8 @@ are marked, not implied. Per-component grades and evidence are in
 | Generation source of truth (`config/*.ncl`) | **built** — CI-gated |
 | Idris2 ABI (`abi/`) | **built** — 17/17 modules typecheck, trusted base gated |
 | Zig FFI (`ffi/zig/`) | **built** — 24/24 tests, CI-gated |
-| SPARK/GNATprove reference model (`spark/`) | **built**; parity gated locally, *VCs not yet discharged here* |
-| Zig hexadeca connector | **wire contract built + gated**; *0 of 16 transports implemented* |
+| SPARK/GNATprove reference model (`spark/`) | **built and proved** — `gnatprove` reports no unproved checks |
+| Zig hexadeca connector | **wire contract built + gated** (13 tests); *0 of 16 transports implemented* |
 | Editor frontends (Bevy / Fyrox / TUI) | *not started* |
 | Reversible VM (`dlc/vm/`, AffineScript) | *has never compiled* |
 

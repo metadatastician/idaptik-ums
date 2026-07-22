@@ -57,8 +57,16 @@ is
    function Well_Formed (Z : Zone) return Boolean is
      (Z.Start_X <= Z.End_X);
 
-   --  Two intervals are disjoint when neither's interior meets the other's.
+   --  Symmetric disjointness, under half-open [Start, End) semantics.
    --  Touching at an endpoint is allowed: zones abut.
+   --
+   --  NOT what the engine decides, and the difference is real. Take
+   --  [0, 10] followed by the degenerate [0, 0]: under half-open semantics
+   --  [0, 0) is empty, so this predicate calls them disjoint. The engine
+   --  rejects it — a start-sorted sweep asks whether each zone starts at or
+   --  after the previous one ENDED, and 0 < 10. Kept as a documented
+   --  contrast, because writing the specification with this symmetric form
+   --  is what made the loop invariant unprovable: it was false.
    function Disjoint (A, B : Zone) return Boolean is
      (A.End_X <= B.Start_X or else B.End_X <= A.Start_X);
 
@@ -80,10 +88,14 @@ is
    function All_Well_Formed (Zs : Zone_Array) return Boolean is
      (for all I in Zs'Range => Well_Formed (Zs (I)));
 
-   function Pairwise_Disjoint (Zs : Zone_Array) return Boolean is
+   --  What a start-sorted sweep actually decides: every earlier interval
+   --  ends at or before every later one starts. Directional, so it is a
+   --  chain of integer <= rather than a case split on each pair, and it
+   --  matches the engine exactly, degenerate intervals included.
+   function Ordered_Non_Overlapping (Zs : Zone_Array) return Boolean is
      (for all I in Zs'Range =>
         (for all J in Zs'Range =>
-           (if I < J then Disjoint (Zs (I), Zs (J)))));
+           (if I < J then Zs (I).End_X <= Zs (J).Start_X)));
 
    ---------------------------------------------------------------------------
    --  The decision procedure
@@ -101,7 +113,7 @@ is
      Pre  => Sorted_By_Start (Zs),
      Post => Zones_Ordered'Result =
                (All_Well_Formed (Zs)
-                and then Pairwise_Disjoint (Zs)
+                and then Ordered_Non_Overlapping (Zs)
                 and then Tiers_Non_Decreasing (Zs));
 
 end UMS_Zones;

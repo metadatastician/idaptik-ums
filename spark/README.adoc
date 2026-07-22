@@ -53,6 +53,29 @@ lane beside the Zig one and split the unified constraints-as-goals search into
 in-process and out-of-process halves. Hardening to a linked model later changes
 no schema, no verb and no proof.
 
+== What proving it found
+
+The first version of this model specified overlap with a *symmetric*
+`Disjoint`: `A.End <= B.Start or else B.End <= A.Start`. `gnatprove` could not
+prove the loop invariant — and the reason was not that the proof was hard. The
+invariant was *false*.
+
+Under half-open `[Start, End)` semantics, `[0, 0)` is empty, so symmetric
+`Disjoint` calls `[0, 10]` and the degenerate `[0, 0]` disjoint. The engine
+rejects that pair: a start-sorted sweep asks whether each zone starts at or
+after the previous one *ended*, and `0 < 10`. The model and the engine
+genuinely disagreed, and no parity vector had exercised it.
+
+The specification is now directional — `Ordered_Non_Overlapping`, every
+earlier interval ending at or before every later one starts — which is what a
+start-sorted sweep decides, matches the engine including degenerate intervals,
+and reduces the proof to integer transitivity instead of a case split through
+an `or else` on every pair.
+
+`spark/vectors.txt` gained five degenerate/equal-start cases. `0,10,0;0,0,1`
+is rejected while `0,0,0;0,10,1` is accepted: the same two zones in the other
+order, which is the whole subtlety.
+
 == Fidelity gap, stated
 
 [IMPORTANT]
@@ -94,3 +117,12 @@ Both gates were negative-tested:
 | The vector table is emptied | `spark-parity` exits 1 (no vacuous pass)
 | `gnatprove` absent | `proof-check-spark` exits 1
 |===
+
+Current state, measured 2026-07-22 with `gnatprove` FSF 16.1.0 / Why3 1.8.2:
+
+[source]
+----
+Run-time Checks        16   16 (CVC5)          0 unproved
+Assertions              6   6                  0 unproved
+Functional Contracts    1   1                  0 unproved
+----

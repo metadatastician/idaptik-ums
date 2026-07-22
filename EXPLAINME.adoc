@@ -249,11 +249,10 @@ path name is stale.
 | Claim area | Status
 
 | SPARK/GNATprove reference model
-| Model written and parity-gated; *the verification conditions have not been
-  discharged here.* `gnatprove` is not installed on this machine, so
-  `just proof-check-spark` fails by design and `spark-ci.yml`'s proof job has
-  never executed. What IS evidenced: the model compiles under GNAT 14.2 and
-  agrees with the Rust engine on 21 shared vectors.
+| *Proved.* `gnatprove --level=2` (FSF 16.1.0) reports no unproved checks, and
+  26 shared vectors give identical verdicts in the SPARK model and the Rust
+  engine. Proving it found a real defect — see the note on `Disjoint` in
+  `spark/src/ums_zones.ads`.
 
 | Zig hexadeca connector
 | Wire contract only. The sixteen connectors, their ordinals and
