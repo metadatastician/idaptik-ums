@@ -179,6 +179,30 @@ Caveat::
 loads it with IDApTIK's loader. Both sides validate against the same declared
 contract; nothing yet proves the game accepts what UMS emits.
 
+=== "17 of 17 Idris2 modules typecheck"
+
+How this is implemented::
+`idaptik-ums.ipkg` declares all 17 modules with `depends = proven`;
+`idris-ci.yml` runs `idris2 --typecheck idaptik-ums.ipkg` and then builds and
+runs `extractors-test.ipkg`, so the extraction code is executed rather than
+only typechecked.
+
+Evidence::
+Re-measured 2026-07-22: `idris2 --typecheck idaptik-ums.ipkg` builds 1/17
+through 17/17 and exits 0. `scripts/check-abi-trusted-base.sh` reports 0
+`believe_me`, 0 `assert_total`, 0 `assert_smaller`, 0 `idris_crash`, 0
+`unsafePerformIO`, 0 `postulate`, and `%default total` on all 17 modules.
++
+The trusted-base script exists because typechecking is *not* sufficient. It is
+negative-tested three ways: a planted `believe_me`, an undeclared module in
+`abi/`, and a commented-out `%default total` each make it fail.
+
+Caveat::
+"Typechecks under `%default total` with no escape hatches" is a real and
+checkable property, but it is a statement about the *ABI's* internal
+consistency. It does not prove the Zig FFI on the other side of the boundary
+agrees — that is what the wire-order parity work is for, and it is not built.
+
 === "Python, TypeScript, ReScript and Go are not used"
 
 Evidence::
@@ -211,9 +235,6 @@ path name is stale.
 | *Has never compiled.* 28 `.affine` sources, no AffineScript toolchain wired
   to this repo. Its manifest declares
   `every-instruction-has-an-inverse`; nothing has ever checked that.
-
-| Idris2 `ProvenBridge`
-| 2 typed holes and a commented-out `proven` dependency. The ABI is 16/17.
 
 | UMS → game round trip
 | Never executed end to end.

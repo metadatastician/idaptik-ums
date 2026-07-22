@@ -59,6 +59,17 @@ jobs:
           cd /tmp/proven && idris2 --install proven-min.ipkg
       - name: Typecheck ABI package
         run: idris2 --typecheck idaptik-ums.ipkg
+
+      # Typechecking is necessary and not sufficient. A module can typecheck
+      # while cheating — believe_me coerces between any two types,
+      # assert_total silences the totality checker, %default partial turns it
+      # off wholesale. The estate has been bitten by exactly this shape: a
+      # Lean project's `sorry` gate was green while sixteen results were
+      # stubbed as `axiom`, including a vacuous soundness theorem.
+      # Negative-tested: a planted believe_me, an undeclared module in abi/,
+      # and a commented-out %default total each make this step fail.
+      - name: ABI trusted base is not widened
+        run: ./scripts/check-abi-trusted-base.sh
       - name: Build and run extractor tests
         # Executes the ProvenBridge JSON extractors against a fixture
         # covering every LevelData section plus negative fixtures —

@@ -25,7 +25,7 @@ are marked, not implied. Per-component grades and evidence are in
 | AI-edit engine (`crates/ums-ai-edit`) | **built** — 59 tests, CI-gated |
 | DLC bridge validator (`crates/ums-dlc`) | **built** — 37 tests, CI-gated |
 | Generation source of truth (`config/*.ncl`) | **built** — CI-gated |
-| Idris2 ABI (`abi/`) | **16 of 17 modules typecheck**, CI-gated |
+| Idris2 ABI (`abi/`) | **built** — 17/17 modules typecheck, trusted base gated |
 | Zig FFI (`ffi/zig/`) | **built** — 24/24 tests, CI-gated |
 | SPARK/GNATprove reference model (`spark/`) | *not started* |
 | Zig hexadeca connector | *not started* |
@@ -133,12 +133,26 @@ neither repo's CI can break the other:
 Both repos are `AGPL-3.0-or-later`, so tighter coupling is available if it is
 ever wanted.
 
-## ProvenBridge
+## The ABI, and what "proved" is allowed to mean
 
-`abi/ProvenBridge.idr` — the 17th ABI module — carries 2 typed holes and a
-commented-out `proven` dependency. Whether to wire that dependency or fold the
-holes into effect rows is still open; it is the reason the ABI is 16/17 rather
-than 17/17.
+All 17 Idris2 modules typecheck, `ProvenBridge` included — it wires the real
+`proven` dependency and the six `LevelData` extractors, and the extractor
+tests *execute* that code rather than only typechecking it.
+
+Typechecking alone would not be worth much. A module can typecheck while
+cheating: `believe_me` coerces between any two types, `assert_total` silences
+the totality checker, `%default partial` turns it off wholesale. So the ABI's
+trusted base is stated explicitly and gated:
+
+```console
+$ just proof-check-abi
+modules:        17 declared, all present and checked
+escape hatches: none (believe_me, assert_total, assert_smaller, idris_crash, unsafePerformIO, postulate)
+totality:       all 17 modules declare %default total
+```
+
+The gate is negative-tested: a planted `believe_me`, an undeclared module in
+`abi/`, and a commented-out `%default total` each make it fail.
 
 ## Quick start
 

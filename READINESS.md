@@ -11,7 +11,7 @@ assessment 2026-07-20)
 **Assessor:** Claude (PR E of the staged lineage migration), from real local runs
 and the repo's CI workflows — evidence over intuition, no aspirational grading.
 
-**Current Grade:** D
+**Current Grade:** C
 
 ## Summary
 
@@ -22,32 +22,44 @@ and the repo's CI workflows — evidence over intuition, no aspirational grading
 | Generation source of truth (`config/*.ncl`) | C | Alpha-stable | `config-check` typechecks every source AND requires all three `config/bad/bad_*.ncl` negative fixtures to be rejected; `gen-check` diffs generated artifacts and fails when `nickel` is absent rather than skipping. Gated by `config-gen.yml`. | 2026-07-22 |
 | Zig FFI (`ffi/zig/`) | C | Alpha-stable | 24/24 integration tests pass; CI-gated (`zig-ci.yml`); zig 0.14.0 pin enforced locally by `_zig-guard` and in CI. | 2026-07-20 |
 | Licence hygiene gate | C | Alpha-stable | Three steps, each negative-tested: a planted MPL header, a truncated LICENSE and an unattributed JSON file each make it fail. Polarity inverted with the AGPL relicence. | 2026-07-22 |
-| Idris2 ABI (`abi/`) | D | Alpha-unstable | 16 of the intended 17 modules typecheck under `idris-ci.yml`; ProvenBridge (the 17th) is still in flight with 2 typed holes. **This is what holds the project line at D.** | 2026-07-22 |
+| Idris2 ABI (`abi/`) | C | Alpha-stable | **17 of 17 modules typecheck** (`idris2 --typecheck idaptik-ums.ipkg`, exit 0), ProvenBridge included; extractor tests execute the code rather than only typechecking it. `check-abi-trusted-base.sh` proves nothing widened the trusted base: 0 `believe_me`, 0 `assert_total`, 0 `assert_smaller`, 0 `idris_crash`, 0 `unsafePerformIO`, 0 `postulate`, and all 17 modules declare `%default total`. Negative-tested. | 2026-07-22 |
 | SPARK/GNATprove reference model (`spark/`) | X | — | Does not exist. Decided in ADR-0003 (§3) and not started; `gnatprove` is not installed on the development machine. | 2026-07-22 |
 | Zig hexadeca connector | X | — | Does not exist. `ffi/zig/` is the existing 11-file C-ABI surface, not the 16-protocol unified connector. | 2026-07-22 |
 | Editor frontends (Bevy / Fyrox / TUI) | X | — | 0% — not started. The engine has no interactive consumer. Supersedes the former "AffineScript shell" row: the game is a Rust workspace with Bevy and Fyrox frontends, and the shell was never built. | 2026-07-22 |
 | Reversible VM (`dlc/vm/`, `.affine`) | X | — | Has never compiled. No AffineScript toolchain is wired to this repo; the `.affine` sources have never been exercised by anything, so its declared `every-instruction-has-an-inverse` guarantee has never been checked. | 2026-07-22 |
 
-## Why Grade D — for a much narrower reason than before
+## Why Grade C
 
-CRG defines the project line as the grade of the worst deployed component. It
-is still **D**, but the reason has changed completely.
+CRG defines the project line as the grade of the worst deployed component.
+Every deployed component is now **C (alpha-stable)**: CI-integrated
+validation, no known failures in the home context.
 
 The 2026-07-20 assessment was held at D by three things: the engine was Python
-with no CI, the DLC schema check ran local-only, and the ABI was 16/17. **Two
-of the three are now resolved.** The engine and the validator are Rust, CI-
-gated, with 96 tests between them and negative tests proving the gates can
-fail. What remains is:
+with no CI, the DLC schema check ran local-only, and the ABI was believed to
+be 16/17 with ProvenBridge "still in flight with 2 typed holes". **All three
+are resolved, and the third was never true by the time it was written.**
 
-- **`abi/ProvenBridge.idr`** — 2 typed holes and a commented-out `proven`
-  dependency. One D-graded deployed component sets the line. Landing it, or
-  formally descoping it, moves the project to C.
-- **Not X or E:** every component above the D-line runs real, failing-able
-  tests that currently pass, with documented scope.
+`abi/ProvenBridge.idr` was re-measured on 2026-07-22 rather than trusted:
+
+```
+$ idris2 --typecheck idaptik-ums.ipkg
+ 1/17: Building Primitives ... 17/17: Building Multiplayer
+$ echo $?
+0
+```
+
+Zero typed holes, zero escape hatches, `%default total` on all 17 modules. The
+`proven` dependency landed with the six LevelData extractors (PR #14); the
+"2 typed holes" line simply outlived the fact. It is now gated by
+`check-abi-trusted-base.sh`, so it cannot silently regress — and typechecking
+alone would not have caught a regression, because a module can typecheck while
+using `believe_me`.
+
+- **Not B:** grade B needs a real consumer and sustained use. The studio has no
+  interactive surface, and the UMS → game round trip has never been executed.
+- **Not D:** no deployed component has known failures or uncovered validation.
 - The X-graded components (frontends, SPARK model, hexadeca connector, VM) are
-  not deployed and gate nothing — but they are why this cannot claim more than
-  alpha-unstable, because the studio still has no interactive surface and the
-  VM has never compiled.
+  not deployed and gate nothing. They cap the ceiling, not the floor.
 
 **Assessment basis.** The Rust and Nickel gates were verified by local runs of
 the exact commands CI executes. `rust-ci.yml` and `config-gen.yml` are new
@@ -86,9 +98,9 @@ stated rather than papered over.
 
 ## Promotion paths
 
-- **PROJECT D → C:** land `ProvenBridge` or formally descope it (the STATE.a2ml
-  "fate decision"), so the module-count claim and the tree agree. This is the
-  single remaining blocker on the project line.
+- **PROJECT C → B:** grow a real consumer (an editor frontend), and execute
+  the UMS → game round trip in CI. Those are the two things separating
+  "every gate is green" from "someone uses this".
 - **ai-edit C → B:** grow a real consumer, and close the type-6 loop so the
   proposer consults `solve()` in-process rather than across a boundary.
 - **DLC bridge C → B:** execute the round trip in CI — generate an artifact
