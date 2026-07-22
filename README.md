@@ -27,7 +27,7 @@ are marked, not implied. Per-component grades and evidence are in
 | Generation source of truth (`config/*.ncl`) | **built** — CI-gated |
 | Idris2 ABI (`abi/`) | **built** — 17/17 modules typecheck, trusted base gated |
 | Zig FFI (`ffi/zig/`) | **built** — 24/24 tests, CI-gated |
-| SPARK/GNATprove reference model (`spark/`) | *not started* |
+| SPARK/GNATprove reference model (`spark/`) | **built**; parity gated locally, *VCs not yet discharged here* |
 | Zig hexadeca connector | **wire contract built + gated**; *0 of 16 transports implemented* |
 | Editor frontends (Bevy / Fyrox / TUI) | *not started* |
 | Reversible VM (`dlc/vm/`, AffineScript) | *has never compiled* |
@@ -61,6 +61,8 @@ are marked, not implied. Per-component grades and evidence are in
 - **Idris2** owns the ABI proofs (`abi/`, 17 modules).
 - **Zig** owns the C-ABI FFI (`ffi/zig/`), including the Hexadeca connector
   set. No C is written where Zig lives.
+- **SPARK/Ada** owns the decidable arithmetic — `spark/` proves the
+  `ZonesOrdered` geometry as a reference model (see `spark/README.adoc`).
 - **`just`** is the single task-runner entry point — `just --list`.
 
 Python, TypeScript, ReScript and Go are not used, and

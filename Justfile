@@ -167,14 +167,17 @@ crg-badge:
 #   dlc-check      — schema validation of every dlc/ artifact
 #   ai-edit-check  — sample edit-script replay
 #   ai-edit-reflect— the compiled registry equals the source that generated it
-#   proof-check-abi— 17/17 Idris2 modules typecheck AND nothing widened the
+#   proof-check-abi— 18/18 Idris2 modules typecheck AND nothing widened the
 #                    trusted base (no believe_me / assert_total / %default partial)
+#   spark-parity   — the SPARK reference model and the Rust engine agree
+# NOT in test-all: proof-check-spark, which needs gnatprove. It is a CI gate
+# and a deliberate local opt-in, never a silent skip.
 #   test-ffi       — Zig FFI integration tests (zig build test, 0.14.0-guarded)
 # The former chain (test e2e aspect bench readiness) was five echo-stubs
 # ending in a fabricated "safe to merge!".
 
 # Run every real test gate in this repo
-test-all: test config-check gen-check dlc-check ai-edit-check ai-edit-reflect proof-check-abi test-ffi
+test-all: test config-check gen-check dlc-check ai-edit-check ai-edit-reflect proof-check-abi spark-parity test-ffi
     @echo "test-all: Rust suite + Nickel contracts + codegen + DLC schema + ai-edit replay + reflection + Idris2 trusted base + Zig FFI — all gates real, all green"
 
 # Run all quality checks (zig fmt --check, Rust fmt/clippy, tests)
@@ -215,6 +218,19 @@ proof-check-abi:
     command -v idris2 >/dev/null 2>&1 || { echo "error: idris2 not found — this gate cannot be skipped" >&2; exit 1; }
     idris2 --typecheck idaptik-ums.ipkg
     ./scripts/check-abi-trusted-base.sh
+
+# The SPARK reference model and the Rust engine must agree on every vector in
+# spark/vectors.txt. A reference model nothing compares against is decoration.
+spark-parity:
+    ./scripts/spark-parity.sh
+
+# Discharge the ZonesOrdered verification conditions with gnatprove.
+#
+# FAILS when gnatprove is absent, rather than exiting 0. That is the estate's
+# most-repeated defect — 54 repository roots with a green proof gate no prover
+# ever looked at — and this recipe is written specifically not to be one.
+proof-check-spark:
+    ./scripts/proof-check-spark.sh
 
 # Validate every DLC artifact against the bridge contracts in schemas/
 # (manifest envelopes, puzzle payloads, cross-field invariants).

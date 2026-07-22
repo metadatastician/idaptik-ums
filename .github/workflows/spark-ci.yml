@@ -1,0 +1,103 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# SPARK/GNATprove gate for the ZonesOrdered reference model.
+#
+# Standalone workflow, matching zig-ci / idris-ci / rust-ci / config-gen /
+# licence-hygiene.
+#
+# Two jobs, deliberately separate because they prove different things:
+#
+#   parity  the SPARK model and the Rust engine agree on every vector. Needs
+#           only GNAT, which apt provides, so it runs everywhere.
+#   proof   the verification conditions are actually discharged. Needs
+#           gnatprove, which is not in apt, so it comes via Alire.
+#
+# Neither degrades gracefully. A proof gate that exits 0 without a prover
+# certifies nothing while looking green — the estate's most-repeated defect,
+# across fifty-four repository roots. If gnatprove cannot be installed, this
+# job FAILS, and that failure is the correct signal: the VCs are not
+# discharged.
+
+name: SPARK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'spark/**'
+      - 'crates/ums-ai-edit/**'
+      - 'scripts/spark-parity.sh'
+      - 'scripts/proof-check-spark.sh'
+      - '.github/workflows/spark-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'spark/**'
+      - 'crates/ums-ai-edit/**'
+      - 'scripts/spark-parity.sh'
+      - 'scripts/proof-check-spark.sh'
+      - '.github/workflows/spark-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    name: SPARK model and Rust engine agree
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          persist-credentials: false
+
+      - name: Install GNAT
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y gnat gprbuild
+          gnatmake --version | head -1
+
+      - name: Cache cargo
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # Negative-tested locally three ways, each confirmed to exit 1:
+      # a SPARK model that diverges from its own postcondition, an empty
+      # vector table, and a missing toolchain.
+      - name: Parity over the shared vector table
+        run: ./scripts/spark-parity.sh
+
+  proof:
+    name: ZonesOrdered verification conditions are discharged
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          persist-credentials: false
+
+      # gnatprove is not packaged in apt; Alire ships the SPARK toolchain.
+      # Full-SHA pin: this repo's Actions policy sets sha_pinning_required,
+      # so tag refs startup_failure.
+      - name: Set up Alire
+        uses: alire-project/setup-alire@fc4c8ce471aa30b3af0d39ce15add1ee9eaf28f2 # v6.0.0
+
+      - name: Install the SPARK toolchain
+        run: |
+          set -euo pipefail
+          alr toolchain --select gnat_native gprbuild
+          alr install gnatprove || alr toolchain --select gnatprove
+          echo "$HOME/.alire/bin" >> "$GITHUB_PATH"
+
+      - name: Discharge the verification conditions
+        run: ./scripts/proof-check-spark.sh
