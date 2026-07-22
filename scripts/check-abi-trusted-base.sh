@@ -29,7 +29,7 @@ ABI_DIR=abi
 # The ABI is exactly what idaptik-ums.ipkg declares. abi/ExtractorsTest.idr
 # also lives here but belongs to extractors-test.ipkg — it is a test harness,
 # not part of the proved surface, so it is deliberately out of scope.
-EXPECTED_MODULES=17
+EXPECTED_MODULES=18
 
 rc=0
 

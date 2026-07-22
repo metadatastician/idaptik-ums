@@ -28,6 +28,9 @@ fi
 TARGETS=(
     "config/edit-script-schema.ncl:schemas/edit-script.schema.json:json"
     "config/vocab-rs.ncl:crates/ums-ai-edit/src/vocab.rs:raw"
+    "config/hexadeca-zig.ncl:ffi/zig/src/hexadeca.zig:raw"
+    "config/hexadeca-rs.ncl:crates/ums-dlc/src/hexadeca.rs:raw"
+    "config/hexadeca-idr.ncl:abi/Hexadeca.idr:raw"
 )
 
 mode="${1:-write}"
@@ -40,6 +43,16 @@ for pair in "${TARGETS[@]}"; do
 
     tmp="$(mktemp)"
     nickel export "$src" --format "$fmt" > "$tmp"
+
+    if [ "${dst##*.}" = "zig" ]; then
+        # zig fmt normalises in place; the pinned toolchain is asserted by
+        # _zig-guard elsewhere, so only require it when a .zig target exists.
+        command -v zig >/dev/null 2>&1 || {
+            echo "error: zig not found; generated Zig cannot be normalised." >&2
+            exit 1
+        }
+        zig fmt "$tmp" >/dev/null 2>&1 || true
+    fi
 
     if [ "${dst##*.}" = "rs" ]; then
         command -v rustfmt >/dev/null 2>&1 || {

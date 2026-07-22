@@ -99,6 +99,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Generated from config/connectors.ncl — see hexadeca.zig's header.
+    const hexadeca_mod = b.addModule("hexadeca", .{
+        .root_source_file = b.path("src/hexadeca.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Common import set for library and test targets.
     const all_imports = &[_]std.Build.Module.Import{
         .{ .name = "types", .module = types_mod },
@@ -111,6 +118,7 @@ pub fn build(b: *std.Build) void {
         .{ .name = "proven_bridge", .module = proven_bridge_mod },
         .{ .name = "multiplayer", .module = multiplayer_mod },
         .{ .name = "game_systems", .module = game_systems_mod },
+        .{ .name = "hexadeca", .module = hexadeca_mod },
     };
 
     // ---------------------------------------------------------------
@@ -175,6 +183,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "wiring", .module = wiring_mod },
                 .{ .name = "proven_bridge", .module = proven_bridge_mod },
                 .{ .name = "multiplayer", .module = multiplayer_mod },
+                .{ .name = "hexadeca", .module = hexadeca_mod },
                 .{ .name = "game_systems", .module = game_systems_mod },
             },
         }),
@@ -183,4 +192,11 @@ pub fn build(b: *std.Build) void {
     const run_tests = b.addRunArtifact(integration_tests);
     const test_step = b.step("test", "Run IDApTIK UMS FFI integration tests");
     test_step.dependOn(&run_tests.step);
+
+    // Module-level tests need their own target. Importing a module from the
+    // integration test root links it but does NOT collect its `test` blocks,
+    // so hexadeca's tests compiled into nothing and their failure to compile
+    // went unnoticed until the module was tested directly.
+    const hexadeca_tests = b.addTest(.{ .root_module = hexadeca_mod });
+    test_step.dependOn(&b.addRunArtifact(hexadeca_tests).step);
 }

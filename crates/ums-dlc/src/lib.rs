@@ -25,6 +25,7 @@ use std::path::Path;
 use serde_json::Value;
 use ums_ai_edit::vocab;
 
+pub mod hexadeca;
 pub mod taxonomy;
 
 // ---------------------------------------------------------------------------
