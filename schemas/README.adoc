@@ -16,7 +16,7 @@ them.
   to decide whether and where to mount an artifact.
 * *Puzzle payloads* (`puzzle.schema.json`) — owned here, because the
   reversible-VM puzzle format was born in this repo (`dlc/vm`,
-  `dlc/legacy-ts-puzzles`). Two formats: register puzzles and vault sequences.
+  `dlc/legacy-puzzles`). Two formats: register puzzles and vault sequences.
 * *Edit-script payloads* (`edit-script.schema.json`) — owned here, because
   UMS is the editor authority: `kind: edit-script` artifacts
   (`payload.format: idaptik-edit/1`) are ordered, replayable edit verbs over

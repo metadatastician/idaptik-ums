@@ -72,7 +72,7 @@ SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 - Initial scaffold (2026-04-30).
 
 ### Fixed
-- `dlc/legacy-ts-puzzles/bonus_04_bit_rotation.json` was invalid JSON
+- `dlc/legacy-puzzles/bonus_04_bit_rotation.json` was invalid JSON
   (JavaScript `0b10101010` binary literals); now `170` (2026-07-10).
 - `dlc/vm/dlc-manifest.json` `$schema` pointed at the nonexistent
   `hyperpolymath/idaptik-game` repo; now points at this repo's schema

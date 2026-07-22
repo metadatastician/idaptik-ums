@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# https://editorconfig.org
+#
+# Deliberately lists the languages this repository actually contains. The
+# version in the abandoned wt-bridge checkout was a template artefact whose
+# glob named py, ts, js, go, java and more — languages AGENTIC.a2ml forbids.
+# An editor config that configures indentation for banned languages is a small
+# thing, but it is the same category of drift as a README describing a runtime
+# the project does not use.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Rust, and rustfmt's default.
+[*.rs]
+indent_size = 4
+
+# Zig, and `zig fmt`'s default.
+[*.zig]
+indent_size = 4
+
+# Idris2 and Ada/SPARK.
+[*.{idr,ipkg,ads,adb,gpr}]
+indent_size = 2
+
+# Nickel: the generative source of truth.
+[*.ncl]
+indent_size = 2
+
+# Data, config and machine-readable contractiles.
+[*.{json,yml,yaml,toml,a2ml}]
+indent_size = 2
+
+# Prose. Trailing whitespace is meaningful in Markdown line breaks, but this
+# repo does not use them, so trimming stays on.
+[*.{md,adoc}]
+indent_size = 2
+max_line_length = 80
+
+[*.{sh,bash}]
+indent_size = 4
+
+# just uses significant indentation inside recipes.
+[Justfile]
+indent_size = 4
+
+# Licence texts and generated artefacts are reproduced verbatim.
+[LICENSES/**]
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[LICENSE]
+trim_trailing_whitespace = false
+insert_final_newline = false
