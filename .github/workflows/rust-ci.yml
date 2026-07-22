@@ -119,9 +119,13 @@ jobs:
       - name: Install nickel and jq (for the reflection identity)
         run: |
           set -euo pipefail
+          # /usr/local/bin is root-owned on GitHub-hosted runners, so a bare
+          # `curl -o` there fails with permission denied. Stage then install.
           curl -fsSL https://github.com/tweag/nickel/releases/download/1.17.0/nickel-x86_64-linux \
-            -o /usr/local/bin/nickel
-          chmod +x /usr/local/bin/nickel
+            -o nickel
+          sudo install -m 0755 nickel /usr/local/bin/nickel
+          rm -f nickel
+          nickel --version
           command -v jq >/dev/null || sudo apt-get install -y jq
 
       - name: Reflection identity — compiled registry equals its Nickel source

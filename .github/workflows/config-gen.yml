@@ -56,8 +56,11 @@ jobs:
           set -euo pipefail
           ver=1.17.0
           url="https://github.com/tweag/nickel/releases/download/${ver}/nickel-x86_64-linux"
-          curl -fsSL "$url" -o /usr/local/bin/nickel
-          chmod +x /usr/local/bin/nickel
+          # /usr/local/bin is root-owned on GitHub-hosted runners, so a bare
+          # `curl -o` there fails with permission denied. Stage then install.
+          curl -fsSL "$url" -o nickel
+          sudo install -m 0755 nickel /usr/local/bin/nickel
+          rm -f nickel
           nickel --version
 
       - name: Contracts typecheck and negative fixtures are rejected
