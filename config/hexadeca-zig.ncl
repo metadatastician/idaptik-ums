@@ -112,7 +112,7 @@ test "an unimplemented connector never reports success" {
 test "the implemented count matches what the connectors report" {
     // Fails the moment a transport lands without config/connectors.ncl being
     // updated, and equally if the manifest claims a transport that is absent.
-    comptime var counted: usize = 0;
+    var counted: usize = 0;
     inline for (@typeInfo(Connector).@"enum".fields) |f| {
         const c: Connector = @enumFromInt(f.value);
         if (c.isImplemented()) counted += 1;
