@@ -78,10 +78,16 @@ stated rather than papered over.
   Python~~ — **resolved 2026-07-22.** `ai_edit/`, `scripts/validate_dlc.py`
   and both test modules are deleted; `git ls-files '*.py'` is empty. ADR-0001
   is superseded by ADR-0003.
-- Two of the six hand-maintained copies of the closed vocabularies are still
-  hand-written: `abi/Types.idr` and `ffi/zig/src/types.zig`. They are checked
-  by tests, not generated from `config/vocab.ncl` — the obvious next extension
-  of `scripts/gen.sh`.
+- `abi/Types.idr` and `ffi/zig/src/types.zig` are still hand-written rather
+  than generated from `config/vocab.ncl` — the last two of the original six
+  copies. They are now **gated** (`crates/ums-dlc/tests/vocab_parity.rs`, 5
+  tests): the four shared vocabularies must match the Nickel source in
+  declaration ORDER, and the Zig `enum(u8)` ordinals must be dense from zero,
+  because those bytes cross the FFI boundary and a reordering that keeps the
+  same members would silently remap every value. Generating them outright is
+  still the better end state; wholesale generation is blocked because both
+  files also carry ABI-only types (`AlertLevel`, `ItemCondition`, the
+  cable/adapter/tool enums) that have no place in an edit vocabulary.
 - The UMS → game round trip has never been executed end to end. Both sides
   validate against the same declared contract, but nothing proves the game
   accepts what UMS emits.
