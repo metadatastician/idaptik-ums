@@ -4,7 +4,7 @@
   "name": "AI-edit sample script",
   "version": "0.1.0",
   "description": "Reference edit-script artifact produced by the ai_edit miniKanren engine: builds a two-zone floor (lobby + server room) with a guard, a dog, a drone, two street/house NPCs, an undercover character, a keycard item and a consistent PBX on an empty level.",
-  "license": "MPL-2.0",
+  "license": "AGPL-3.0-or-later",
   "author": "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
   "kind": "edit-script",
   "loads": "on-scenario-select",

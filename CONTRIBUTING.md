@@ -1,5 +1,5 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
-<!-- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->
 
 # Contributing to idaptik-ums
 
@@ -8,7 +8,7 @@ standards defined in [hyperpolymath/standards](https://github.com/hyperpolymath/
 
 ## Licence
 
-This project is licensed under **MPL-2.0**. By contributing you agree that
+This project is licensed under **AGPL-3.0-or-later** (code) and **CC-BY-SA-4.0** (documentation). By contributing you agree that
 your contributions are licensed under the same terms. Every source file
 carries an `SPDX-License-Identifier` header; keep it when editing, and add
 one to any new file.

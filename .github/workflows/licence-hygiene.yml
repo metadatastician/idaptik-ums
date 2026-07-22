@@ -1,13 +1,20 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
 # Licence hygiene for idaptik-ums.
 #
-# Ported from the hyperpolymath/idaptik-ums lineage repo's ci.yml, where this
-# gate was added after the same defect it guards against: this repo's
-# dlc/vm/LICENSE carried 663 lines of AGPL text under an SPDX MPL-2.0 header
-# until 2026-07-20 and nothing noticed. .machine_readable/6a2/AGENTIC.a2ml:24 —
-# "Never use AGPL license (use MPL-2.0)".
+# This repository is AGPL-3.0-or-later for code and CC-BY-SA-4.0 for
+# documentation. It was MPL-2.0 until the relicence; MPL-2.0 §3.3 names AGPLv3 a
+# Secondary License, so MPL -> AGPL is the permitted direction and the whole tree
+# is single-author. The polarity of this gate is therefore INVERTED relative to
+# its original form: MPL declarations are now the defect, AGPL is correct.
+#
+# The gate exists because it caught a real defect: dlc/vm/LICENSE carried 663
+# lines of AGPL text under an SPDX MPL-2.0 header until 2026-07-20 and nothing
+# noticed. Body-vs-header drift is the failure mode, in either direction.
 #
 # Standalone workflow (not folded into a bigger ci.yml) so the migration PRs
-# that add Zig/Idris CI cannot conflict with it.
+# that add Zig/Idris/Rust CI cannot conflict with it.
 
 name: Licence hygiene
 
@@ -22,7 +29,7 @@ permissions:
 
 jobs:
   licence-hygiene:
-    name: Licence hygiene — no AGPL
+    name: Licence hygiene — AGPL code, CC-BY-SA docs
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -33,33 +40,69 @@ jobs:
 
       # Anchored to match an SPDX *declaration* (line start, optional comment
       # marker) rather than any mention of the string — otherwise this step
-      # matches its own grep pattern and fails permanently.
-      - name: No AGPL SPDX identifiers
+      # matches its own grep pattern and fails permanently. Same reasoning as
+      # the original AGPL-polarity gate; only the forbidden identifier changed.
+      - name: No MPL SPDX identifiers
         run: |
           set -euo pipefail
-          pat='^[[:space:]]*(#|//|--|;|<!--)?[[:space:]]*SPDX-License-Identifier:[[:space:]]*AGPL'
+          pat='^[[:space:]]*(#|//|--|;|<!--)?[[:space:]]*SPDX-License-Identifier:[[:space:]]*MPL'
           if grep -rnE --exclude-dir=.git "$pat" .; then
-            echo "::error::AGPL SPDX declaration found; AGENTIC.a2ml:24 forbids AGPL."
+            echo "::error::MPL SPDX declaration found; this tree is AGPL-3.0-or-later (code) / CC-BY-SA-4.0 (docs)."
             exit 1
           fi
-          echo "no AGPL SPDX declarations"
+          echo "no MPL SPDX declarations"
 
-      # Anchored to the AGPL's *title heading*, which sits on a line of its own.
-      # A bare substring search cannot be used: MPL-2.0's own text names the AGPL
-      # when defining "Secondary License", so every correct MPL file contains the
-      # phrase. That only passed before because MPL's text happens to wrap between
-      # "General" and "Public" — reflowing the file would have failed a valid
-      # licence. Verified both ways: real AGPL body caught, MPL clean even rewrapped.
+      # Anchored to each licence's *title heading*, which sits on a line of its
+      # own. A bare substring search cannot be used in the AGPL->MPL direction:
+      # MPL-2.0's own text names the AGPL when defining "Secondary License", so
+      # every correct MPL file contains the phrase. Title-anchoring is verified
+      # both ways — a real body is caught, a correct one passes even if rewrapped.
       - name: Licence bodies match their SPDX header
         run: |
           set -euo pipefail
           rc=0
-          title='^[[:space:]]*GNU AFFERO GENERAL PUBLIC LICENSE[[:space:]]*$'
+          agpl='^[[:space:]]*GNU AFFERO GENERAL PUBLIC LICENSE[[:space:]]*$'
+          mpl='^[[:space:]]*Mozilla Public License Version 2\.0[[:space:]]*$'
           while IFS= read -r f; do
-            if head -1 "$f" | grep -q "SPDX-License-Identifier: MPL-2.0" \
-               && grep -qE "$title" "$f"; then
-              echo "::error file=$f::declares MPL-2.0 but the body is the AGPL"
+            # Negative: an AGPL declaration must not sit over an MPL body.
+            if grep -qE "$mpl" "$f"; then
+              echo "::error file=$f::contains the MPL-2.0 body; this tree is AGPL-3.0-or-later"
+              rc=1
+            fi
+            # Positive: a LICENSE file must actually contain the licence it names,
+            # so a truncated or empty file cannot pass by having no wrong text.
+            if ! grep -qE "$agpl" "$f"; then
+              echo "::error file=$f::declares AGPL-3.0-or-later but the AGPL body is absent"
               rc=1
             fi
           done < <(find . -name LICENSE -not -path './.git/*')
+          exit $rc
+
+      # Every tracked file must be attributable, per
+      # .machine_readable/contractiles/Adjustfile.a2ml ("tolerance: 0 files
+      # missing SPDX-License-Identifier"). Files that cannot carry a comment
+      # (JSON) are covered by REUSE.toml instead. Implemented in shell rather
+      # than via the `reuse` tool because that tool is Python and Python is
+      # banned by AGENTIC.a2ml.
+      - name: Every file is attributable (header or REUSE.toml)
+        run: |
+          set -euo pipefail
+          rc=0
+          # Path globs declared in REUSE.toml, one per `path = ` entry.
+          mapfile -t covered < <(grep -oP '^\s*path\s*=\s*\[?\s*"\K[^"]+' REUSE.toml || true)
+          while IFS= read -r f; do
+            case "$f" in
+              LICENSE|LICENSES/*|REUSE.toml) continue ;;
+            esac
+            head -8 "$f" | grep -q 'SPDX-License-Identifier' && continue
+            ok=0
+            for pat in "${covered[@]}"; do
+              # shellcheck disable=SC2053
+              [[ "$f" == $pat ]] && { ok=1; break; }
+            done
+            if [ "$ok" -eq 0 ]; then
+              echo "::error file=$f::no SPDX header and not covered by REUSE.toml"
+              rc=1
+            fi
+          done < <(git ls-files)
           exit $rc

@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // integration_test.zig -- Integration tests for the IDApTIK UMS Zig FFI.
 // Author: Jonathan D.A. Jewell
 //

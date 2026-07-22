@@ -4,7 +4,7 @@
   "name": "Reversible VM",
   "version": "0.1.0-alpha",
   "description": "23-instruction reversible virtual machine with provable backward = forward^-1.",
-  "license": "MPL-2.0",
+  "license": "AGPL-3.0-or-later",
   "author": "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
   "kind": "gameplay-mechanic",
   "loads": "on-puzzle-screen",
