@@ -194,6 +194,33 @@ Caveat::
 loads it with IDApTIK's loader. Both sides validate against the same declared
 contract; nothing yet proves the game accepts what UMS emits.
 
+=== "19 of 19 Idris2 modules typecheck"
+
+How this is implemented::
+`idaptik-ums.ipkg` declares all 19 modules with `depends = proven`;
+`idris-ci.yml` runs `idris2 --typecheck idaptik-ums.ipkg` and then builds and
+runs `extractors-test.ipkg`, so the extraction code is executed rather than
+only typechecked.
+
+Evidence::
+Re-measured 2026-10-09: `idris2 --typecheck idaptik-ums.ipkg` builds 1/19
+through 19/19 and exits 0. `scripts/check-abi-trusted-base.sh` reports 0
+`believe_me`, 0 `assert_total`, 0 `assert_smaller`, 0 `idris_crash`, 0
+`unsafePerformIO`, 0 `postulate`, and `%default total` on all 19 modules. The test harnesses
+(`ExtractorsTest`, `RepresentationTest`) are out of scope because their own
+`*-test.ipkg` declares them; any other undeclared `abi/` file fails the check.
++
+The trusted-base script exists because typechecking is *not* sufficient. It is
+negative-tested five ways: a planted `believe_me`, an undeclared module in
+`abi/`, a commented-out `%default total`, a harness its package no longer
+declares, and a 20th declared module each make it fail.
+
+Caveat::
+"Typechecks under `%default total` with no escape hatches" is a real and
+checkable property, but it is a statement about the *ABI's* internal
+consistency. It does not prove the Zig FFI on the other side of the boundary
+agrees; `docs/ABI-PARITY.adoc` covers what is tested on that side.
+
 === "Python, TypeScript, ReScript and Go are not used"
 
 Evidence::

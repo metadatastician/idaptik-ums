@@ -225,13 +225,15 @@ crg-badge:
 #   ai-edit-reflect— the compiled registry equals the source that generated it
 #   abi-header-check — generated Idris2 C headers and symbol manifest are current
 #   abi-symbol-check — compiled shared/static exports match that manifest
+#   proof-check-abi— 19/19 Idris2 modules typecheck AND nothing widened the
+#                    trusted base (no believe_me / assert_total / %default partial)
 #   test-ffi       — Zig FFI integration tests (zig build test, 0.14.0-guarded)
 # The former chain (test e2e aspect bench readiness) was five echo-stubs
 # ending in a fabricated "safe to merge!".
 
 # Run every real test gate in this repo
-test-all: test config-check gen-check dlc-check ai-edit-check ai-edit-reflect abi-header-check test-ffi abi-symbol-check
-    @echo "test-all: Rust suite + Nickel contracts + codegen + DLC schema + ai-edit replay + reflection + generated ABI + Zig FFI — all gates real, all green"
+test-all: test config-check gen-check dlc-check ai-edit-check ai-edit-reflect abi-header-check proof-check-abi test-ffi abi-symbol-check
+    @echo "test-all: Rust suite + Nickel contracts + codegen + DLC schema + ai-edit replay + reflection + generated ABI + Idris2 trusted base + Zig FFI — all gates real, all green"
 
 # Run all quality checks (zig fmt --check, Rust fmt/clippy, tests)
 quality: fmt-check lint test
@@ -260,6 +262,17 @@ fmt-check: _zig-guard
 # caught syntax errors.)
 lint:
     cargo clippy --workspace --all-targets -- -D warnings
+
+# Typecheck the Idris2 ABI, then check what the typechecker is NOT asked to
+# notice: that nothing widened the trusted base. `idris2 --typecheck` passing
+# does not mean the ABI proves anything — a module can typecheck while using
+# believe_me, assert_total or %default partial.
+proof-check-abi:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    command -v idris2 >/dev/null 2>&1 || { echo "error: idris2 not found — this gate cannot be skipped" >&2; exit 1; }
+    idris2 --typecheck idaptik-ums.ipkg
+    ./scripts/check-abi-trusted-base.sh
 
 # Validate every DLC artifact against the bridge contracts in schemas/
 # (manifest envelopes, puzzle payloads, cross-field invariants).
