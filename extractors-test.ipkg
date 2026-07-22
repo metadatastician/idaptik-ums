@@ -1,6 +1,7 @@
 package extractors-test
 
--- SPDX-License-Identifier: MPL-2.0
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 --
 -- Executable test for abi/ProvenBridge.idr's JSON extractors.
 -- Shares sourcedir with idaptik-ums.ipkg so the test main imports the

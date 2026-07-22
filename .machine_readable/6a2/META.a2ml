@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: MPL-2.0
-# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
 # META.a2ml — Project meta-level information
 # Architecture decisions, design rationale, governance.
@@ -11,7 +11,7 @@ last-updated = "2026-04-11"
 [project-info]
 type = "library"  # TODO: update type (library|binary|service|website|monorepo)  # library | binary | monorepo | service | website
 languages = []             # e.g. ["rust", "zig", "idris2"]
-license = "MPL-2.0"
+license = "AGPL-3.0-or-later"
 author = "Jonathan D.A. Jewell (hyperpolymath)"
 
 [architecture-decisions]

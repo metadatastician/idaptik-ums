@@ -1,4 +1,5 @@
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 """Lockstep tests for the UMS <-> game taxonomy map (schemas/taxonomy-map.json).
 
 The map is the versioned contract at the DLC manifest seam (docs/adr/0002):

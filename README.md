@@ -51,4 +51,4 @@ maturity signal.
 
 # License
 
-MPL-2.0.
+AGPL-3.0-or-later for code, CC-BY-SA-4.0 for documentation.

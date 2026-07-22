@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: MPL-2.0
-# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
 # RSR Standard Justfile Template
 # https://just.systems/man/en/
@@ -201,6 +201,45 @@ lint:
 # (manifest envelopes, puzzle payloads, cross-field invariants).
 dlc-check:
     python3 scripts/validate_dlc.py
+
+# ── Nickel: the single generative source of truth ─────────────────────────────
+# config/vocab.ncl and config/verbs.ncl are authoritative. The closed worlds
+# used to be hand-maintained in six places (ai_edit/vocab.py, the schema's
+# inline enums, scripts/validate_dlc.py, schemas/taxonomy-map.json,
+# abi/Types.idr, ffi/zig/src/types.zig); vocab.py's own docstring asked a human
+# to "keep them in lockstep" and nothing enforced it. These recipes do.
+
+# Regenerate every artifact derived from the Nickel sources.
+gen:
+    ./scripts/gen.sh
+
+# Fail if a committed generated artifact has drifted from its Nickel source.
+# Also fails when nickel is absent: a generator that silently skips its work
+# reports success for a tree it never looked at.
+gen-check:
+    ./scripts/gen.sh --check
+
+# Typecheck the Nickel sources, and prove the contracts actually reject: every
+# config/bad/bad_*.ncl is a negative fixture that MUST fail to export. A
+# contract nothing can violate is not a contract.
+config-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    command -v nickel >/dev/null 2>&1 || { echo "error: nickel not found — this gate cannot be skipped" >&2; exit 1; }
+    for f in config/*.ncl; do
+        nickel export "$f" >/dev/null || { echo "::error file=$f::failed to export"; exit 1; }
+        echo "ok       $f"
+    done
+    rc=0
+    for f in config/bad/bad_*.ncl; do
+        if nickel export "$f" >/dev/null 2>&1; then
+            echo "::error file=$f::negative fixture was ACCEPTED; the contract does not bite"
+            rc=1
+        else
+            echo "rejected $f"
+        fi
+    done
+    exit $rc
 
 # Run the AI-edit engine suite (miniKanren kernel, verbs, validity proofs)
 # and replay the sample edit script against an empty level

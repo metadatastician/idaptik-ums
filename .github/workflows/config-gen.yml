@@ -1,0 +1,85 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# Nickel config + codegen gate.
+#
+# Standalone workflow, matching zig-ci / idris-ci / licence-hygiene, so the
+# staged migration PRs never need to merge into a shared ci.yml.
+#
+# Two things are gated, and both can fail:
+#
+#   config-check  every config/*.ncl typechecks AND every config/bad/bad_*.ncl
+#                 is REJECTED. A contract nothing can violate is not a contract.
+#   gen-check     the committed generated artifacts match what the Nickel
+#                 sources produce. Codegen without a diff gate is a fake gate.
+#
+# Neither step degrades gracefully when nickel is missing — installation
+# failure fails the job rather than silently reporting success.
+
+name: Config + codegen
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'config/**'
+      - 'schemas/**'
+      - 'scripts/gen.sh'
+      - 'Justfile'
+      - '.github/workflows/config-gen.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'config/**'
+      - 'schemas/**'
+      - 'scripts/gen.sh'
+      - 'Justfile'
+      - '.github/workflows/config-gen.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  config-gen:
+    name: Nickel contracts hold and generated files are current
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          persist-credentials: false
+
+      - name: Install nickel
+        run: |
+          set -euo pipefail
+          ver=1.17.0
+          url="https://github.com/tweag/nickel/releases/download/${ver}/nickel-x86_64-linux"
+          # /usr/local/bin is root-owned on GitHub-hosted runners, so a bare
+          # `curl -o` there fails with permission denied. Stage then install.
+          curl -fsSL "$url" -o nickel
+          sudo install -m 0755 nickel /usr/local/bin/nickel
+          rm -f nickel
+          nickel --version
+
+      - name: Contracts typecheck and negative fixtures are rejected
+        run: |
+          set -euo pipefail
+          for f in config/*.ncl; do
+            nickel export "$f" >/dev/null || { echo "::error file=$f::failed to export"; exit 1; }
+            echo "ok       $f"
+          done
+          rc=0
+          for f in config/bad/bad_*.ncl; do
+            if nickel export "$f" >/dev/null 2>&1; then
+              echo "::error file=$f::negative fixture was ACCEPTED; the contract does not bite"
+              rc=1
+            else
+              echo "rejected $f"
+            fi
+          done
+          exit $rc
+
+      - name: Generated artifacts are current
+        run: ./scripts/gen.sh --check

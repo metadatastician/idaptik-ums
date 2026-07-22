@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 = idaptik-dlc-vm
 :toc:
@@ -104,4 +104,4 @@ For each class, a property test asserts the round-trip identity. See
 
 == License
 
-MPL-2.0.
+AGPL-3.0-or-later for code, CC-BY-SA-4.0 for documentation.

@@ -1,5 +1,5 @@
--- SPDX-License-Identifier: MPL-2.0
--- Copyright (c) 2026 Joshua B. Jewell and Jonathan D.A. Jewell
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 --
 -- Multiplayer.idr — Formal ABI types for asymmetric co-op multiplayer.
 --

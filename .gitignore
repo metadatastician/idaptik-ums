@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 # --- Zig FFI (ffi/zig) build output ---
 zig-out/
 .zig-cache/
@@ -9,5 +11,9 @@ build/
 # Python bytecode (just test / lint / dlc-check produce these; NB cpython-313
 # pycs are tracked from before — untracking them is separate hygiene, this just
 # stops new ones)
+__pycache__/
+*.pyc
+
+# Python bytecode (the Python sources themselves are removed in the Rust migration).
 __pycache__/
 *.pyc
