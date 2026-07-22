@@ -1,0 +1,220 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= idaptik-ums — EXPLAINME
+How each README claim maps to an artefact, a gate, and the evidence behind it.
+:toc: left
+:sectnums:
+:icons: font
+
+The link:README.md[README] is the orientation. This file is the engineering
+account: where each claim lives, which gate enforces it, and *where the
+evidence stops*.
+
+[IMPORTANT]
+====
+*Boundary.* idaptik-ums is the editor and the bridge. It is not the game.
+Claims about gameplay, rendering or the simulation belong to
+link:https://github.com/metadatastician/IDApTIK[IDApTIK]'s own docs. What UMS
+owns is the `edit-script` payload format, the AI-edit engine that produces it,
+and the contract checker that gates it.
+====
+
+[NOTE]
+====
+*Why this file exists.* Until 2026-07-22 the README described an *AffineScript
+shell over a Gossamer host runtime*, ported from ReScript, and referenced
+Tauri. None of it was ever built here, and the game is a Rust workspace with
+Bevy and Fyrox frontends. A reader following that diagram would have ported to
+a runtime the game does not use. Every claim below is now tied to a command
+you can run.
+====
+
+== Claim-to-evidence map
+
+=== "An AI can take direct action on a level without ever being trusted to get it right"
+
+How this is implemented::
+`crates/ums-ai-edit/src/engine.rs`, `solve()`. The proposer supplies a partial
+edit whose finite-domain arguments are the placeholder `"?"`. `solve()`
+conjoins the domain relations (`vocab::in_domain`), the verb relation
+(`verbs::apply`) and all six validity proofs (`constraints::all_constraints`)
+into a single miniKanren search, and enumerates only edits with a satisfying
+model.
++
+The ordering matters and is deliberate: domain relations are pushed *before*
+the state is built (`verbs.rs`, `apply`). This is generate-and-narrow, not
+generate-then-filter.
+
+Evidence::
+`cargo test -p ums-ai-edit` — 59 cases. Specifically
+`solve_only_proposes_constraint_satisfying_edits`,
+`solve_returns_nothing_when_no_zone_exists` (refusal, not fabrication) and
+`solve_refuses_to_invent_an_id`.
++
+`.github/workflows/rust-ci.yml` carries a *negative* step: an
+out-of-vocabulary `GuardRank` must be refused. Without it, an engine that
+accepted everything would pass every other step in the file.
+
+Caveat::
+The engine has no interactive consumer. No editor frontend exists yet, so in
+practice `solve()` is driven from the CLI or by an external LLM. The
+architecture is unaffected; the reach is.
+
+=== "Kautz type-6 neurosymbolic"
+
+How this is implemented::
+Reasoned in link:docs/adr/0003-ai-edit-rust-minikanren-spark.adoc[ADR-0003],
+which supersedes ADR-0001 and preserves its taxonomy argument.
+
+Caveat::
+*This is a target, not a measurement.* What runs today is the symbolic kernel
+plus an LLM calling `solve()` across a process boundary — operationally closer
+to type 2/3. Type 6 requires the proposer to consult the kernel *inside* its
+own generation loop. The seam is shaped for it (the API is already "goal in,
+models out"), so closing the gap changes integration depth, not contracts —
+but it is not closed, and the README says so.
+
+=== "Six validity proofs"
+
+How this is implemented::
+`crates/ums-ai-edit/src/constraints.rs`: `guards_in_zones`,
+`defence_targets_exist`, `zones_ordered`, `pbx_consistent`, `devices_exist`,
+`items_in_zones`. Re-expressed from the archive editor's Idris2 proofs, plus
+`items_in_zones` for the UMS-owned object collection.
+
+Evidence::
+One rejection test per proof, each asserting a *specific* failure — an actor
+in an undeclared zone, an inverted interval, overlapping zones, a tier that
+decreases with depth, `hasPBX` without a `PhoneSystem` device, a dangling PBX
+field, wiring of an unknown type, a defence targeting a device that does not
+exist, orphaned loot.
+
+Caveat::
+These are *runtime relational checks*, not machine-checked proofs. The name
+"proof" is inherited from the Idris2 modules they mirror. The SPARK/GNATprove
+model that would discharge the decidable half as verification conditions
+(`zones_ordered`: interval well-formedness, disjointness, monotone tiers) is
+*not started*.
+
+=== "Nickel is the single source of truth"
+
+How this is implemented::
+`config/vocab.ncl` (ten closed worlds) and `config/verbs.ncl` (the verb
+registry: ordered arguments, required/optional split, finite domains).
+`scripts/gen.sh` generates `schemas/edit-script.schema.json` and
+`crates/ums-ai-edit/src/vocab.rs` from them.
+
+Evidence::
+`just gen-check` regenerates into a temp dir and diffs; `just config-check`
+typechecks every `config/*.ncl` *and* requires every `config/bad/bad_*.ncl` to
+be **rejected**. A contract nothing can violate is not a contract.
++
+Both gates fail when `nickel` is absent rather than skipping. A generator that
+silently skips its work reports success for a tree it never looked at.
+
+Caveat::
+Two of the six original copies are generated today (the JSON Schema and the
+Rust registry). `abi/Types.idr` and `ffi/zig/src/types.zig` still declare
+their enums by hand and are *not yet* generated — they are checked by tests,
+not by codegen.
+
+=== "Reflective — the engine describes itself and CI proves it true"
+
+How this is implemented::
+`crates/ums-ai-edit/src/describe.rs` reads the compiled registry back out as
+JSON, shaped to match `nickel export config/verbs.ncl`'s derived views.
+
+Evidence::
+`just ai-edit-reflect` compares `names`, `arg_order` and `domains` between the
+compiled binary and the Nickel source; all three match. Also enforced in
+`rust-ci.yml`. Without this gate, `describe` could drift into a flattering
+fiction about what the engine actually does.
+
+=== "Edit scripts are homoiconic"
+
+How this is implemented::
+`schemas/edit-script.schema.json` (generated). The wire format is the same
+shape `verbs::apply` consumes, so replaying a script is applying the relations
+it names — there is no separate interpreter.
+
+Evidence::
+`the_shipped_sample_edit_script_replays_clean` replays
+`dlc/examples/ai-edit-sample/edit-script.json` — 14 verbs, all applied.
+`replaying_a_script_is_deterministic` pins the replay property.
+
+=== "The validator and the engine cannot disagree"
+
+How this is implemented::
+`crates/ums-dlc` imports `ums_ai_edit::vocab` for the verb surface and every
+closed world. The Python it replaced hard-coded a third copy of the
+vocabularies and a second copy of the verb registry.
+
+Evidence::
+`cargo test -p ums-dlc` — 37 cases, including the mutation battery.
+`just dlc-check` validates all 31 in-tree artifacts.
+
+Caveat::
+Agreement is now structural for *vocabulary and arity*. The two still encode
+different things about geometry: the validator checks `worldXStart` is a
+number, the engine checks intervals do not overlap. That division is
+intentional — the validator sees one artifact, the engine sees a whole level —
+but it is not a single source of truth for *semantics*.
+
+=== "Integration with IDApTIK through artifacts, not a Cargo dependency"
+
+How this is implemented::
+`Cargo.toml` has no `idaptik-core` dependency, by design; `LevelData` is
+re-declared locally in `crates/ums-ai-edit/src/verbs.rs` (`LEVEL_KEYS`,
+`initial_state`). The seam is the `dlc-manifest.json` envelope plus the
+`idaptik-ffi` C ABI.
+
+Evidence::
+`schemas/taxonomy-map.json` is the versioned mapping at that seam, and
+`crates/ums-dlc/src/taxonomy.rs` enforces its coherence — the device half is a
+total 1:1 identity per ADR-0002, the zone tier bands must start at 0 and
+strictly increase.
+
+Caveat::
+*The round trip is untested.* No CI job generates a DLC artifact from UMS and
+loads it with IDApTIK's loader. Both sides validate against the same declared
+contract; nothing yet proves the game accepts what UMS emits.
+
+=== "Python, TypeScript, ReScript and Go are not used"
+
+Evidence::
+`git ls-files '*.py'` is empty. `.machine_readable/6a2/AGENTIC.a2ml` forbids
+them. `licence-hygiene.yml` gates attributability of every tracked file.
+
+Caveat::
+`dlc/legacy-ts-puzzles/` still carries a directory name from its
+ReScript/TypeScript origin. The 27 files in it are plain JSON data; only the
+path name is stale.
+
+== Where the evidence stops
+
+[cols="2,3"]
+|===
+| Claim area | Status
+
+| SPARK/GNATprove reference model
+| *Not started.* No `spark/` directory, no proof gate. `gnatprove` is not
+  installed on the development machine.
+
+| Zig hexadeca connector
+| *Not started.* `ffi/zig/` is the existing 11-file C-ABI surface, not the
+  16-protocol unified connector.
+
+| Editor frontends (Bevy / Fyrox / TUI)
+| *Not started.* The engine has no interactive consumer.
+
+| Reversible VM (`dlc/vm/`)
+| *Has never compiled.* 28 `.affine` sources, no AffineScript toolchain wired
+  to this repo. Its manifest declares
+  `every-instruction-has-an-inverse`; nothing has ever checked that.
+
+| Idris2 `ProvenBridge`
+| 2 typed holes and a commented-out `proven` dependency. The ABI is 16/17.
+
+| UMS → game round trip
+| Never executed end to end.
+|===

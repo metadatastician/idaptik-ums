@@ -40,10 +40,11 @@ The mapping still exists as an explicit, versioned artifact —
 `schemas/taxonomy-map.json` (`format: idaptik-taxonomy-map/1`),
 `device-kinds` table — rather than being left implicit in "the names
 happen to match", because implicit identity is exactly how drift starts.
-It is load-bearing: `scripts/validate_dlc.py` derives its `add_device`
+It is load-bearing: `crates/ums-dlc` derives its `add_device`
 kind vocabulary from the table (an incoherent map fails the validator at
 load), and `tests/test_taxonomy_map.py` pins the table to
-`ai_edit/vocab.py` and to the enums in `schemas/edit-script.schema.json`.
+`config/vocab.ncl`, from which both the engine's vocabularies and the enums in
+`schemas/edit-script.schema.json` are generated.
 
 === Zones: default tier banding + per-zone override (RATIFIED 2026-07-21)
 

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// ipc_handlers.zig -- Gossamer IPC command handlers for IDApTIK UMS.
+// ipc_handlers.zig -- IPC command handlers for IDApTIK UMS.
 // Author: Jonathan D.A. Jewell
 //
-// These functions implement 18 Gossamer IPC callbacks: 6 disk/system commands
+// These functions implement 18 host IPC callbacks: 6 disk/system commands
 // plus 12 level-building commands that wrap the C FFI exports from main.zig.
 //
 // Each function matches the BindingCallback signature:
@@ -35,7 +35,7 @@
 //  18.  deserialize_level  -- Deserialise JSON to LevelData
 //
 // The level storage path is /tmp/idaptik-ums/levels/ (development) or
-// ~/.idaptik-ums/levels/ (production). The Gossamer host must grant a
+// ~/.idaptik-ums/levels/ (production). The host must grant a
 // capability scope covering exactly these two prefixes, or every disk
 // command here fails at runtime: /tmp/idaptik-ums/levels/**, $HOME/.idaptik-ums/**
 
@@ -45,7 +45,7 @@ const types = @import("types");
 
 /// Shared allocator for IPC response strings.
 /// Responses are allocated here and must remain valid until the next call.
-/// The Gossamer bridge copies the response before the callback returns.
+/// The host bridge copies the response before the callback returns.
 var gpa = std.heap.c_allocator;
 
 /// Base path for level storage.
