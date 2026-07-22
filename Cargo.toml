@@ -9,7 +9,7 @@
 # repo's CI can break the other. LevelData is re-declared locally.
 [workspace]
 resolver = "3"
-members = ["crates/ums-ai-edit"]
+members = ["crates/ums-ai-edit", "crates/ums-dlc"]
 
 [workspace.package]
 version = "0.1.0"

@@ -206,7 +206,7 @@ lint:
 # Validate every DLC artifact against the bridge contracts in schemas/
 # (manifest envelopes, puzzle payloads, cross-field invariants).
 dlc-check:
-    python3 scripts/validate_dlc.py
+    cargo run -q -p ums-dlc
 
 # ── Nickel: the single generative source of truth ─────────────────────────────
 # config/vocab.ncl and config/verbs.ncl are authoritative. The closed worlds
@@ -300,15 +300,13 @@ install: build-release
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Verify the toolchain this repo actually needs (fails loudly if absent).
-# python3 remains only for scripts/validate_dlc.py, which the Rust ums-dlc
-# validator replaces in the next migration PR.
 deps: _zig-guard
     #!/usr/bin/env bash
     set -euo pipefail
-    for tool in cargo nickel jq python3; do
+    for tool in cargo nickel jq; do
         command -v "$tool" >/dev/null || { echo "error: $tool not found" >&2; exit 1; }
     done
-    echo "Toolchain present: $(cargo --version), $(nickel --version), jq $(jq --version), $(python3 --version), zig {{zig_version}}"
+    echo "Toolchain present: $(cargo --version), $(nickel --version), jq $(jq --version), zig {{zig_version}}"
 
 # NOTE: the former deps-audit / security recipes ran trivy behind
 # `command -v trivy && ... || true` and then echoed "Audit complete" —

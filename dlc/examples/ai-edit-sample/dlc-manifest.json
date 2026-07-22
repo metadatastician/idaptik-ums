@@ -19,6 +19,6 @@
   "verification": {
     "engine-tests": "tests/test_ai_edit.py",
     "architecture": "docs/adr/0001-ai-edit-kautz6-nesy.adoc",
-    "replay": "python3 -m ai_edit check dlc/examples/ai-edit-sample/edit-script.json"
+    "replay": "cargo run -q -p ums-ai-edit -- check dlc/examples/ai-edit-sample/edit-script.json"
   }
 }
