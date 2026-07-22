@@ -131,7 +131,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(shared_lib);
 
     // ---------------------------------------------------------------
-    // Static library (for embedding in Gossamer / Rust hosts)
+    // Static library (for embedding in Rust hosts — the Bevy/Fyrox frontends)
     // ---------------------------------------------------------------
     const static_lib = b.addLibrary(.{
         .linkage = .static,

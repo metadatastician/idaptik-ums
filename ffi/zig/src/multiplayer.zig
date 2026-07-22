@@ -10,7 +10,7 @@
 //   - Sync message kind classification
 //   - Player list management
 //
-// These types are used by the Gossamer IPC layer and the ReScript
+// These types are used by the host IPC layer and the editor
 // MultiplayerClient to ensure type-safe communication with the sync server.
 
 const std = @import("std");

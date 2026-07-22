@@ -6,7 +6,8 @@ SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 # idaptik-ums Component Readiness Assessment
 
 **Standard:** [Component Readiness Grades (CRG) v2.0](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)
-**Assessed:** 2026-07-20
+**Assessed:** 2026-07-22 (re-assessed after the Rust migration; previous
+assessment 2026-07-20)
 **Assessor:** Claude (PR E of the staged lineage migration), from real local runs
 and the repo's CI workflows — evidence over intuition, no aspirational grading.
 
@@ -16,31 +17,44 @@ and the repo's CI workflows — evidence over intuition, no aspirational grading
 
 | Component | Grade | Release stage | Evidence summary | Last assessed |
 |---|---|---|---|---|
-| ai-edit engine (`ai_edit/`, Python) | D | Alpha-unstable | 37 unit tests + sample edit-script replay green locally (`just test`, `just ai-edit-check`). No CI workflow runs them yet, and the engine has no real consumer (the shell that would drive it is 0%). | 2026-07-20 |
+| AI-edit engine (`crates/ums-ai-edit`, Rust) | C | Alpha-stable | 59 tests (miniKanren kernel, verbs, the six proofs, both engine directions) + sample edit-script replay, gated by `rust-ci.yml` with `clippy -D warnings`. Parity with the deleted Python was measured: identical proposals AND identical search order, byte-identical final state. CI carries a negative step — an out-of-vocabulary rank must be refused. | 2026-07-22 |
+| DLC bridge (`crates/ums-dlc` + `schemas/`) | C | Alpha-stable | 37 tests; validates all 31 in-tree artifacts against manifest, puzzle, vault, edit-script and taxonomy contracts, now in CI (`rust-ci.yml`) rather than local-only. Parity fuzzed against the Python: 32/32 mutations, identical verdict and message. | 2026-07-22 |
+| Generation source of truth (`config/*.ncl`) | C | Alpha-stable | `config-check` typechecks every source AND requires all three `config/bad/bad_*.ncl` negative fixtures to be rejected; `gen-check` diffs generated artifacts and fails when `nickel` is absent rather than skipping. Gated by `config-gen.yml`. | 2026-07-22 |
 | Zig FFI (`ffi/zig/`) | C | Alpha-stable | 24/24 integration tests pass; CI-gated (`zig-ci.yml`); zig 0.14.0 pin enforced locally by `_zig-guard` and in CI. | 2026-07-20 |
-| Idris2 ABI (`abi/`) | D | Alpha-unstable | 16 of the intended 17 modules typecheck under `idris-ci.yml` (`idris2 --typecheck idaptik-ums.ipkg`); ProvenBridge (the 17th) is still in flight with 2 typed holes. | 2026-07-20 |
-| DLC bridge (`schemas/` + `scripts/validate_dlc.py`) | D | Alpha-unstable | `just dlc-check` validates all 30 in-tree DLC artifacts against the bridge schemas; CI covers only JSON well-formedness (`puzzle-data.yml`) — full schema validation is local-only. | 2026-07-20 |
-| Licence hygiene gate | C | Alpha-stable | `licence-hygiene.yml` gates every push/PR; it exists because it caught a real defect (dlc/vm carried the AGPL body under an MPL-2.0 SPDX header, fixed in PR #6). | 2026-07-20 |
-| AffineScript shell | X | — | 0% — the port from the lineage ReScript tree has not started. Nothing exists to test. | 2026-07-20 |
-| Reversible VM (`dlc/vm/`, `.affine`) | X | — | Has never compiled. No AffineScript toolchain is wired to this repo; the `.affine` sources have never been exercised by anything. | 2026-07-20 |
+| Licence hygiene gate | C | Alpha-stable | Three steps, each negative-tested: a planted MPL header, a truncated LICENSE and an unattributed JSON file each make it fail. Polarity inverted with the AGPL relicence. | 2026-07-22 |
+| Idris2 ABI (`abi/`) | D | Alpha-unstable | 16 of the intended 17 modules typecheck under `idris-ci.yml`; ProvenBridge (the 17th) is still in flight with 2 typed holes. **This is what holds the project line at D.** | 2026-07-22 |
+| SPARK/GNATprove reference model (`spark/`) | X | — | Does not exist. Decided in ADR-0003 (§3) and not started; `gnatprove` is not installed on the development machine. | 2026-07-22 |
+| Zig hexadeca connector | X | — | Does not exist. `ffi/zig/` is the existing 11-file C-ABI surface, not the 16-protocol unified connector. | 2026-07-22 |
+| Editor frontends (Bevy / Fyrox / TUI) | X | — | 0% — not started. The engine has no interactive consumer. Supersedes the former "AffineScript shell" row: the game is a Rust workspace with Bevy and Fyrox frontends, and the shell was never built. | 2026-07-22 |
+| Reversible VM (`dlc/vm/`, `.affine`) | X | — | Has never compiled. No AffineScript toolchain is wired to this repo; the `.affine` sources have never been exercised by anything, so its declared `every-instruction-has-an-inverse` guarantee has never been checked. | 2026-07-22 |
 
-## Why Grade D (not C, not X)
+## Why Grade D — for a much narrower reason than before
 
-CRG defines the project line as the grade of the primary component / the worst
-deployed component. The deployed, working surface of this repo — ai-edit
-engine, Idris2 ABI, DLC bridge — sits honestly at **D (alpha-unstable)**:
+CRG defines the project line as the grade of the worst deployed component. It
+is still **D**, but the reason has changed completely.
 
-- **Not C:** grade C requires CI-integrated validation and no known failures
-  in the home context. The Python engine and the full DLC schema check run
-  only via local `just` recipes; the ABI is 16/17 with ProvenBridge open; and
-  governance CI on `main` is red (pre-existing, estate-wide — the
-  `hyperpolymath/standards` reusable workflows it wraps `startup_failure`).
-- **Not X or E:** every graded component above D-line runs real, failing-able
-  tests that currently pass, with documented scope. That is exactly D:
-  "works on some cases, but not systematically".
-- The X-graded components (shell, VM) are not deployed and gate nothing, but
-  they are why this project cannot honestly claim more than alpha-unstable:
-  the architecture's top layer does not exist and the VM has never compiled.
+The 2026-07-20 assessment was held at D by three things: the engine was Python
+with no CI, the DLC schema check ran local-only, and the ABI was 16/17. **Two
+of the three are now resolved.** The engine and the validator are Rust, CI-
+gated, with 96 tests between them and negative tests proving the gates can
+fail. What remains is:
+
+- **`abi/ProvenBridge.idr`** — 2 typed holes and a commented-out `proven`
+  dependency. One D-graded deployed component sets the line. Landing it, or
+  formally descoping it, moves the project to C.
+- **Not X or E:** every component above the D-line runs real, failing-able
+  tests that currently pass, with documented scope.
+- The X-graded components (frontends, SPARK model, hexadeca connector, VM) are
+  not deployed and gate nothing — but they are why this cannot claim more than
+  alpha-unstable, because the studio still has no interactive surface and the
+  VM has never compiled.
+
+**Assessment basis.** The Rust and Nickel gates were verified by local runs of
+the exact commands CI executes. `rust-ci.yml` and `config-gen.yml` are new
+files whose first CI execution happens when their branches reach `main`; every
+workflow here filters on `pull_request: branches: [main]`, so a stacked PR
+does not trigger them. Graded on measured local evidence, with that caveat
+stated rather than papered over.
 
 ## Known failures and debt (kept visible on purpose)
 
@@ -48,9 +62,20 @@ engine, Idris2 ABI, DLC bridge — sits honestly at **D (alpha-unstable)**:
   over `hyperpolymath/standards` reusables that fail at startup). Not
   repo-local; fix is upstream.
 - `push-email-notify.yml` is the estate-wide never-green template.
-- Python is banned by the estate language policy; `ai_edit` landed as Python
-  in the lineage migration and is un-migrated — an open policy conflict,
-  listed here rather than hidden.
+- ~~Python is banned by the estate language policy; `ai_edit` landed as
+  Python~~ — **resolved 2026-07-22.** `ai_edit/`, `scripts/validate_dlc.py`
+  and both test modules are deleted; `git ls-files '*.py'` is empty. ADR-0001
+  is superseded by ADR-0003.
+- Two of the six hand-maintained copies of the closed vocabularies are still
+  hand-written: `abi/Types.idr` and `ffi/zig/src/types.zig`. They are checked
+  by tests, not generated from `config/vocab.ncl` — the obvious next extension
+  of `scripts/gen.sh`.
+- The UMS → game round trip has never been executed end to end. Both sides
+  validate against the same declared contract, but nothing proves the game
+  accepts what UMS emits.
+- `dlc/legacy-ts-puzzles/` carries a directory name from its
+  ReScript/TypeScript origin. The 27 files are plain JSON; only the path is
+  stale.
 - RSR compliance is partial: `.machine_readable/6a2/` + contractiles are
   present, but `0-AI-MANIFEST.a2ml` is absent and no Immaculate Guide
   compliance evidence is recorded in STATE.a2ml (a formal Grade-D
@@ -61,16 +86,21 @@ engine, Idris2 ABI, DLC bridge — sits honestly at **D (alpha-unstable)**:
 
 ## Promotion paths
 
-- **ai-edit D → C:** add a Python CI workflow running `just test`,
-  `just ai-edit-check`, `just dlc-check`; grow a real consumer (the shell).
-- **ABI D → C:** land ProvenBridge or formally descope it (the STATE.a2ml
-  "fate decision"), so the module count claim and the tree agree.
-- **DLC bridge D → C:** run `scripts/validate_dlc.py` (full schema check) in
-  CI, not just the JSON-parse loop.
-- **Shell X → D:** start the AffineScript port (`src/{App.res, editor/, abi/}`
-  in the lineage repo is the source material).
-- **VM X → D:** wire an AffineScript toolchain and make `dlc/vm` compile at
-  all before claiming anything about reversibility.
+- **PROJECT D → C:** land `ProvenBridge` or formally descope it (the STATE.a2ml
+  "fate decision"), so the module-count claim and the tree agree. This is the
+  single remaining blocker on the project line.
+- **ai-edit C → B:** grow a real consumer, and close the type-6 loop so the
+  proposer consults `solve()` in-process rather than across a boundary.
+- **DLC bridge C → B:** execute the round trip in CI — generate an artifact
+  from UMS and load it with IDApTIK's loader.
+- **SPARK model X → C:** add `spark/src/ums_zones.ads` per ADR-0003 §3, a
+  parity test against `constraints.rs`, and a proof gate that **fails when
+  `gnatprove` is absent** rather than exiting 0.
+- **Frontends X → D:** start `ums-tui` (ratatui, headless so CI can drive it),
+  mirroring `idaptik-tui`.
+- **VM X → D:** port `dlc/vm` to Rust so it compiles at all, and make its
+  `every-instruction-has-an-inverse` guarantee a round-trip property test over
+  all 23 instructions, before claiming anything about reversibility.
 
 ## Machine-readable
 

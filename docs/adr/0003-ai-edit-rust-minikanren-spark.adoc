@@ -1,0 +1,161 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0003: AI-edit in Rust — miniKanren kernel, Nickel generation, SPARK for the decidable arithmetic
+:toc: preamble
+
+Status: Accepted +
+Date: 2026-07-22 +
+Supersedes: link:0001-ai-edit-kautz6-nesy.adoc[ADR-0001] +
+Deciders: @hyperpolymath
+
+== Context
+
+ADR-0001 established the AI-edit capability as a Kautz type-6 neurosymbolic
+system over a miniKanren relational kernel, with an `edit-script` DLC kind as
+the wire contract. *That reasoning stands and is not revisited here.* The
+taxonomy argument, the choice of miniKanren as the symbolic substrate, the
+verb surface, the validity proofs and the wire format are all carried forward
+unchanged.
+
+What ADR-0001 got wrong was the implementation language. It named "the
+stdlib-only Python package `ai_edit/`" as the reference implementation, and
+built its portability argument on that package being small enough to port
+verbatim.
+
+Python is banned by the estate language policy. The repository's own
+machine-readable policy said so — `.machine_readable/6a2/AGENTIC.a2ml:22`,
+"Never use banned languages (TypeScript, Python, Go, etc.)" — and
+`READINESS.md` recorded the conflict in writing rather than hiding it:
+"`ai_edit` landed as Python in the lineage migration and is un-migrated — an
+open policy conflict".
+
+ADR-0001 anticipated its own replacement, in its Consequences section: "the
+Python kernel is a reference implementation — ports (AffineScript, or Rust
+beside `idaptik-core`) inherit its test suite semantics." This ADR executes
+that, and records three decisions ADR-0001 did not have to make.
+
+== Decision
+
+=== 1. The kernel is Rust, hand-ported
+
+miniKanren needs dynamic terms, heap-allocated substitutions, closures-as-
+goals and lazily interleaved streams. Rust carries all four comfortably.
+
+The kernel is *hand-ported* rather than taken from a crate (`canrun`,
+`ascent`), matching ADR-0001's stated goal that the kernel be "small enough to
+be the reference kernel other languages port from" — a dependency would move
+that reference out of the tree.
+
+Two deliberate departures from the Python:
+
+Substitutions are persistent::
+An `Rc`-linked association list. Extending is O(1) and shares structure with
+its parent, so the search branches without copying. The Python wrote
+`{**subst, u: v}`, copying the entire map at every binding.
+
+`fresh` is a macro, not introspection::
+The Python read the lambda's arity at runtime via `inspect.signature`. Rust
+has no equivalent and needs none: `fresh!(x, y => ...)` binds the variables it
+names, and the arity is checked by the compiler.
+
+Search semantics are preserved exactly, including *order*. `mplus` interleaves
+only at immature points, so a finite disjunction concatenates and an infinite
+one interleaves. Both are pinned by tests with exact expected sequences,
+because callers depend on order: `solve()` enumerates vocabularies in declared
+order, so a proposer that takes the first suggestion gets a predictable one.
+
+=== 2. Nickel is the single source of truth for the closed worlds
+
+ADR-0001 treated the vocabularies as ordinary constants. In practice they were
+hand-maintained in *six* places — `ai_edit/vocab.py`, the inline `enum` arrays
+in `schemas/edit-script.schema.json`, constants in `scripts/validate_dlc.py`,
+`schemas/taxonomy-map.json`, `abi/Types.idr` and `ffi/zig/src/types.zig` —
+and `vocab.py`'s docstring asked a human to "keep them in lockstep".
+
+`config/vocab.ncl` and `config/verbs.ncl` are now authoritative, and generate
+the JSON Schema and the Rust registry. Each declares its intent once:
+
+* a vocabulary must be a non-empty array of distinct PascalCase strings.
+  Empty is rejected because an empty domain makes its relation unsatisfiable;
+  duplicates are rejected because a closed world is a set;
+* a verb declares its ordered arguments, which are required, and the finite
+  domain of each — and `arg_order`, `domains` and `names` are *derived*.
+
+Argument order is an array, not a record, because JSON key order is
+wire-significant and `solve()` binds positionally.
+
+Declaring the domain once in the registry is what makes narrowing possible
+rather than filtering: the domain relation is conjoined into the same search
+as the verb relation and the proofs, so an out-of-vocabulary value is never
+generated.
+
+=== 3. SPARK/GNATprove owns the decidable arithmetic — as a proved reference model
+
+miniKanren cannot live under SPARK: pointer and recursion restrictions rule
+out the term representation and the stream search. But one constraint *is*
+decidable and pointer-free — `zones_ordered`: interval well-formedness,
+pairwise disjointness, and non-decreasing security tier with depth.
+
+That half will be stated as SPARK contracts in `spark/src/ums_zones.ads` and
+discharged by `gnatprove`, *not linked at runtime*. `constraints.rs` mirrors
+it, and a parity test drives the same vector table through both so they cannot
+diverge silently.
+
+Runtime linkage was considered and rejected for now: it would add a second FFI
+lane beside the Zig one and split ADR-0001's unified constraints-as-goals
+search into in-process and out-of-process halves. Hardening to a linked model
+later changes no schema, no verb and no proof.
+
+*This is not built yet.* It is recorded here as the decided shape, and
+`READINESS.md` grades it as absent.
+
+=== 4. Every gate must be able to fail
+
+Not a language decision, but the one that determines whether any of the above
+is true tomorrow. Each gate added by this work was negative-tested:
+
+[cols="3,2"]
+|===
+| Condition | Result
+
+| A generated file drifts from its Nickel source | `gen-check` fails
+| `nickel` is absent | `gen-check` fails — it does *not* skip
+| A `config/bad/bad_*.ncl` negative fixture is accepted | `config-check` fails
+| An out-of-vocabulary `GuardRank` is accepted | `rust-ci` fails
+| The reflected registry differs from its source | `ai-edit-reflect` fails
+| `gnatprove` is absent (when `spark/` lands) | the proof gate must fail
+|===
+
+The last row is the estate's most-repeated defect: a `proof-check` recipe that
+exits 0 when the prover is not installed proves nothing while looking green.
+
+== Consequences
+
+* The type-6 claim is unchanged, and unchanged in its honesty: the proposer
+  still calls `solve()` across a process boundary, so what runs is closer to
+  type 2/3. ADR-0001's caveat is carried forward verbatim.
+* Parity with the Python was *measured* before it was deleted, not asserted:
+  identical proposals and identical search order across four verbs, a
+  byte-identical final state on the shipped 14-verb sample, and — for the DLC
+  validator — 32 targeted mutations producing identical verdicts and identical
+  messages.
+* The port found a real defect the Python could not have had. `add_zone`'s
+  optional `segment` argument has a finite domain, so an *absent* one was
+  conjoined with `membero(Null, ZONE_SEGMENTS)`, which correctly fails —
+  making every segment-less `add_zone` unsatisfiable. Driving behaviour from a
+  single declarative registry surfaces obligations that hand-written per-verb
+  functions quietly omit.
+* Two of the six vocabulary copies remain hand-written: `abi/Types.idr` and
+  `ffi/zig/src/types.zig`. Generating them is the obvious next extension of
+  `scripts/gen.sh`, and until then they are checked by tests rather than by
+  construction.
+* `ai_edit/` no longer exists, so ADR-0001's Python references now describe
+  deleted code. It is marked superseded rather than edited, so the reasoning
+  it contains stays readable as written.
+
+== References
+
+* link:0001-ai-edit-kautz6-nesy.adoc[ADR-0001] — the type-6 argument, superseded only as to language.
+* link:0002-ums-game-taxonomy-map.adoc[ADR-0002] — the extend-the-enum ruling.
+* Jason Hemann and Daniel P. Friedman, "microKanren: A Minimal Functional Core for Relational Programming" (Scheme Workshop 2013).
+* Henry Kautz, "The Third AI Summer" (AAAI Robert S. Engelmore Memorial Lecture, 2020).
