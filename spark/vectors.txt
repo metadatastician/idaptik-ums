@@ -41,6 +41,19 @@ empty
 20,30,2;0,10,0;10,20,1
 40,80,0;0,40,1
 
+# --- degenerate intervals and equal starts ---
+# These are the cases that broke the first version of the SPARK model. Its
+# symmetric Disjoint (A.End <= B.Start or B.End <= A.Start) calls [0,10] and
+# the degenerate [0,0] disjoint under half-open semantics, while the engine
+# rejects them: a start-sorted sweep asks whether each zone starts at or after
+# the previous one ENDED, and 0 < 10. gnatprove could not prove the loop
+# invariant because the invariant was false, not because it was hard.
+0,10,0;0,0,1
+0,0,0;0,10,1
+0,0,0;0,0,1
+5,5,0;5,10,1
+0,10,0;10,10,1
+
 # --- boundary values ---
 -1000000,0,0;0,1000000,255
 0,1,0;1,2,0;2,3,0;3,4,0;4,5,0

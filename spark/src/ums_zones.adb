@@ -25,8 +25,11 @@ is
             --  The array is start-sorted (precondition), so the only way an
             --  interval can meet an earlier one is by starting before that
             --  one ended. Checking the immediate predecessor is therefore
-            --  enough for disjointness against ALL predecessors.
-            if not Disjoint (Zs (I - 1), Zs (I)) then
+            --  enough against ALL predecessors.
+            --
+            --  Directional, not symmetric Disjoint: see the note on Disjoint
+            --  in the spec. This is the comparison the engine makes.
+            if Zs (I - 1).End_X > Zs (I).Start_X then
                return False;
             end if;
 
@@ -37,10 +40,22 @@ is
 
          pragma Loop_Invariant
            (for all K in Zs'First .. I => Well_Formed (Zs (K)));
+
+         --  The chain that makes the linear sweep sufficient.
+         --
+         --  Stated as `<=` on coordinates rather than as Disjoint: the array
+         --  is start-sorted, so an interval ending before the current one
+         --  starts also ends before every LATER one starts. That is plain
+         --  integer transitivity. Phrased as Disjoint it would instead be a
+         --  case split through an `or else` on every pair, which is what the
+         --  prover could not discharge (medium: "loop invariant might not be
+         --  preserved by an arbitrary iteration").
+         pragma Loop_Invariant
+           (for all K in Zs'First .. I - 1 => Zs (K).End_X <= Zs (I).Start_X);
          pragma Loop_Invariant
            (for all K in Zs'First .. I =>
               (for all L in Zs'First .. I =>
-                 (if K < L then Disjoint (Zs (K), Zs (L)))));
+                 (if K < L then Zs (K).End_X <= Zs (L).Start_X)));
          pragma Loop_Invariant
            (for all K in Zs'First .. I =>
               (for all L in Zs'First .. I =>
