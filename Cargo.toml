@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# idaptik-ums Cargo workspace.
+#
+# Deliberately NOT depending on IDApTIK's `idaptik-core`: UMS integrates with
+# the game through artifacts (the dlc-manifest.json envelope, the idaptik-ffi
+# C ABI, shared Nickel schemas), not a cross-repo Cargo dependency, so neither
+# repo's CI can break the other. LevelData is re-declared locally.
+[workspace]
+resolver = "3"
+members = ["crates/ums-ai-edit"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-or-later"
+authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
+repository = "https://github.com/metadatastician/idaptik-ums"
+
+[workspace.dependencies]
+# `float_roundtrip` guarantees bit-exact f64 JSON round-trips, matching the
+# sibling IDApTIK workspace: edit scripts carry worldX geometry as JSON
+# numbers and must replay identically.
+serde_json = { version = "1", features = ["float_roundtrip"] }
+clap = { version = "4", features = ["derive"] }

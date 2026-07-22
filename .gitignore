@@ -17,3 +17,6 @@ __pycache__/
 # Python bytecode (the Python sources themselves are removed in the Rust migration).
 __pycache__/
 *.pyc
+
+# Rust build artefacts
+/target/
