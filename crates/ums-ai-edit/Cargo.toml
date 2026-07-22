@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+[package]
+name = "ums-ai-edit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "The UMS AI-edit engine: a miniKanren relational kernel over the IDApTIK level object graph."
+
+[dependencies]
+serde_json.workspace = true
+clap.workspace = true
+
+[[bin]]
+name = "ums-ai-edit"
+path = "src/main.rs"

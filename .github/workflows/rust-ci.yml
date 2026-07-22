@@ -1,0 +1,134 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# Rust build + test gate for the AI-edit engine.
+#
+# Standalone workflow, matching zig-ci / idris-ci / config-gen / licence-hygiene.
+#
+# Every step here can fail, and each was negative-tested locally before landing:
+#
+#   fmt/clippy  clippy runs with -D warnings, so a lint is a failure not advice
+#   test        the ported behavioural contract (59 cases)
+#   replay      the shipped sample edit-script; a rejected script exits non-zero
+#   reflect     the compiled registry must equal the Nickel source that
+#               generated it — otherwise `describe` could drift into a
+#               flattering fiction about what the engine actually does
+#   refusal     a NEGATIVE test: an out-of-vocabulary rank must be REFUSED.
+#               Without it, an engine that accepted everything would pass
+#               every other step in this file.
+
+name: Rust CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - 'config/**'
+      - 'dlc/examples/**'
+      - '.github/workflows/rust-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - 'config/**'
+      - 'dlc/examples/**'
+      - '.github/workflows/rust-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: ums-ai-edit builds, lints, and passes its contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          persist-credentials: false
+
+      # rust-toolchain.toml pins the channel and components; rustup honours it
+      # automatically, so the version is declared in one place.
+      - name: Show toolchain
+        run: |
+          rustup show
+          cargo --version
+
+      - name: Cache cargo
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Formatting
+        run: cargo fmt --check
+
+      - name: Clippy (warnings are failures)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test suite
+        run: cargo test --workspace
+
+      - name: Replay the shipped sample edit script
+        run: cargo run -q -p ums-ai-edit -- check dlc/examples/ai-edit-sample/edit-script.json
+
+      - name: Refusal is real (negative test)
+        run: |
+          set -euo pipefail
+          cat > /tmp/state.json <<'JSON'
+          {"zones":[{"id":"lobby","securityTier":0,"worldXStart":0,"worldXEnd":40}],
+           "devices":[],"guards":[],"dogs":[],"drones":[],"assassins":[],"items":[],
+           "npcs":[],"characters":[],"wiring":[],"zoneTransitions":[],"deviceDefences":[],
+           "mission":null,"physical":null,"hasPBX":false,"pbxIp":null,"pbxWorldX":null}
+          JSON
+          cat > /tmp/bad.json <<'JSON'
+          {"edits":[{"verb":"add_guard","id":"g","rank":"Wizard","zone":"lobby"}]}
+          JSON
+          if cargo run -q -p ums-ai-edit -- check /tmp/bad.json --state /tmp/state.json; then
+            echo "::error::an out-of-vocabulary GuardRank was ACCEPTED; the closed world is not closed"
+            exit 1
+          fi
+          echo "out-of-vocabulary rank correctly refused"
+
+      - name: Install nickel and jq (for the reflection identity)
+        run: |
+          set -euo pipefail
+          # /usr/local/bin is root-owned on GitHub-hosted runners, so a bare
+          # `curl -o` there fails with permission denied. Stage then install.
+          curl -fsSL https://github.com/tweag/nickel/releases/download/1.17.0/nickel-x86_64-linux \
+            -o nickel
+          sudo install -m 0755 nickel /usr/local/bin/nickel
+          rm -f nickel
+          nickel --version
+          command -v jq >/dev/null || sudo apt-get install -y jq
+
+      - name: Reflection identity — compiled registry equals its Nickel source
+        run: |
+          set -euo pipefail
+          cargo run -q -p ums-ai-edit -- describe > /tmp/described.json
+          nickel export config/verbs.ncl --format json > /tmp/source.json
+          rc=0
+          for field in names arg_order domains; do
+            if diff -u <(jq -S ".$field" /tmp/source.json) <(jq -S ".$field" /tmp/described.json); then
+              echo "match  $field"
+            else
+              echo "::error::reflected $field differs from config/verbs.ncl"
+              rc=1
+            fi
+          done
+          exit $rc

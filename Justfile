@@ -118,9 +118,11 @@ clean-all: clean
 # TEST & QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Run the Python unit-test suite (ai_edit engine + DLC validator tests)
+# Run the Rust suite: miniKanren kernel, verbs, the six validity proofs, and
+# both engine directions. Ported case-for-case from the Python suite it
+# replaces, because that suite was the behavioural contract.
 test *args:
-    python3 -m unittest discover -s tests {{args}}
+    cargo test --workspace {{args}}
 
 # NOTE: the former test-verbose / test-smoke / e2e / aspect / bench /
 # readiness recipes were template stubs that echoed "passed!" without
@@ -159,20 +161,23 @@ crg-badge:
     echo "[![CRG $grade](https://img.shields.io/badge/CRG-$grade-$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
 
 # Chains ONLY recipes that do real work and can fail:
-#   test          — Python unit tests (ai_edit engine + DLC validator)
-#   dlc-check     — schema validation of every dlc/ artifact
-#   ai-edit-check — engine suite + sample edit-script replay
-#   test-ffi      — Zig FFI integration tests (zig build test, 0.14.0-guarded)
+#   test           — the Rust suite (miniKanren kernel, verbs, proofs, engine)
+#   config-check   — Nickel contracts hold AND negative fixtures are rejected
+#   gen-check      — generated artifacts match their Nickel sources
+#   dlc-check      — schema validation of every dlc/ artifact
+#   ai-edit-check  — sample edit-script replay
+#   ai-edit-reflect— the compiled registry equals the source that generated it
+#   test-ffi       — Zig FFI integration tests (zig build test, 0.14.0-guarded)
 # The former chain (test e2e aspect bench readiness) was five echo-stubs
 # ending in a fabricated "safe to merge!".
 
-# Run every real test gate in this repo (unit + DLC schema + ai-edit + FFI)
-test-all: test dlc-check ai-edit-check test-ffi
-    @echo "test-all: Python unit + DLC schema + ai-edit replay + Zig FFI — all gates real, all green"
+# Run every real test gate in this repo
+test-all: test config-check gen-check dlc-check ai-edit-check ai-edit-reflect test-ffi
+    @echo "test-all: Rust suite + Nickel contracts + codegen + DLC schema + ai-edit replay + reflection + Zig FFI — all gates real, all green"
 
-# Run all quality checks (zig fmt --check, Python byte-compile, unit tests)
+# Run all quality checks (zig fmt --check, Rust fmt/clippy, tests)
 quality: fmt-check lint test
-    @echo "Quality checks passed (zig fmt --check, python compileall, unittest)"
+    @echo "Quality checks passed (zig fmt --check, cargo fmt --check, clippy -D warnings, cargo test)"
 
 # Fix all auto-fixable issues [reversible: git checkout]
 fix: fmt
@@ -182,20 +187,21 @@ fix: fmt
 # LINT & FORMAT
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Format Zig FFI sources — the only pinned formatter here [reversible: git checkout]
+# Format Zig FFI and Rust sources [reversible: git checkout]
 fmt: _zig-guard
     cd ffi/zig && zig fmt .
+    cargo fmt
 
-# Check Zig formatting without changing files (fails on drift)
+# Check formatting without changing files (fails on drift)
 fmt-check: _zig-guard
     cd ffi/zig && zig fmt --check .
+    cargo fmt --check
 
-# Honest scope: no style linter is pinned for this repo yet, so this
-# catches syntax errors only — but it is a real, failing check.
-
-# Syntax-level lint: byte-compile all Python sources
+# Lint the Rust workspace. clippy runs with -D warnings, so a lint is a
+# failure, not advice. (This replaced `python3 -m compileall`, which only ever
+# caught syntax errors.)
 lint:
-    python3 -m compileall -q ai_edit scripts tests
+    cargo clippy --workspace --all-targets -- -D warnings
 
 # Validate every DLC artifact against the bridge contracts in schemas/
 # (manifest envelopes, puzzle payloads, cross-field invariants).
@@ -241,12 +247,34 @@ config-check:
     done
     exit $rc
 
-# Run the AI-edit engine suite (miniKanren kernel, verbs, validity proofs)
-# and replay the sample edit script against an empty level
-# (docs/adr/0001-ai-edit-kautz6-nesy.adoc).
+# Replay the sample edit script against an empty level. A rejected script
+# exits non-zero, so this gate can fail.
 ai-edit-check:
-    python3 -m unittest discover -s tests
-    python3 -m ai_edit check dlc/examples/ai-edit-sample/edit-script.json
+    cargo run -q -p ums-ai-edit -- check dlc/examples/ai-edit-sample/edit-script.json
+
+# The reflection identity: the registry the engine DISPATCHES on must equal
+# the Nickel source that GENERATED it. Without this, `describe` could drift
+# into a flattering fiction about what the engine actually does.
+ai-edit-reflect:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    command -v nickel >/dev/null 2>&1 || { echo "error: nickel not found — this gate cannot be skipped" >&2; exit 1; }
+    command -v jq >/dev/null 2>&1 || { echo "error: jq not found — this gate cannot be skipped" >&2; exit 1; }
+    described="$(mktemp)"; source="$(mktemp)"
+    trap 'rm -f "$described" "$source"' EXIT
+    cargo run -q -p ums-ai-edit -- describe > "$described"
+    nickel export config/verbs.ncl --format json > "$source"
+    rc=0
+    for field in names arg_order domains; do
+        if diff -u <(jq -S ".$field" "$source") <(jq -S ".$field" "$described") > /dev/null; then
+            echo "match  $field"
+        else
+            echo "::error::reflected $field differs from config/verbs.ncl"
+            diff -u <(jq -S ".$field" "$source") <(jq -S ".$field" "$described") || true
+            rc=1
+        fi
+    done
+    exit $rc
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # RUN & EXECUTE
@@ -271,10 +299,16 @@ install: build-release
 # DEPENDENCIES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Verify the toolchain this repo actually needs (fails loudly if absent)
+# Verify the toolchain this repo actually needs (fails loudly if absent).
+# python3 remains only for scripts/validate_dlc.py, which the Rust ums-dlc
+# validator replaces in the next migration PR.
 deps: _zig-guard
-    @command -v python3 >/dev/null || { echo "error: python3 not found" >&2; exit 1; }
-    @echo "Toolchain present: $(python3 --version), zig {{zig_version}}"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    for tool in cargo nickel jq python3; do
+        command -v "$tool" >/dev/null || { echo "error: $tool not found" >&2; exit 1; }
+    done
+    echo "Toolchain present: $(cargo --version), $(nickel --version), jq $(jq --version), $(python3 --version), zig {{zig_version}}"
 
 # NOTE: the former deps-audit / security recipes ran trivy behind
 # `command -v trivy && ... || true` and then echoed "Audit complete" —
