@@ -28,7 +28,7 @@ are marked, not implied. Per-component grades and evidence are in
 | Idris2 ABI (`abi/`) | **built** — 17/17 modules typecheck, trusted base gated |
 | Zig FFI (`ffi/zig/`) | **built** — 24/24 tests, CI-gated |
 | SPARK/GNATprove reference model (`spark/`) | *not started* |
-| Zig hexadeca connector | *not started* |
+| Zig hexadeca connector | **wire contract built + gated**; *0 of 16 transports implemented* |
 | Editor frontends (Bevy / Fyrox / TUI) | *not started* |
 | Reversible VM (`dlc/vm/`, AffineScript) | *has never compiled* |
 
@@ -59,7 +59,8 @@ are marked, not implied. Per-component grades and evidence are in
   Schemas and the Rust registry are generated from them. They were previously
   hand-maintained in six places.
 - **Idris2** owns the ABI proofs (`abi/`, 17 modules).
-- **Zig** owns the C-ABI FFI (`ffi/zig/`). No C is written where Zig lives.
+- **Zig** owns the C-ABI FFI (`ffi/zig/`), including the Hexadeca connector
+  set. No C is written where Zig lives.
 - **`just`** is the single task-runner entry point — `just --list`.
 
 Python, TypeScript, ReScript and Go are not used, and
@@ -119,6 +120,26 @@ $ just ai-edit-reflect                   # compiled registry == the Nickel that 
 Edit scripts are **homoiconic**: the wire format is the same shape the
 engine's relations consume. An edit is therefore data — replayable, reviewable
 in a pull request, and its own audit log.
+
+## The Hexadeca connector
+
+A sixteen-protocol unified API over one C-ABI core. What exists today is the
+**wire contract**, not a transport: the connector set, the ordinals, and
+cross-language agreement about them.
+
+The ordinal is the contract — a connector tag crosses the FFI boundary as a
+`u8`, so if Zig, Rust and Idris2 disagree about which number means which
+protocol, every call dispatches to the wrong handler. Nothing crashes; the
+wrong thing just happens. So all three are generated from
+`config/connectors.ncl` and a test reads the generated Zig and Idris2 back and
+compares them to the compiled Rust.
+
+**Zero of the sixteen have a transport handler**, and `dispatch` returns
+`error.NotImplemented` for every one rather than a success code. The reference
+implementation elsewhere in the estate ships sixteen stubs whose `dispatch`
+returns 0 — surface that reads as a transport layer and is not one. When a
+transport lands, `implemented` flips in the Nickel manifest, and a Zig test
+fails until the manifest and the code agree in both directions.
 
 ## Integration with IDApTIK
 

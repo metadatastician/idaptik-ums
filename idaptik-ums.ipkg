@@ -24,6 +24,7 @@ modules = Primitives,
           Validation,
           Multiplayer,
           GameSystems,
-          ProvenBridge
+          ProvenBridge,
+          Hexadeca
 
 depends = proven

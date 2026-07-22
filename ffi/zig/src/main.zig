@@ -33,6 +33,7 @@ comptime {
     _ = @import("proven_bridge");
     _ = @import("multiplayer");
     _ = @import("game_systems");
+    _ = @import("hexadeca");
 }
 
 /// Global general-purpose allocator used for all heap allocations.

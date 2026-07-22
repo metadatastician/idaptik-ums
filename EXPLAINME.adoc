@@ -203,6 +203,30 @@ checkable property, but it is a statement about the *ABI's* internal
 consistency. It does not prove the Zig FFI on the other side of the boundary
 agrees — that is what the wire-order parity work is for, and it is not built.
 
+=== "The Hexadeca wire order agrees across Zig, Rust and Idris2"
+
+How this is implemented::
+`config/connectors.ncl` is the source of truth; `config/hexadeca-{zig,rs,idr}.ncl`
+generate `ffi/zig/src/hexadeca.zig`, `crates/ums-dlc/src/hexadeca.rs` and
+`abi/Hexadeca.idr`. The Nickel contract enforces exactly sixteen members with
+dense ordinals 0..15, distinct snake_case names.
+
+Evidence::
+`crates/ums-dlc/tests/hexadeca_wire_order.rs` parses the generated Zig and
+Idris2 back and compares them to the compiled Rust — 7 tests. Negative-tested
+by swapping the `rest` and `jsonrpc` ordinals in the Zig, which fails with
+"Zig and Rust disagree on the wire order".
++
+The Idris2 module is covered by the ABI trusted-base gate: 18 of 18 modules
+typecheck with `%default total` and no escape hatches.
+
+Caveat::
+*Zero of the sixteen connectors have a transport handler.* What is built is
+the wire contract, not a transport layer; `dispatch` returns
+`error.NotImplemented` for every tag. The Zig tests are also unverified
+locally — `_zig-guard` pins zig 0.14.0 and the development machine has 0.16.0,
+so only `zig ast-check` was run here and CI is the first real execution.
+
 === "Python, TypeScript, ReScript and Go are not used"
 
 Evidence::
@@ -225,8 +249,9 @@ path name is stale.
   installed on the development machine.
 
 | Zig hexadeca connector
-| *Not started.* `ffi/zig/` is the existing 11-file C-ABI surface, not the
-  16-protocol unified connector.
+| Wire contract only. The sixteen connectors, their ordinals and
+  cross-language agreement are built and gated; *zero* have a transport
+  handler, and `dispatch` returns `NotImplemented` for every tag.
 
 | Editor frontends (Bevy / Fyrox / TUI)
 | *Not started.* The engine has no interactive consumer.

@@ -99,6 +99,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Generated from config/connectors.ncl — see hexadeca.zig's header.
+    const hexadeca_mod = b.addModule("hexadeca", .{
+        .root_source_file = b.path("src/hexadeca.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Common import set for library and test targets.
     const all_imports = &[_]std.Build.Module.Import{
         .{ .name = "types", .module = types_mod },
@@ -111,6 +118,7 @@ pub fn build(b: *std.Build) void {
         .{ .name = "proven_bridge", .module = proven_bridge_mod },
         .{ .name = "multiplayer", .module = multiplayer_mod },
         .{ .name = "game_systems", .module = game_systems_mod },
+        .{ .name = "hexadeca", .module = hexadeca_mod },
     };
 
     // ---------------------------------------------------------------
