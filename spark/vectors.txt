@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# Shared parity vectors for the ZonesOrdered proof.
+#
+# `just spark-parity` drives EVERY line through both the SPARK model
+# (spark/src/ums_zones.adb) and the Rust mirror
+# (crates/ums-ai-edit/src/constraints.rs) and diffs the verdicts. A vector
+# only earns its place if it could distinguish the two.
+#
+# Format: start,end,tier;start,end,tier;...   or the literal `empty`.
+# Integer coordinates only — the SPARK model is over integers (ADR-0003 §3).
+
+# --- vacuous and trivial ---
+empty
+0,10,0
+0,0,0
+
+# --- abutting is legal: zones touch, they do not overlap ---
+0,40,0;40,80,1
+0,40,0;40,80,0
+0,10,0;10,20,0;20,30,0
+
+# --- overlap is not ---
+0,40,0;20,60,1
+0,100,0;10,20,1
+0,10,0;10,20,0;15,30,1
+
+# --- inverted intervals ---
+40,0,0
+0,10,0;30,20,1
+
+# --- tier monotonicity with depth ---
+0,10,0;10,20,1;20,30,2
+0,10,3;10,20,1
+0,10,0;10,20,5;20,30,4
+0,10,2;10,20,2
+
+# --- input order must not matter: both models sort by start first ---
+40,80,1;0,40,0
+20,30,2;0,10,0;10,20,1
+40,80,0;0,40,1
+
+# --- boundary values ---
+-1000000,0,0;0,1000000,255
+0,1,0;1,2,0;2,3,0;3,4,0;4,5,0
+-5,-1,0;-1,3,1

@@ -61,3 +61,7 @@ harden/
 *.temp
 tmp/
 temp/
+
+# SPARK build artefacts
+spark/obj/
+spark/bin/
