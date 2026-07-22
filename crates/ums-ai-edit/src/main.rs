@@ -47,11 +47,39 @@ enum Command {
         #[arg(short, long, default_value_t = 5)]
         number: usize,
     },
+    /// Evaluate the ZonesOrdered proof over a shared vector table and print
+    /// one verdict per line.
+    ///
+    /// Exists so `just spark-parity` can drive the SAME vectors through this
+    /// engine and through the SPARK reference model in `spark/` and diff the
+    /// verdicts. The two must not be able to diverge silently.
+    ZonesVerdicts {
+        /// Path to the vector table (see spark/vectors.txt for the format).
+        vectors: String,
+    },
     /// Print the engine's own registry, vocabularies and guarantees as JSON.
     ///
     /// `just ai-edit-reflect` compares this against the Nickel source that
     /// generated it.
     Describe,
+}
+
+/// `start,end,tier` -> a zone object. Ids are synthesised: ZonesOrdered does
+/// not look at them, and the SPARK model has no notion of them.
+fn parse_zone(spec: &str) -> Result<Value, String> {
+    let parts: Vec<&str> = spec.split(',').collect();
+    if parts.len() != 3 {
+        return Err(format!("expected start,end,tier, got {spec:?}"));
+    }
+    let num = |s: &str| -> Result<i64, String> {
+        s.trim().parse::<i64>().map_err(|e| format!("{s:?}: {e}"))
+    };
+    Ok(json!({
+        "id": format!("z{}-{}", num(parts[0])?, num(parts[1])?),
+        "worldXStart": num(parts[0])?,
+        "worldXEnd": num(parts[1])?,
+        "securityTier": num(parts[2])?,
+    }))
 }
 
 fn read_state(path: &Option<String>) -> Result<ums_ai_edit::microkanren::Term, String> {
@@ -69,6 +97,52 @@ fn main() -> ExitCode {
     let cli = Cli::parse();
 
     match cli.command {
+        Command::ZonesVerdicts { vectors } => {
+            let text = match std::fs::read_to_string(&vectors) {
+                Ok(t) => t,
+                Err(e) => {
+                    eprintln!("error: {vectors}: {e}");
+                    return ExitCode::FAILURE;
+                }
+            };
+            for line in text.lines() {
+                let line = line.trim();
+                if line.is_empty() || line.starts_with('#') {
+                    continue;
+                }
+                let zones: Vec<Value> = if line == "empty" {
+                    Vec::new()
+                } else {
+                    match line.split(';').map(parse_zone).collect::<Result<_, _>>() {
+                        Ok(z) => z,
+                        Err(e) => {
+                            eprintln!("error: bad vector {line:?}: {e}");
+                            return ExitCode::FAILURE;
+                        }
+                    }
+                };
+                let state = engine::from_json(&json!({
+                    "zones": zones,
+                    "devices": [], "guards": [], "dogs": [], "drones": [],
+                    "assassins": [], "items": [], "npcs": [], "characters": [],
+                    "wiring": [], "zoneTransitions": [], "deviceDefences": [],
+                    "mission": null, "physical": null,
+                    "hasPBX": false, "pbxIp": null, "pbxWorldX": null
+                }));
+                let holds = !ums_ai_edit::microkanren::run(Some(1), |q| {
+                    ums_ai_edit::microkanren::conj(vec![
+                        ums_ai_edit::constraints::zones_ordered(state.clone()),
+                        ums_ai_edit::microkanren::eq(q, ums_ai_edit::microkanren::Term::Bool(true)),
+                    ])
+                })
+                .is_empty();
+                // Uppercase to match Ada's Boolean'Image, so the harness can
+                // diff the two streams directly.
+                println!("{}", if holds { "TRUE" } else { "FALSE" });
+            }
+            ExitCode::SUCCESS
+        }
+
         Command::Describe => {
             println!(
                 "{}",

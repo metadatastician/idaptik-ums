@@ -39,11 +39,11 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
-# Puzzle data carried over from the lineage repo. Same sole author; the
-# directory name still says "ts" for its ReScript/TypeScript origin and is
-# renamed in a later migration PR.
+# Puzzle data carried over from the lineage repo. Same sole author. The
+# directory was `legacy-ts-puzzles` until 2026-07-22; the "ts" named its
+# ReScript/TypeScript origin, not its contents, which are plain JSON.
 [[annotations]]
-path = "dlc/legacy-ts-puzzles/*.json"
+path = "dlc/legacy-puzzles/*.json"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"

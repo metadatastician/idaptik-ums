@@ -482,7 +482,7 @@ fn puzzle_errors(doc: &Value) -> Vec<String> {
 
 #[test]
 fn puzzles_reject_impossible_and_unknown_content() {
-    let base = load("dlc/legacy-ts-puzzles/beginner_01_simple_add.json");
+    let base = load("dlc/legacy-puzzles/beginner_01_simple_add.json");
     assert_eq!(puzzle_errors(&base), Vec::<String>::new());
 
     let mut p = base.clone();
@@ -543,7 +543,7 @@ fn puzzles_reject_impossible_and_unknown_content() {
 
 #[test]
 fn vault_sequences_reject_unknown_bits_and_malformed_ops() {
-    let base = load("dlc/legacy-ts-puzzles/vault_7.json");
+    let base = load("dlc/legacy-puzzles/vault_7.json");
     let mut e = Vec::new();
     check_vault_sequence(&base, &mut e);
     assert_eq!(e, Vec::<String>::new());

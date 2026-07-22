@@ -1,0 +1,128 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= SPARK reference model — ZonesOrdered
+:toc: preamble
+
+What is proved here, what is not, and why the split is where it is.
+
+== Why only one of the six proofs
+
+`ai_edit`'s six validity proofs are relational goals over a level state
+(ADR-0001). Five of them quantify over collections whose members reference
+each other by id — guards in zones, defences targeting devices, wiring between
+devices. Expressing those under SPARK would mean modelling the whole object
+graph.
+
+`ZonesOrdered` is different: it is pure bounded-integer geometry. Interval
+well-formedness, pairwise disjointness, and monotone security tier with depth.
+That is decidable, pointer-free, and exactly what SPARK is good at — so that
+is what is stated here as contracts and discharged by `gnatprove`.
+
+== What the postcondition buys
+
+The engine runs a cheap adjacent-pair sweep. The specification is quadratic:
+_no two_ zones overlap, _no_ later zone has a lower tier. Those are not
+obviously the same thing — the sweep is only sufficient because the array is
+start-sorted first.
+
+`Zones_Ordered`'s postcondition states the quadratic property, and the body
+proves the linear sweep decides it:
+
+[source,ada]
+----
+function Zones_Ordered (Zs : Zone_Array) return Boolean with
+  Pre  => Sorted_By_Start (Zs),
+  Post => Zones_Ordered'Result =
+            (All_Well_Formed (Zs)
+             and then Pairwise_Disjoint (Zs)
+             and then Tiers_Non_Decreasing (Zs));
+----
+
+That equivalence is the deliverable. It is the step a reviewer would otherwise
+have to take on trust.
+
+== Not linked at runtime
+
+This is a *proved reference model*, not a library the engine calls
+(ADR-0003 §3). `crates/ums-ai-edit/src/constraints.rs` mirrors it, and
+`just spark-parity` drives every vector in `vectors.txt` through both and
+diffs the verdicts.
+
+Runtime linkage was considered and rejected for now: it would add a second FFI
+lane beside the Zig one and split the unified constraints-as-goals search into
+in-process and out-of-process halves. Hardening to a linked model later changes
+no schema, no verb and no proof.
+
+== What proving it found
+
+The first version of this model specified overlap with a *symmetric*
+`Disjoint`: `A.End <= B.Start or else B.End <= A.Start`. `gnatprove` could not
+prove the loop invariant — and the reason was not that the proof was hard. The
+invariant was *false*.
+
+Under half-open `[Start, End)` semantics, `[0, 0)` is empty, so symmetric
+`Disjoint` calls `[0, 10]` and the degenerate `[0, 0]` disjoint. The engine
+rejects that pair: a start-sorted sweep asks whether each zone starts at or
+after the previous one *ended*, and `0 < 10`. The model and the engine
+genuinely disagreed, and no parity vector had exercised it.
+
+The specification is now directional — `Ordered_Non_Overlapping`, every
+earlier interval ending at or before every later one starts — which is what a
+start-sorted sweep decides, matches the engine including degenerate intervals,
+and reduces the proof to integer transitivity instead of a case split through
+an `or else` on every pair.
+
+`spark/vectors.txt` gained five degenerate/equal-start cases. `0,10,0;0,0,1`
+is rejected while `0,0,0;0,10,1` is accepted: the same two zones in the other
+order, which is the whole subtlety.
+
+== Fidelity gap, stated
+
+[IMPORTANT]
+====
+The engine's `worldX` coordinates are JSON numbers and may be *fractional*.
+This model is over `World_Coord`, an integer range. The arithmetic being
+proved — ordering, disjointness, monotonicity — is the same, and the parity
+harness therefore drives integer vectors only.
+
+*A counterexample that depends on fractional coordinates would not be caught
+by this model.* Widening to fixed-point is possible and is not done here.
+====
+
+Two further bounds worth knowing: `Max_Zones` is 256, and `World_Coord` is
+±1,000,000 — chosen so every comparison is provably overflow-free, and far
+outside level scale.
+
+== Running it
+
+[source,console]
+----
+$ just spark-parity        # needs gnat + cargo; 21 vectors through both models
+$ just proof-check-spark   # needs gnatprove; discharges the VCs
+----
+
+`proof-check-spark` *fails* when `gnatprove` is absent rather than exiting 0.
+That is deliberate. The estate's most-repeated defect is a `proof-check-*`
+recipe that passes without a prover — fifty-four repository roots, every one
+reporting a green proof gate for a tree no prover ever looked at. The sibling
+`vordr` repo still carries the shape (`else echo "No Ada code yet"`, exit 0).
+
+Both gates were negative-tested:
+
+[cols="3,2"]
+|===
+| Planted defect | Result
+
+| SPARK body diverges from its own postcondition | `spark-parity` exits 1
+| The vector table is emptied | `spark-parity` exits 1 (no vacuous pass)
+| `gnatprove` absent | `proof-check-spark` exits 1
+|===
+
+Current state, measured 2026-07-22 with `gnatprove` FSF 16.1.0 / Why3 1.8.2:
+
+[source]
+----
+Run-time Checks        16   16 (CVC5)          0 unproved
+Assertions              6   6                  0 unproved
+Functional Contracts    1   1                  0 unproved
+----

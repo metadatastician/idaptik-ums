@@ -113,10 +113,20 @@ Both gates fail when `nickel` is absent rather than skipping. A generator that
 silently skips its work reports success for a tree it never looked at.
 
 Caveat::
-Two of the six original copies are generated today (the JSON Schema and the
-Rust registry). `abi/Types.idr` and `ffi/zig/src/types.zig` still declare
-their enums by hand and are *not yet* generated — they are checked by tests,
-not by codegen.
+Two of the six copies are generated today (the JSON Schema and the Rust
+registry). `abi/Types.idr` and `ffi/zig/src/types.zig` still declare their
+enums by hand — but they are now gated rather than merely "checked":
+`crates/ums-dlc/tests/vocab_parity.rs` compares the four shared vocabularies
+against `config/vocab.ncl` in declaration order, and asserts the Zig
+`enum(u8)` ordinals are dense from zero. Negative-tested by renaming an Idris
+constructor and by swapping two Zig ordinals — the latter being the case a
+membership check cannot see.
++
+Generating them outright remains the better end state. It is blocked, not
+forgotten: both files also carry ABI-only types (`AlertLevel`,
+`ItemCondition`, the cable/adapter/tool enums) with no place in an edit
+vocabulary, so wholesale generation would either drag them into `vocab.ncl` or
+lose them.
 
 === "Reflective — the engine describes itself and CI proves it true"
 
@@ -238,9 +248,9 @@ Evidence::
 them. `licence-hygiene.yml` gates attributability of every tracked file.
 
 Caveat::
-`dlc/legacy-ts-puzzles/` still carries a directory name from its
-ReScript/TypeScript origin. The 27 files in it are plain JSON data; only the
-path name is stale.
+None outstanding. `dlc/legacy-ts-puzzles/` was the last path naming a banned
+language; it is now `dlc/legacy-puzzles/`. The 27 files in it are, and always
+were, plain JSON data.
 
 == Where the evidence stops
 
@@ -249,8 +259,10 @@ path name is stale.
 | Claim area | Status
 
 | SPARK/GNATprove reference model
-| *Not started.* No `spark/` directory, no proof gate. `gnatprove` is not
-  installed on the development machine.
+| *Proved.* `gnatprove --level=2` (FSF 16.1.0) reports no unproved checks, and
+  26 shared vectors give identical verdicts in the SPARK model and the Rust
+  engine. Proving it found a real defect — see the note on `Disjoint` in
+  `spark/src/ums_zones.ads`.
 
 | Zig hexadeca connector
 | Wire contract only. The sixteen connectors, their ordinals and

@@ -21,3 +21,7 @@ __pycache__/
 
 # Rust build artefacts
 /target/
+
+# SPARK build artefacts
+spark/obj/
+spark/bin/
