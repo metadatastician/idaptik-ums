@@ -238,9 +238,9 @@ Evidence::
 them. `licence-hygiene.yml` gates attributability of every tracked file.
 
 Caveat::
-`dlc/legacy-ts-puzzles/` still carries a directory name from its
-ReScript/TypeScript origin. The 27 files in it are plain JSON data; only the
-path name is stale.
+None outstanding. `dlc/legacy-ts-puzzles/` was the last path naming a banned
+language; it is now `dlc/legacy-puzzles/`. The 27 files in it are, and always
+were, plain JSON data.
 
 == Where the evidence stops
 

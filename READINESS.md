@@ -85,9 +85,9 @@ stated rather than papered over.
 - The UMS → game round trip has never been executed end to end. Both sides
   validate against the same declared contract, but nothing proves the game
   accepts what UMS emits.
-- `dlc/legacy-ts-puzzles/` carries a directory name from its
-  ReScript/TypeScript origin. The 27 files are plain JSON; only the path is
-  stale.
+- ~~`dlc/legacy-ts-puzzles/` carries a directory name from its
+  ReScript/TypeScript origin~~ — **resolved 2026-07-22**, renamed to
+  `dlc/legacy-puzzles/`.
 - RSR compliance is partial: `.machine_readable/6a2/` + contractiles are
   present, but `0-AI-MANIFEST.a2ml` is absent and no Immaculate Guide
   compliance evidence is recorded in STATE.a2ml (a formal Grade-D
