@@ -6,4 +6,4 @@
 (trust no-secrets-committed :cmd "test ! -f .env && test ! -f credentials.json")
 (trust container-images-pinned :cmd "test ! -f Containerfile || grep -q '@sha256:' Containerfile")
 (trust stapeln-images-pinned :cmd "test ! -f stapeln.toml || ! grep -E '^from\\s*=\\s*\".*:latest\"' stapeln.toml")
-(trust dlc-manifest-schema :doc "dlc-manifest.json validates against the game's DLC schema." :cmd "test -f dlc-manifest.json && python -c \"import json; json.load(open('dlc-manifest.json'))\"")
+(trust dlc-manifest-schema :doc "dlc-manifest.json validates against the game's DLC schema." :cmd "test -f dlc-manifest.json && cargo run -q -p ums-dlc --manifest-path ../../Cargo.toml")

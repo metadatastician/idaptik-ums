@@ -214,6 +214,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ums-dlc"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "serde_json",
+ "ums-ai-edit",
+]
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"

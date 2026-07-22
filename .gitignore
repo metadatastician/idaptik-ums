@@ -8,7 +8,8 @@ zig-cache/
 # Idris2 build output
 build/
 
-# Python bytecode (just test / lint / dlc-check produce these; NB cpython-313
+# Python bytecode. Nothing in this repo produces it any more (the engine and
+# the DLC validator are Rust); kept so a stray local run cannot re-commit it (cpython-313
 # pycs are tracked from before — untracking them is separate hygiene, this just
 # stops new ones)
 __pycache__/
