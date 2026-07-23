@@ -1,12 +1,33 @@
+<<<<<<< HEAD
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+# --- Zig FFI (ffi/zig) build output ---
+zig-out/
+.zig-cache/
+zig-cache/
+
+# Idris2 build output
+=======
 # Dependencies
 node_modules/
 .vendor/
 dist/
+>>>>>>> origin/main
 build/
 target/
 bin/
 *.egg-info/
 __pycache__/
+<<<<<<< HEAD
+*.pyc
+
+# Python bytecode (the Python sources themselves are removed in the Rust migration).
+__pycache__/
+*.pyc
+
+# Rust build artefacts
+/target/
+=======
 .venv/
 venv/
 .env/
@@ -43,3 +64,4 @@ harden/
 *.temp
 tmp/
 temp/
+>>>>>>> origin/main
