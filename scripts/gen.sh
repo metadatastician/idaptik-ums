@@ -22,20 +22,36 @@ if ! command -v nickel >/dev/null 2>&1; then
     exit 1
 fi
 
-# source .ncl  ->  generated artifact
+# source .ncl : generated artifact : nickel output format
+# `raw` emits the exported string verbatim; Rust output is then rustfmt'd so
+# the committed file is stable and `--check` compares like with like.
 TARGETS=(
-    "config/edit-script-schema.ncl:schemas/edit-script.schema.json"
+    "config/edit-script-schema.ncl:schemas/edit-script.schema.json:json"
+    "config/vocab-rs.ncl:crates/ums-ai-edit/src/vocab.rs:raw"
 )
 
 mode="${1:-write}"
 rc=0
 
 for pair in "${TARGETS[@]}"; do
-    src="${pair%%:*}"
-    dst="${pair#*:}"
+    src="$(echo "$pair" | cut -d: -f1)"
+    dst="$(echo "$pair" | cut -d: -f2)"
+    fmt="$(echo "$pair" | cut -d: -f3)"
 
     tmp="$(mktemp)"
-    nickel export "$src" --format json > "$tmp"
+    nickel export "$src" --format "$fmt" > "$tmp"
+
+    if [ "${dst##*.}" = "rs" ]; then
+        command -v rustfmt >/dev/null 2>&1 || {
+            echo "error: rustfmt not found; generated Rust cannot be normalised." >&2
+            exit 1
+        }
+        # `rustfmt --emit stdout` prefixes the output with a "<path>:" banner
+        # and a blank line; strip both so the committed file is pure source.
+        rustfmt --edition 2024 --emit stdout "$tmp" 2>/dev/null \
+            | tail -n +3 > "$tmp.fmt"
+        mv "$tmp.fmt" "$tmp"
+    fi
 
     if [ "$mode" = "--check" ]; then
         if ! diff -u "$dst" "$tmp" > /dev/null 2>&1; then
