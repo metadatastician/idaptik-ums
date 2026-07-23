@@ -1,34 +1,41 @@
-= idaptik-ums
+= IDApTIK UMS (Universal Modding Studio)
 
-The Unified Modding Studio (UMS). Procedural-generation pipeline and integration libraries for idaptik characters, levels, objects, and DLC extensions.
+[quote]
+____
+Don't just infiltrate the network. Rewrite it.
+____
 
-== Architecture
+Welcome to the **Universal Modding Studio (UMS)** for IDApTIK. 
 
-This repository contains the core logic, engines, and bridge components for UMS content generation and validation. Based on the current repository state, the system is composed of several specialized subsystems:
+IDApTIK is an asymmetric infiltration game about trust and deception. UMS is the procedural-generation pipeline and integration toolkit that hands the keys over to you. It is the engine that allows you to tear the game apart, build it back together, and seamlessly inject your own rules, stories, and worlds directly into the core engine. 
 
-=== 1. Idris2 ABI (`abi/`)
-A suite of 17 Idris2 modules providing dependent-type proofs for the game integration boundary and core structures.
-* *Scope*: Primitives, Devices, Zones, Validation, and experimental `ProvenBridge`.
-* *Packaging*: Managed via `idaptik-ums.ipkg`.
+== What can you mod?
 
-=== 2. Zig FFI (`ffi/zig/`)
-Zig-based C-ABI exports (built with Zig 0.14.0) that integrate the core data structures and proofs with host systems and the game itself.
-* *Scope*: 11 source files translating Idris2 ABI modules into C-compatible interfaces, along with robust integration tests.
+Almost everything. If it exists in the IDApTIK universe, UMS provides the hooks to generate, validate, and inject it:
 
-=== 3. DLC & VM (`dlc/`)
-Assets and runtimes for executing and verifying DLC payloads.
-* *`dlc/vm/`*: A 23-instruction reversible virtual machine written in AffineScript, ported from `idaptik-dlc-vm`.
-* *`dlc/legacy-ts-puzzles/`*: Authored puzzle JSONs preserved from `idaptik-dlc-iky`.
+* **Worlds & Architecture:** Levels, zones, routing boundaries, and wiring diagrams.
+* **Entities:** Characters, animals, NPCs, and patrol dogs.
+* **Minds & Behavior:** Game AI for behavior, player character traits, and security responses.
+* **Narrative:** Storylines, plots, dialogue, themes, and tropes.
+* **Assets:** Objects, devices, and interactive terminals.
 
-=== 4. Schemas (`config/`, `schemas/`)
-Contracts ensuring UMS-generated content conforms to the game's expectations.
-* *Nickel Source of Truth*: Generative schemas defined in `config/*.ncl`.
+== How it works
 
-== UMS↔game integration
+UMS isn't just a basic level editor; it's a robust procedural generation and validation pipeline designed to ensure that player-created DLC is completely bulletproof before it ever touches the game. 
 
-UMS produces generated content as `dlc-manifest.json` artifacts in the same shape as AssetPack output. The game's existing DLC loader consumes them with no game-side code changes. 
+1. **Generative Truth (Nickel):** All content rules and schemas are defined in Nickel, providing a typed, functional source of truth for the universe's constraints.
+2. **Constraint-Driven Generation (Rust & miniKanren):** The `ai_edit` engine (now powered by a Rust miniKanren kernel) acts as a relational constraint solver. You define the *intent* of your edit or procedural generation, and the engine resolves it into a valid game state.
+3. **Rigorous Validation (DLC VM & Idris2):** Before any content is packaged, it is mathematically proven and validated. The Idris2 ABI provides dependent-type proofs for the game integration boundary, and the DLC VM executes payloads to verify their safety.
+4. **Seamless Injection (Zig FFI):** UMS produces `dlc-manifest.json` artifacts that match the game's exact AssetPack output. The game's native DLC loader consumes these payloads via a highly-optimized Zig C-ABI—requiring zero game-side code changes.
 
-The integration contract is declared via schemas (generated from Nickel definitions) and validated locally before delivery.
+== The Stack
+
+Based on the current repository state, the system is composed of several specialized subsystems:
+
+* **Schemas (`config/`, `schemas/`)**: Contracts ensuring UMS-generated content conforms to the game's expectations, written in Nickel.
+* **Idris2 ABI (`abi/`)**: Dependent-type proofs for the game integration boundary and core structures.
+* **Zig FFI (`ffi/zig/`)**: Zig-based C-ABI exports (built with Zig 0.14.0) that integrate the core data structures with host systems.
+* **DLC & VM (`dlc/`)**: Assets and runtimes for executing and verifying DLC payloads, including a 23-instruction reversible virtual machine.
 
 == Development & Testing
 
@@ -38,6 +45,6 @@ This project uses `just` as its command runner. Key recipes:
 * `just gen` / `gen-check` — Regenerate and verify JSON schemas from Nickel sources.
 * `just test-all` — Run all gates (DLC check, Zig FFI integration).
 
-== License
+== Licensing
 
 AGPL-3.0-or-later for code, CC-BY-SA-4.0 for documentation.
