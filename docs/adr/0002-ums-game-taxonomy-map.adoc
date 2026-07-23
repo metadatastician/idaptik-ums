@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0002: The UMS <-> game taxonomy map at the DLC manifest seam
+:toc: preamble
+
+Status: Accepted (device kinds 2026-07-20; zones ratified 2026-07-21) +
+Date: 2026-07-20 (zones ratified 2026-07-21) +
+Deciders: @hyperpolymath (device-kind ruling and zone ruling)
+
+== Context
+
+UMS (the level architect) and the IDApTIK game (the network sim) grew two
+taxonomies for the same world — deliberately two taxonomies, not a desync,
+but content has to cross between them at exactly one seam: the DLC manifest
+(`schemas/dlc-manifest.schema.json`) and its `idaptik-edit/1` payloads.
+
+* *Device kinds.* UMS (`abi/Types.idr`) has 12: Laptop, Desktop, Server,
+  Router, Switch, Firewall, Camera, AccessPoint, PatchPanel, PowerSupply,
+  PhoneSystem, FibreHub. The game (`idaptik-core` `device::DeviceKind`) had
+  15, overlapping on only 5 (Laptop, Server, Router, Firewall, Camera). Any
+  UMS-authored Desktop, Switch, AccessPoint, PatchPanel, PowerSupply,
+  PhoneSystem or FibreHub had no game-side name: content would either be
+  rejected or lossily collapsed onto a nearby kind.
+* *Zones.* UMS zones (`abi/Zones.idr`) are `{name, securityTier : Nat}` —
+  an open, clearance-graded model. The game's `network::Zone` is a closed
+  world of 8 named segment categories: Lan, Dmz, Internal, Iot, Management,
+  Scada, Isp, Service. There is no injective mapping in either direction.
+
+== Decision
+
+=== Device kinds: extend the game's enum (ruled)
+
+The ruling: *the game enum is extended*, not the UMS content remapped. The
+companion game PR (`metadatastician/IDApTIK` branch
+`feat/devicekind-ums-parity`) appends the 7 UMS-only kinds to
+`DeviceKind`, so the game enum is now a strict superset of the UMS enum and
+the UMS->game device mapping is a *total, lossless, 1:1 identity*.
+
+The mapping still exists as an explicit, versioned artifact —
+`schemas/taxonomy-map.json` (`format: idaptik-taxonomy-map/1`),
+`device-kinds` table — rather than being left implicit in "the names
+happen to match", because implicit identity is exactly how drift starts.
+It is load-bearing: `scripts/validate_dlc.py` derives its `add_device`
+kind vocabulary from the table (an incoherent map fails the validator at
+load), and `tests/test_taxonomy_map.py` pins the table to
+`ai_edit/vocab.py` and to the enums in `schemas/edit-script.schema.json`.
+
+=== Zones: default tier banding + per-zone override (RATIFIED 2026-07-21)
+
+The zone half was ratified by the owner on 2026-07-21, adopting the
+recommended default *unchanged* on all three open questions: (1) the tier
+band ladder stands as shipped; (2) Iot/Isp/Service remain override-only —
+no tier ever maps to them; (3) an authored per-zone `segment` always wins
+over the banding. The map file records this
+(`zone-defaults-status: ratified-2026-07-21`):
+
+* *Default banding* (`zone-tier-bands` in `schemas/taxonomy-map.json`):
+  a zone's `securityTier` selects the band with the highest `min-tier`
+  less than or equal to it —
+
+|===
+| securityTier | game segment | reading
+
+| 0 | Lan | public front of house
+| 1 | Dmz | perimeter-exposed
+| 2 | Internal | protected interior
+| 3 | Management | restricted operations
+| 4+ | Scada | critical plant
+|===
+
+* *Per-zone override*: `add_zone` in `schemas/edit-script.schema.json`
+  gains an optional `segment` field (enum of the game's 8 segments). An
+  authored override always wins over the banding. Iot, Isp and Service are
+  reachable *only* by override: they are functional categories, not
+  clearance grades, and no tier should silently land content in them.
+
+The banding is total (band 0 exists, tiers strictly increase), so every
+`Nat` tier resolves; the sample artifact
+(`dlc/examples/ai-edit-sample/edit-script.json`) exercises the override.
+
+== Consequences
+
+* UMS `idaptik-edit/1` content round-trips into the game with zero lossy
+  device remapping; the game may keep kinds UMS does not author
+  (Terminal, IotCamera, SmartDoor, ...) — the seam only requires the
+  superset direction.
+* Any future change to either taxonomy must go through
+  `schemas/taxonomy-map.json` and will be caught by `just dlc-check` and
+  the unittest suite if the copies disagree.
+* The zone ruling landed 2026-07-21 with zero changes to
+  `zone-tier-bands` or the override policy — the shipped default was
+  adopted as-is, so no content, schema or validator behaviour changed;
+  only the status markers did. Any *future* change to the banding is a
+  new ruling, versioned by the map's `format` tag.

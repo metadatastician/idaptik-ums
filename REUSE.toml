@@ -1,0 +1,41 @@
+version = 1
+SPDX-PackageName = "idaptik-ums"
+SPDX-PackageSupplier = "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-PackageDownloadLocation = "https://github.com/metadatastician/idaptik-ums"
+
+# JSON has no comment syntax, so these files cannot carry the two-line SPDX
+# header every other source file in this tree carries. They are declared here
+# instead. `.machine_readable/contractiles/Adjustfile.a2ml` sets a tolerance of
+# "0 files missing SPDX-License-Identifier"; before this file existed that
+# tolerance was unmeetable for 34 tracked files, and nothing enforced it.
+#
+# The `Every file is attributable` step of .github/workflows/licence-hygiene.yml
+# reads the `path` globs below directly. Adding a JSON file outside these globs
+# fails CI rather than silently going unattributed.
+
+[[annotations]]
+path = "schemas/*.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "dlc/vm/*.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "dlc/examples/ai-edit-sample/*.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Puzzle data carried over from the lineage repo. Same sole author; the
+# directory name still says "ts" for its ReScript/TypeScript origin and is
+# renamed in a later migration PR.
+[[annotations]]
+path = "dlc/legacy-ts-puzzles/*.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

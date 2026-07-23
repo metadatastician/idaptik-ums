@@ -3,11 +3,11 @@
   "description": "Use ROL to scramble a number, then ROR to decrypt it back.",
   "difficulty": "intermediate",
   "initialState": {
-    "message": 0b10101010,
+    "message": 170,
     "key": 3
   },
   "goalState": {
-    "message": 0b10101010,
+    "message": 170,
     "key": 3
   },
   "maxMoves": 10,

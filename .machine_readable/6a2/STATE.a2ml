@@ -1,11 +1,12 @@
-; SPDX-License-Identifier: MPL-2.0
+; SPDX-License-Identifier: AGPL-3.0-or-later
+; SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 ; STATE.a2ml — idaptik-ums
 
 [metadata]
 project = "idaptik-ums"
 version = "0.1.0-alpha"
 type = "modding-studio"
-last-updated = "2026-04-30"
+last-updated = "2026-07-10"
 branch = "main"
 build-status = "scaffold"
 test-status = "pending — Zig FFI tests carry over from existing monorepo"
@@ -25,12 +26,12 @@ abi = { percent = 95, notes = "17 Idris2 modules, 0 believe_me — carry over fr
 ffi = { percent = 95, notes = "11 Zig files, 20 tests — carry over." }
 proven-bridge = { percent = 30, notes = "Gated to experimental/; 2 typed holes; decision deferred per Recovery PR 4." }
 docs-tauri-purge = { percent = 0, notes = "Recovery PR 4 — 5 files mention Tauri; rewrite to Gossamer." }
-ums-game-bridge = { percent = 10, notes = "Schema declared in idaptik-contracts; codegen running. Generator side not yet wired." }
+ums-game-bridge = { percent = 45, notes = "Envelope + puzzle schemas live in schemas/ with `just dlc-check` smoke test over all dlc/ artifacts; scenario-definition/actor-pack kinds reserved with payload.format tags (payload internals owned by idaptik-core). Generator side not yet wired; idaptik-contracts codegen alignment pending." }
 
 [route-to-mvp]
 remaining = [
   { item = "Recovery PR 4 — Tauri→Gossamer doc rewrite", priority = "critical" },
-  { item = "Recovery PR 4 — UMS-game smoke test passing", priority = "critical" },
+  { item = "Recovery PR 4 — UMS-game smoke test passing (DONE 2026-07-10: just dlc-check)", priority = "critical" },
   { item = "Run scaffold-component.py to fill RSR + contractiles + remaining 6a2", priority = "high" },
   { item = "Port shell from src/{App.res, editor/, abi/}", priority = "high" },
   { item = "Carry over 17 Idris2 ABI modules", priority = "medium" },

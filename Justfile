@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: MPL-2.0
-# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
 # RSR Standard Justfile Template
 # https://just.systems/man/en/
@@ -19,9 +19,9 @@ set positional-arguments := true
 import? "build/contractile.just"
 
 # Project metadata — customize these
-project := "rsr-template-repo"
-OWNER := "hyperpolymath"
-REPO := "rsr-template-repo"
+project := "idaptik-ums"
+OWNER := "metadatastician"
+REPO := "idaptik-ums"
 version := "0.1.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 
@@ -80,26 +80,20 @@ import? "build/just/assess.just"
 # BUILD & COMPILE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Build the project (debug mode)
-build *args:
-    @echo "Building {{project}} (debug)..."
-    # TODO: Replace with your build command
-    # Examples:
-    #   cargo build {{args}}                    # Rust
-    #   mix compile {{args}}                    # Elixir
-    #   zig build {{args}}                      # Zig
-    #   deno task build {{args}}                # Deno/ReScript
-    @echo "Build complete"
+# Build the Zig FFI shared + static library (debug).
+# Body lives here (just forbids duplicate recipe names); the rest of the Zig
+# FFI tooling (_zig-guard, test-ffi, zig_version) is in the ZIG FFI section
+# at the end of this file.
+build *args: _zig-guard
+    @echo "Building {{project}} FFI (debug)..."
+    cd ffi/zig && zig build {{args}}
+    @echo "Build complete — artefacts in ffi/zig/zig-out/lib/"
 
-# Build in release mode with optimizations
-build-release *args:
-    @echo "Building {{project}} (release)..."
-    # TODO: Replace with your release build command
-    # Examples:
-    #   cargo build --release {{args}}
-    #   MIX_ENV=prod mix compile {{args}}
-    #   zig build -Doptimize=ReleaseFast {{args}}
-    @echo "Release build complete"
+# Build the Zig FFI in release mode (same guard + tree as `build`)
+build-release *args: _zig-guard
+    @echo "Building {{project}} FFI (release)..."
+    cd ffi/zig && zig build -Doptimize=ReleaseFast {{args}}
+    @echo "Release build complete — artefacts in ffi/zig/zig-out/lib/"
 
 # Build and watch for changes (requires entr or similar)
 build-watch:
@@ -124,97 +118,61 @@ clean-all: clean
 # TEST & QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Run all tests
+# Run the Python unit-test suite (ai_edit engine + DLC validator tests)
 test *args:
-    @echo "Running tests..."
-    # TODO: Replace with your test command
-    # Examples:
-    #   cargo test {{args}}
-    #   mix test {{args}}
-    #   zig build test {{args}}
-    #   deno test {{args}}
-    @echo "Tests passed!"
+    python3 -m unittest discover -s tests {{args}}
 
-# Run tests with verbose output
-test-verbose:
-    @echo "Running tests (verbose)..."
-    # TODO: Replace with verbose test command
+# NOTE: the former test-verbose / test-smoke / e2e / aspect / bench /
+# readiness recipes were template stubs that echoed "passed!" without
+# running anything. Deleted 2026-07-20 — a gate that cannot fail is not a
+# gate. Reintroduce a name from that list only together with a real
+# implementation.
 
-# Smoke test
-test-smoke:
-    @echo "Smoke test..."
-    # TODO: Add basic sanity checks
-
-# Run end-to-end tests (full pipeline: build → run → verify)
-e2e:
-    @echo "Running E2E tests..."
-    # TODO: Replace with your E2E test command. Examples:
-    #   bash tests/e2e.sh                    # Shell-based E2E
-    #   npx playwright test                  # Browser E2E
-    #   mix test test/integration/e2e_test.exs  # Elixir E2E
-    #   cargo test --test end_to_end         # Rust E2E
-    @echo "E2E tests passed!"
-
-# Run aspect tests (cross-cutting concern validation)
-aspect:
-    @echo "Running aspect tests..."
-    # TODO: Replace with your aspect test command. Examples:
-    #   bash tests/aspect_tests.sh           # Shell-based aspect tests
-    #   cargo test --test aspects             # Rust aspect tests
-    # Aspect tests validate architectural invariants:
-    #   - Thread safety (mutex in FFI modules)
-    #   - ABI/FFI contract (declarations match exports)
-    #   - SPDX compliance (all files have license headers)
-    #   - No dangerous patterns (believe_me, assert_total, etc.)
-    @echo "Aspect tests passed!"
-
-# Run benchmarks (performance regression detection)
-bench:
-    @echo "Running benchmarks..."
-    # TODO: Replace with your benchmark command. Examples:
-    #   cargo bench                           # Rust criterion
-    #   zig build bench                       # Zig benchmarks
-    #   mix run bench/benchmarks.exs          # Elixir benchee
-    #   deno bench                            # Deno bench
-    @echo "Benchmarks complete!"
-
-# Run readiness tests (Component Readiness Grade: D/C/B)
-readiness:
-    @echo "Running readiness tests..."
-    # TODO: Replace with your readiness test command. Examples:
-    #   cargo test --test readiness -- --nocapture
-    @echo "Readiness tests complete!"
-
-# Print the current CRG grade (reads from READINESS.md '**Current Grade:** X' line)
+# Print the current CRG grade. Reads the '**Current Grade:** X' line from
+# READINESS.md and FAILS if it is missing — the old template silently fell
+# back to "X" (and its Makefile-style $$(...) escaping made it a bash
+# syntax error anyway, so it had never actually run).
 crg-grade:
-    @grade=$$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md 2>/dev/null | head -1); \
-    [ -z "$$grade" ] && grade="X"; \
-    echo "$$grade"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    grade=$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md | head -1 || true)
+    if [ -z "$grade" ]; then
+        echo "error: no '**Current Grade:** <A-F|X>' line in READINESS.md" >&2
+        exit 1
+    fi
+    echo "$grade"
 
 # Print a shields.io CRG badge for embedding in README files
-# Looks for '**Current Grade:** X' in READINESS.md; falls back to X
 crg-badge:
-    @grade=$$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md 2>/dev/null | head -1); \
-    [ -z "$$grade" ] && grade="X"; \
-    case "$$grade" in \
-      A) color="brightgreen" ;; \
-      B) color="green" ;; \
-      C) color="yellow" ;; \
-      D) color="orange" ;; \
-      E) color="red" ;; \
-      F) color="critical" ;; \
-      *) color="lightgrey" ;; \
-    esac; \
-    echo "[![CRG $$grade](https://img.shields.io/badge/CRG-$$grade-$$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    grade=$(just crg-grade)
+    case "$grade" in
+      A) color="brightgreen" ;;
+      B) color="green" ;;
+      C) color="yellow" ;;
+      D) color="orange" ;;
+      E) color="red" ;;
+      F) color="critical" ;;
+      *) color="lightgrey" ;;
+    esac
+    echo "[![CRG $grade](https://img.shields.io/badge/CRG-$grade-$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
 
-# Run the full merge-requirement test suite (ALL categories)
-# Per STANDING rule: P2P + E2E + aspect + execution + lifecycle + bench
-test-all: test e2e aspect bench readiness
-    @echo "All test categories passed — safe to merge!"
+# Chains ONLY recipes that do real work and can fail:
+#   test          — Python unit tests (ai_edit engine + DLC validator)
+#   dlc-check     — schema validation of every dlc/ artifact
+#   ai-edit-check — engine suite + sample edit-script replay
+#   test-ffi      — Zig FFI integration tests (zig build test, 0.14.0-guarded)
+# The former chain (test e2e aspect bench readiness) was five echo-stubs
+# ending in a fabricated "safe to merge!".
 
-# Run all quality checks
+# Run every real test gate in this repo (unit + DLC schema + ai-edit + FFI)
+test-all: test dlc-check ai-edit-check test-ffi
+    @echo "test-all: Python unit + DLC schema + ai-edit replay + Zig FFI — all gates real, all green"
+
+# Run all quality checks (zig fmt --check, Python byte-compile, unit tests)
 quality: fmt-check lint test
-    @echo "All quality checks passed!"
+    @echo "Quality checks passed (zig fmt --check, python compileall, unittest)"
 
 # Fix all auto-fixable issues [reversible: git checkout]
 fix: fmt
@@ -224,33 +182,71 @@ fix: fmt
 # LINT & FORMAT
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Format all source files [reversible: git checkout]
-fmt:
-    @echo "Formatting source files..."
-    # TODO: Replace with your formatter
-    # Examples:
-    #   cargo fmt
-    #   mix format
-    #   gleam format
-    #   deno fmt
+# Format Zig FFI sources — the only pinned formatter here [reversible: git checkout]
+fmt: _zig-guard
+    cd ffi/zig && zig fmt .
 
-# Check formatting without changes
-fmt-check:
-    @echo "Checking formatting..."
-    # TODO: Replace with your format check
-    # Examples:
-    #   cargo fmt --check
-    #   mix format --check-formatted
-    #   gleam format --check
+# Check Zig formatting without changing files (fails on drift)
+fmt-check: _zig-guard
+    cd ffi/zig && zig fmt --check .
 
-# Run linter
+# Honest scope: no style linter is pinned for this repo yet, so this
+# catches syntax errors only — but it is a real, failing check.
+
+# Syntax-level lint: byte-compile all Python sources
 lint:
-    @echo "Linting source files..."
-    # TODO: Replace with your linter
-    # Examples:
-    #   cargo clippy -- -D warnings
-    #   mix credo --strict
-    #   gleam check
+    python3 -m compileall -q ai_edit scripts tests
+
+# Validate every DLC artifact against the bridge contracts in schemas/
+# (manifest envelopes, puzzle payloads, cross-field invariants).
+dlc-check:
+    python3 scripts/validate_dlc.py
+
+# ── Nickel: the single generative source of truth ─────────────────────────────
+# config/vocab.ncl and config/verbs.ncl are authoritative. The closed worlds
+# used to be hand-maintained in six places (ai_edit/vocab.py, the schema's
+# inline enums, scripts/validate_dlc.py, schemas/taxonomy-map.json,
+# abi/Types.idr, ffi/zig/src/types.zig); vocab.py's own docstring asked a human
+# to "keep them in lockstep" and nothing enforced it. These recipes do.
+
+# Regenerate every artifact derived from the Nickel sources.
+gen:
+    ./scripts/gen.sh
+
+# Fail if a committed generated artifact has drifted from its Nickel source.
+# Also fails when nickel is absent: a generator that silently skips its work
+# reports success for a tree it never looked at.
+gen-check:
+    ./scripts/gen.sh --check
+
+# Typecheck the Nickel sources, and prove the contracts actually reject: every
+# config/bad/bad_*.ncl is a negative fixture that MUST fail to export. A
+# contract nothing can violate is not a contract.
+config-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    command -v nickel >/dev/null 2>&1 || { echo "error: nickel not found — this gate cannot be skipped" >&2; exit 1; }
+    for f in config/*.ncl; do
+        nickel export "$f" >/dev/null || { echo "::error file=$f::failed to export"; exit 1; }
+        echo "ok       $f"
+    done
+    rc=0
+    for f in config/bad/bad_*.ncl; do
+        if nickel export "$f" >/dev/null 2>&1; then
+            echo "::error file=$f::negative fixture was ACCEPTED; the contract does not bite"
+            rc=1
+        else
+            echo "rejected $f"
+        fi
+    done
+    exit $rc
+
+# Run the AI-edit engine suite (miniKanren kernel, verbs, validity proofs)
+# and replay the sample edit script against an empty level
+# (docs/adr/0001-ai-edit-kautz6-nesy.adoc).
+ai-edit-check:
+    python3 -m unittest discover -s tests
+    python3 -m ai_edit check dlc/examples/ai-edit-sample/edit-script.json
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # RUN & EXECUTE
@@ -275,25 +271,16 @@ install: build-release
 # DEPENDENCIES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Install/check all dependencies
-deps:
-    @echo "Checking dependencies..."
-    # TODO: Replace with your dependency check
-    # Examples:
-    #   cargo check
-    #   mix deps.get
-    #   gleam deps download
-    @echo "All dependencies satisfied"
+# Verify the toolchain this repo actually needs (fails loudly if absent)
+deps: _zig-guard
+    @command -v python3 >/dev/null || { echo "error: python3 not found" >&2; exit 1; }
+    @echo "Toolchain present: $(python3 --version), zig {{zig_version}}"
 
-# Audit dependencies for vulnerabilities
-deps-audit:
-    @echo "Auditing for vulnerabilities..."
-    # TODO: Replace with your audit command
-    # Examples:
-    #   cargo audit
-    #   mix audit
-    @command -v trivy >/dev/null && trivy fs --severity HIGH,CRITICAL --quiet . || true
-    @echo "Audit complete"
+# NOTE: the former deps-audit / security recipes ran trivy behind
+# `command -v trivy && ... || true` and then echoed "Audit complete" —
+# a scan that cannot fail and runs nowhere (trivy is not installed and no
+# workflow invokes it). Deleted 2026-07-20; reintroduce only with trivy
+# pinned in the toolchain and `--exit-code 1` semantics.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DOCUMENTATION
@@ -506,9 +493,11 @@ container-run *args:
 # CI & AUTOMATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Run full CI pipeline locally
-ci: deps quality
-    @echo "CI pipeline complete!"
+# (just deduplicates shared dependencies, so `test` runs once.)
+
+# Run the full CI pipeline locally: toolchain check + quality + all real test gates
+ci: deps quality test-all
+    @echo "Local CI mirror complete (deps + quality + test-all)"
 
 # Install git hooks
 install-hooks:
@@ -525,12 +514,6 @@ install-hooks:
 # ═══════════════════════════════════════════════════════════════════════════════
 # SECURITY
 # ═══════════════════════════════════════════════════════════════════════════════
-
-# Run security audit
-security: deps-audit
-    @echo "=== Security Audit ==="
-    @command -v trivy >/dev/null && trivy fs --severity HIGH,CRITICAL . || true
-    @echo "Security audit complete"
 
 # Generate SBOM
 sbom:
@@ -782,3 +765,34 @@ handover-human path=".":
 
 secret-scan-trufflehog:
     @command -v trufflehog >/dev/null && trufflehog filesystem . --only-verified || true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ZIG FFI (migrated from hyperpolymath/idaptik-ums lineage repo)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Must match mise.toml and .github/workflows/zig-ci.yml (IDApTIK ADR-0001:
+# same zig as the game).
+zig_version := "0.14.0"
+
+# Refuse to build on the wrong Zig. mise SILENTLY ignores an untrusted config and
+# falls back to the global toolchain, so the mise.toml pin can be bypassed with no
+# warning at all — a fresh worktree in the lineage repo resolved 0.16.0 while
+# `mise current zig` still reported 0.14.0 (fix: `mise trust`). This code does not
+# compile under 0.16, whose explicit-Io rework removed the std.fs/std.io calls the
+# FFI uses, and the resulting errors point at the stdlib rather than the real cause.
+_zig-guard:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    have=$(zig version 2>/dev/null || echo absent)
+    if [ "$have" != "{{zig_version}}" ]; then
+      echo "error: zig {{zig_version}} required, found '$have'" >&2
+      echo "  which zig: $(command -v zig 2>/dev/null || echo '<none on PATH>')" >&2
+      echo "  mise.toml pins {{zig_version}}. If mise is installed, this config is" >&2
+      echo "  probably untrusted — run 'mise trust' in the repo root, then retry." >&2
+      exit 1
+    fi
+
+# Zig FFI integration tests — 24 blocks in ffi/zig/test/integration_test.zig.
+test-ffi *args: _zig-guard
+    @echo "Running Zig FFI integration tests..."
+    cd ffi/zig && zig build test --summary all {{args}}
