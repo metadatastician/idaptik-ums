@@ -35,6 +35,7 @@ let entity_id = fun n => { name = n, type = 'string } in
   verbs = [
     {
       name = "add_zone",
+      collection = "zones",
       doc = "Declare a zone: a worldX interval with a security tier.",
       args = [
         entity_id "id",
@@ -49,6 +50,7 @@ let entity_id = fun n => { name = n, type = 'string } in
     },
     {
       name = "add_device",
+      collection = "devices",
       doc = "Place a device of a known kind in a declared zone.",
       args = [
         entity_id "id",
@@ -59,6 +61,7 @@ let entity_id = fun n => { name = n, type = 'string } in
     },
     {
       name = "add_guard",
+      collection = "guards",
       doc = "Place a security guard of a known rank in a declared zone.",
       args = [
         entity_id "id",
@@ -68,6 +71,7 @@ let entity_id = fun n => { name = n, type = 'string } in
     },
     {
       name = "add_dog",
+      collection = "dogs",
       doc = "Place a patrol dog of a known breed in a declared zone.",
       args = [
         entity_id "id",
@@ -77,6 +81,7 @@ let entity_id = fun n => { name = n, type = 'string } in
     },
     {
       name = "add_drone",
+      collection = "drones",
       doc = "Place a drone of a known archetype in a declared zone.",
       args = [
         entity_id "id",
@@ -86,6 +91,7 @@ let entity_id = fun n => { name = n, type = 'string } in
     },
     {
       name = "add_npc",
+      collection = "npcs",
       doc = "Place an ambient civilian NPC in a declared zone.",
       args = [
         entity_id "id",
@@ -95,6 +101,7 @@ let entity_id = fun n => { name = n, type = 'string } in
     },
     {
       name = "add_character",
+      collection = "characters",
       doc = "Place a named character: an ActorArchetype + Modifier pair.",
       args = [
         entity_id "id",
@@ -105,6 +112,7 @@ let entity_id = fun n => { name = n, type = 'string } in
     },
     {
       name = "add_item",
+      collection = "items",
       doc = "Place an object/item of a known category in a declared zone.",
       args = [
         entity_id "id",
@@ -114,11 +122,13 @@ let entity_id = fun n => { name = n, type = 'string } in
     },
     {
       name = "set_mission",
+      collection = "mission",
       doc = "Set the mission block. Its internals remain game-owned.",
       args = [{ name = "mission", type = 'object }],
     },
     {
       name = "set_physical",
+      collection = "physical",
       doc = "Set the physical-setup block. Its internals remain game-owned.",
       args = [{ name = "physical", type = 'object }],
     },

@@ -3,7 +3,7 @@
 // main.zig -- C-compatible FFI exports for the IDApTIK UMS level editor.
 // Author: Jonathan D.A. Jewell
 //
-// This module is the sole entry point for foreign callers — the Gossamer host
+// This module is the sole entry point for foreign callers — the host
 // via ipc_handlers.zig, or any C-ABI consumer.  Every exported function uses
 // `callconv(.c)` and operates on the C-ABI types defined in types.zig.
 //
