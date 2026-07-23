@@ -13,14 +13,6 @@ SPDX-PackageDownloadLocation = "https://github.com/metadatastician/idaptik-ums"
 # reads the `path` globs below directly. Adding a JSON file outside these globs
 # fails CI rather than silently going unattributed.
 
-# Cargo rewrites Cargo.lock on every dependency change, stripping any header a
-# human adds, so it is declared here rather than annotated in place.
-[[annotations]]
-path = "Cargo.lock"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
-SPDX-License-Identifier = "AGPL-3.0-or-later"
-
 [[annotations]]
 path = "schemas/*.json"
 precedence = "aggregate"
