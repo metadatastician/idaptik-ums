@@ -1,57 +1,19 @@
+# Toolchain pins for idaptik-ums, managed by mise (https://mise.jdx.dev).
+#
+# Rust is managed by rustup (not mise), matching the sibling IDApTIK repo, so
+# cargo subcommands and the rust-analyzer/clippy components resolve the same
+# way in editors, CI and Claude Code sessions.
+
 [tools]
-# Language runtimes
-node = "latest"
-python = "latest"
-rust = "latest"
-go = "latest"
-zig = "latest"
-java = "latest"
-bun = "latest"
-denojs = "latest"
+# --- Systems / FFI + config + task runner
+zig    = "0.14.0"    # C ABI + cross-compilation for FFI/APIs (see ADR-0001)
+just   = "1.46.0"    # task runner (this repo's justfile)
+"aqua:nickel-lang/nickel" = "1.16.0"  # typed config for game/level/network
 
-# Package managers
-npm = "latest"
-yarn = "latest"
-pnpm = "latest"
-pip = "latest"
-cargo = "latest"
-go-task = "latest"
-
-# Formatting & Linting
-gofmt = "latest"
-black = "latest"
-isort = "latest"
-ruff = "latest"
-prettier = "latest"
-shfmt = "latest"
-stylua = "latest"
-
-# Build tools
-cmake = "latest"
-make = "latest"
-ninja = "latest"
-
-# Shell tools
-git = "latest"
-gnu-sed = "latest"
-gnu-tar = "latest"
-gnu-grep = "latest"
-
-# Testing
-vitest = "latest"
-pytest = "latest"
-jest = "latest"
+# --- Idris2 is intentionally NOT auto-installed here.
+# It bootstraps through Chez Scheme + GMP (no clean prebuilt), so a bare
+# `mise install` would fail on machines without Chez. Provision it on demand with
+# `just install-idris2` (uses idris2-pack), matching how opsm handles it via guix.
 
 [env]
-# Common environment variables
-NODE_ENV = "development"
-PYTHONDONTWRITEBYTECODE = "1"
-PYTHONUNBUFFERED = "1"
-
-# Task runner alias
-[alias]
-task = "go-task"
-build = "cargo build --release || npm run build || go build"
-test = "cargo test || npm test || go test ./..."
-lint = "ruff check . || prettier --check . || black --check ."
-fmt = "ruff format . || prettier --write . || black ."
+RUST_BACKTRACE = "1"
