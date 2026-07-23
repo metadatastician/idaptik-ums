@@ -1,0 +1,12 @@
+= ADR 0002: Repository Component Status
+:date: 2026-07-23
+
+== Context
+
+The repository's documentation previously contained several claims about components that were either planned, moved, or abandoned, which caused confusion regarding the actual architecture of `idaptik-ums`.
+
+== Clarifications
+
+* *Gossamer Host Runtime*: The documentation previously referenced Gossamer as the host runtime. This component is not present in this repository tree.
+* *AffineScript Shell*: References to an AffineScript port of the existing ReScript `idaptik-ums/src/{App.res, editor/, abi/}` tree were inaccurate. The only AffineScript present in the repository is the DLC VM (`dlc/vm/`). There is no UI shell in this tree.
+* *Python Deprecation*: The `ai_edit/` engine and DLC validation scripts were originally written in Python. These are actively being replaced by Rust equivalents (e.g., `ums-dlc` crate and a Rust miniKanren kernel) via a stacked set of feature branches (`feat/ums-ai-edit-rust`, `feat/nickel-generation`). Once those branches merge, Python will be fully evicted from the codebase.
