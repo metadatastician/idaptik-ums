@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-# Mustfile — Physical state contract for rsr-template-repo
+# Mustfile — Physical state contract for idaptik-ums
 # Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
 # What MUST be true about this repository. Hard requirements.
@@ -8,7 +8,7 @@
 # Fix with: must fix (where a deterministic fix exists)
 
 @abstract:
-Physical-state invariants for rsr-template-repo. This is the canonical
+Physical-state invariants for idaptik-ums. This is the canonical
 RSR template repository. These are hard requirements — CI and pre-commit
 hooks fail if any check fails.
 @end

@@ -50,13 +50,22 @@ validates them.
 
 The estate restricts which languages may be used. In particular Python, Go,
 TypeScript, ReScript, V-lang, Java/Kotlin, Swift and Makefiles are **not**
-accepted in new code; AffineScript, Rust/SPARK, Zig, Deno, Gleam, Elixir,
-Haskell, Idris2, Agda, Julia and OCaml are. CI enforces this, so check the
-policy in `hyperpolymath/standards` before introducing a new language.
+accepted in new code; AffineScript, Rust/SPARK, Zig, Nickel, Deno, Gleam,
+Elixir, Haskell, Idris2, Agda, Julia and OCaml are. CI enforces this, so check
+the policy in `hyperpolymath/standards` before introducing a new language.
+
+What this repo actually uses: **Rust** for the engine and the bridge
+validator, **Nickel** for generation, **Idris2** for the ABI proofs, **Zig**
+for the C-ABI FFI, **`just`** as the task runner. `ai_edit/` was Python — an
+exception that lasted months — and was removed on 2026-07-22 (ADR-0003).
+Adding a generated file by hand fails `just gen-check`; adding a vocabulary
+anywhere but `config/vocab.ncl` fails `just ai-edit-reflect`.
 
 ## Documentation format
 
-Docs are AsciiDoc (`.adoc`) by default, including `README.adoc`. The
+Docs are AsciiDoc (`.adoc`) by default. `README.md` and `READINESS.md` are
+deliberate Markdown exceptions (GitHub renders them as the repository front
+page and the CRG grade line is parsed from `READINESS.md`). The
 GitHub-required community-health files stay Markdown: `SECURITY.md`,
 `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CHANGELOG.md`. Do not add a `.md`
 duplicate of a doc that already exists as `.adoc`.
