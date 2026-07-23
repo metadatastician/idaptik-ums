@@ -1,0 +1,397 @@
+{
+  "$defs": {
+    "add_character": {
+      "additionalProperties": false,
+      "description": "Place a named character: an ActorArchetype + Modifier pair.",
+      "properties": {
+        "archetype": {
+          "enum": [
+            "Protagonist",
+            "Handler",
+            "Fixer",
+            "Contact",
+            "Insider",
+            "Rival",
+            "Mark",
+            "Bystander"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "modifier": {
+          "enum": [
+            "Unarmed",
+            "Armed",
+            "Disguised",
+            "Alerted",
+            "Wounded",
+            "Corrupt",
+            "Loyal",
+            "Undercover"
+          ]
+        },
+        "verb": {
+          "const": "add_character"
+        },
+        "zone": {
+          "$ref": "#/$defs/entityId"
+        }
+      },
+      "required": [
+        "verb",
+        "id",
+        "archetype",
+        "modifier",
+        "zone"
+      ],
+      "type": "object"
+    },
+    "add_device": {
+      "additionalProperties": false,
+      "description": "Place a device of a known kind in a declared zone.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "kind": {
+          "enum": [
+            "Laptop",
+            "Desktop",
+            "Server",
+            "Router",
+            "Switch",
+            "Firewall",
+            "Camera",
+            "AccessPoint",
+            "PatchPanel",
+            "PowerSupply",
+            "PhoneSystem",
+            "FibreHub"
+          ]
+        },
+        "verb": {
+          "const": "add_device"
+        },
+        "worldX": {
+          "type": "number"
+        },
+        "zone": {
+          "$ref": "#/$defs/entityId"
+        }
+      },
+      "required": [
+        "verb",
+        "id",
+        "kind",
+        "zone",
+        "worldX"
+      ],
+      "type": "object"
+    },
+    "add_dog": {
+      "additionalProperties": false,
+      "description": "Place a patrol dog of a known breed in a declared zone.",
+      "properties": {
+        "breed": {
+          "enum": [
+            "Patrol",
+            "Bloodhound",
+            "RoboDog"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "verb": {
+          "const": "add_dog"
+        },
+        "zone": {
+          "$ref": "#/$defs/entityId"
+        }
+      },
+      "required": [
+        "verb",
+        "id",
+        "breed",
+        "zone"
+      ],
+      "type": "object"
+    },
+    "add_drone": {
+      "additionalProperties": false,
+      "description": "Place a drone of a known archetype in a declared zone.",
+      "properties": {
+        "archetype": {
+          "enum": [
+            "Helper",
+            "Hunter",
+            "Killer"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "verb": {
+          "const": "add_drone"
+        },
+        "zone": {
+          "$ref": "#/$defs/entityId"
+        }
+      },
+      "required": [
+        "verb",
+        "id",
+        "archetype",
+        "zone"
+      ],
+      "type": "object"
+    },
+    "add_guard": {
+      "additionalProperties": false,
+      "description": "Place a security guard of a known rank in a declared zone.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "rank": {
+          "enum": [
+            "BasicGuard",
+            "Enforcer",
+            "AntiHacker",
+            "Sentinel",
+            "Assassin",
+            "EliteGuard",
+            "SecurityChief",
+            "RivalHacker"
+          ]
+        },
+        "verb": {
+          "const": "add_guard"
+        },
+        "zone": {
+          "$ref": "#/$defs/entityId"
+        }
+      },
+      "required": [
+        "verb",
+        "id",
+        "rank",
+        "zone"
+      ],
+      "type": "object"
+    },
+    "add_item": {
+      "additionalProperties": false,
+      "description": "Place an object/item of a known category in a declared zone.",
+      "properties": {
+        "category": {
+          "enum": [
+            "Keycard",
+            "Document",
+            "Weapon",
+            "Tool",
+            "Loot",
+            "Consumable",
+            "Container",
+            "Contraband"
+          ]
+        },
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "verb": {
+          "const": "add_item"
+        },
+        "zone": {
+          "$ref": "#/$defs/entityId"
+        }
+      },
+      "required": [
+        "verb",
+        "id",
+        "category",
+        "zone"
+      ],
+      "type": "object"
+    },
+    "add_npc": {
+      "additionalProperties": false,
+      "description": "Place an ambient civilian NPC in a declared zone.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "role": {
+          "enum": [
+            "Pedestrian",
+            "Shopkeeper",
+            "Resident",
+            "Doorman",
+            "StreetVendor",
+            "Busker",
+            "Commuter",
+            "Concierge"
+          ]
+        },
+        "verb": {
+          "const": "add_npc"
+        },
+        "zone": {
+          "$ref": "#/$defs/entityId"
+        }
+      },
+      "required": [
+        "verb",
+        "id",
+        "role",
+        "zone"
+      ],
+      "type": "object"
+    },
+    "add_zone": {
+      "additionalProperties": false,
+      "description": "Declare a zone: a worldX interval with a security tier.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "securityTier": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "segment": {
+          "enum": [
+            "Lan",
+            "Dmz",
+            "Internal",
+            "Iot",
+            "Management",
+            "Scada",
+            "Isp",
+            "Service"
+          ]
+        },
+        "verb": {
+          "const": "add_zone"
+        },
+        "worldXEnd": {
+          "type": "number"
+        },
+        "worldXStart": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "verb",
+        "id",
+        "securityTier",
+        "worldXStart",
+        "worldXEnd"
+      ],
+      "type": "object"
+    },
+    "entityId": {
+      "description": "Lowercase-kebab identifier, unique within its collection.",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "type": "string"
+    },
+    "set_mission": {
+      "additionalProperties": false,
+      "description": "Set the mission block. Its internals remain game-owned.",
+      "properties": {
+        "mission": {
+          "type": "object"
+        },
+        "verb": {
+          "const": "set_mission"
+        }
+      },
+      "required": [
+        "verb",
+        "mission"
+      ],
+      "type": "object"
+    },
+    "set_physical": {
+      "additionalProperties": false,
+      "description": "Set the physical-setup block. Its internals remain game-owned.",
+      "properties": {
+        "physical": {
+          "type": "object"
+        },
+        "verb": {
+          "const": "set_physical"
+        }
+      },
+      "required": [
+        "verb",
+        "physical"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/edit-script.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Payload for kind: edit-script DLC artifacts. An ordered list of edit verbs\nover a scenario's level object graph, produced by the UMS AI-edit engine.\nEdits are data: replayable, auditable, and constraint-checked — the engine\nonly emits a script when every intermediate state satisfies the validity\nproofs (guards-in-zones, defence-targets, zones-ordered, pbx-consistent,\ndevices-exist, items-in-zones). UMS owns this payload format as the editor\nauthority. GENERATED from config/edit-script-schema.ncl — do not edit by\nhand; run `just gen`. Architecture: docs/adr/0001-ai-edit-kautz6-nesy.adoc.",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "edits": {
+      "description": "Verbs applied in order. Zones referenced by later verbs must be declared earlier in the script or already exist on the target scenario.",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/add_zone"
+          },
+          {
+            "$ref": "#/$defs/add_device"
+          },
+          {
+            "$ref": "#/$defs/add_guard"
+          },
+          {
+            "$ref": "#/$defs/add_dog"
+          },
+          {
+            "$ref": "#/$defs/add_drone"
+          },
+          {
+            "$ref": "#/$defs/add_npc"
+          },
+          {
+            "$ref": "#/$defs/add_character"
+          },
+          {
+            "$ref": "#/$defs/add_item"
+          },
+          {
+            "$ref": "#/$defs/set_mission"
+          },
+          {
+            "$ref": "#/$defs/set_physical"
+          }
+        ]
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "format-note": {
+      "description": "Human-readable reminder of the wire format, e.g. 'idaptik-edit/1'.",
+      "type": "string"
+    },
+    "target": {
+      "description": "Id of the scenario the script edits (a scenario-definition artifact id, or a new scenario id when the script builds a level from empty).",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "target",
+    "edits"
+  ],
+  "title": "IDApTIK edit script (idaptik-edit/1)",
+  "type": "object"
+}

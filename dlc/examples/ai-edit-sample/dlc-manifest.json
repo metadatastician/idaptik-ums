@@ -1,0 +1,24 @@
+{
+  "$schema": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/dlc-manifest.schema.json",
+  "id": "ai-edit-sample",
+  "name": "AI-edit sample script",
+  "version": "0.1.0",
+  "description": "Reference edit-script artifact produced by the ai_edit miniKanren engine: builds a two-zone floor (lobby + server room) with a guard, a dog, a drone, two street/house NPCs, an undercover character, a keycard item and a consistent PBX on an empty level.",
+  "license": "AGPL-3.0-or-later",
+  "author": "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
+  "kind": "edit-script",
+  "loads": "on-scenario-select",
+  "payload": {
+    "format": "idaptik-edit/1",
+    "path": "edit-script.json"
+  },
+  "guarantees": [
+    "constraint-checked-edits",
+    "replayable-edit-history"
+  ],
+  "verification": {
+    "engine-tests": "tests/test_ai_edit.py",
+    "architecture": "docs/adr/0001-ai-edit-kautz6-nesy.adoc",
+    "replay": "python3 -m ai_edit check dlc/examples/ai-edit-sample/edit-script.json"
+  }
+}

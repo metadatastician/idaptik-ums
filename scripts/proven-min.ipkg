@@ -1,0 +1,59 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-- proven-min.ipkg — minimal installable subset of hyperpolymath/proven
+-- for typechecking idaptik-ums.
+--
+-- CI copies this file into a checkout of hyperpolymath/proven pinned to
+-- commit 0368e08f61d4cb6a39530f594b2bdf7c40ca1414 and runs
+-- `idris2 --install proven-min.ipkg` there. It registers package
+-- `proven` (so this repo's `depends = proven` resolves) but builds ONLY
+-- the transitive import closure of abi/ProvenBridge.idr:
+-- SafeJson (+Parser/Access), SafeMath (+Nat/Int/Bounded),
+-- SafeString (+UTF8/Escape), SafeCrypto, SafeInput, and Proven.Core.
+--
+-- Why not the full proven.ipkg: it lists ~180 modules and a full
+-- `idris2 --install proven.ipkg` (idris2 0.7.0, 2026-07-20) burned 15+
+-- minutes of CPU without emitting a single TTC or byte of output before
+-- being killed. The 13-module closure below installs in under a minute.
+--
+-- Why Proven.SafeMath.Proofs is excluded: as of proven@0368e08f that
+-- module compiles under NO available toolchain — under idris2 0.7.0 it
+-- passes ItIsSucc where base's divNatNZ/boundModNatNZ want
+-- NonZero/SIsNonZero, and under the CI container's idris2 0.8.0 its
+-- `import Data.Nat.Division` fails (module no longer in base-0.8.0).
+-- Nothing in SafeMath.idr or this repo references Proofs names; its
+-- sole tie is one `import public` line in SafeMath.idr, which CI
+-- deletes after checkout:
+--   sed -i '/import public Proven.SafeMath.Proofs/d' src/Proven/SafeMath.idr
+-- Reported upstream as hyperpolymath/proven#184; drop this workaround
+-- when proven fixes the module.
+package proven
+
+version = 1.1.0
+authors = "Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>"
+license = "AGPL-3.0-or-later"
+
+sourcedir = "src"
+builddir = "build"
+
+modules = Proven.Core
+        , Proven.SafeJson.Parser
+        , Proven.SafeJson.Access
+        , Proven.SafeJson
+        , Proven.SafeMath.Nat
+        , Proven.SafeMath.Int
+        , Proven.SafeMath.Bounded
+        , Proven.SafeMath
+        , Proven.SafeString.UTF8
+        , Proven.SafeString.Escape
+        , Proven.SafeString
+        , Proven.SafeCrypto
+        , Proven.SafeInput
+
+-- base only: every non-proven import in the closure (Data.Bits,
+-- Data.Vect, Data.List1, Data.So, Decidable.Equality) lives in base.
+-- The full proven.ipkg's contrib and network deps are needed only by
+-- modules outside this closure.
+depends = base >= 0.6.0
+
+opts = "--total"
