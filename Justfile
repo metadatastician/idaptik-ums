@@ -206,7 +206,7 @@ lint:
 # Validate every DLC artifact against the bridge contracts in schemas/
 # (manifest envelopes, puzzle payloads, cross-field invariants).
 dlc-check:
-    python3 scripts/validate_dlc.py
+    cargo run -q -p ums-dlc
 
 # ── Nickel: the single generative source of truth ─────────────────────────────
 # config/vocab.ncl and config/verbs.ncl are authoritative. The closed worlds
@@ -300,15 +300,13 @@ install: build-release
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Verify the toolchain this repo actually needs (fails loudly if absent).
-# python3 remains only for scripts/validate_dlc.py, which the Rust ums-dlc
-# validator replaces in the next migration PR.
 deps: _zig-guard
     #!/usr/bin/env bash
     set -euo pipefail
-    for tool in cargo nickel jq python3; do
+    for tool in cargo nickel jq; do
         command -v "$tool" >/dev/null || { echo "error: $tool not found" >&2; exit 1; }
     done
-    echo "Toolchain present: $(cargo --version), $(nickel --version), jq $(jq --version), $(python3 --version), zig {{zig_version}}"
+    echo "Toolchain present: $(cargo --version), $(nickel --version), jq $(jq --version), zig {{zig_version}}"
 
 # NOTE: the former deps-audit / security recipes ran trivy behind
 # `command -v trivy && ... || true` and then echoed "Audit complete" —
@@ -383,7 +381,7 @@ container-init:
 
     if [ ! -d "container" ]; then
         echo "Error: container/ directory not found."
-        echo "This repo may not have been created from rsr-template-repo."
+        echo "This repo may not have been created from the RSR template."
         exit 1
     fi
 
@@ -698,7 +696,7 @@ assail:
 
 # Self-diagnostic — checks dependencies, permissions, paths
 doctor:
-    @echo "Running diagnostics for rsr-template-repo..."
+    @echo "Running diagnostics for {{project}}..."
     @echo "Checking required tools..."
     @command -v just >/dev/null 2>&1 && echo "  [OK] just" || echo "  [FAIL] just not found"
     @command -v git >/dev/null 2>&1 && echo "  [OK] git" || echo "  [FAIL] git not found"
@@ -708,7 +706,7 @@ doctor:
 
 # Guided tour of key features
 tour:
-    @echo "=== rsr-template-repo Tour ==="
+    @echo "=== {{project}} Tour ==="
     @echo ""
     @echo "1. Project structure:"
     @ls -la
@@ -723,12 +721,12 @@ tour:
 
 # Open feedback channel with diagnostic context
 help-me:
-    @echo "=== rsr-template-repo Help ==="
+    @echo "=== {{project}} Help ==="
     @echo "Platform: $(uname -s) $(uname -m)"
     @echo "Shell: $SHELL"
     @echo ""
     @echo "To report an issue:"
-    @echo "  https://github.com/hyperpolymath/rsr-template-repo/issues/new"
+    @echo "  https://github.com/{{OWNER}}/{{REPO}}/issues/new"
     @echo ""
     @echo "Include the output of 'just doctor' in your report."
 

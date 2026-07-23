@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-# Adjustfile — Drift-tolerance contract for rsr-template-repo
+# Adjustfile — Drift-tolerance contract for idaptik-ums
 # Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
 # Cumulative-drift catchment: tolerance bands + corrective actions.
@@ -9,7 +9,7 @@
 # Fix with: adjust fix (applies deterministic patches; advisory otherwise)
 
 @abstract:
-Drift tolerances and corrective actions for rsr-template-repo. Unlike
+Drift tolerances and corrective actions for idaptik-ums. Unlike
 MUST (hard gate), ADJUST tracks cumulative drift against tolerance bands
 and proposes corrective actions. Advisory — it warns and trends, it does
 not block.

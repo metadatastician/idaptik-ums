@@ -3,9 +3,25 @@
 = ADR 0001: AI-edit as a Kautz type-6 neurosymbolic system over a miniKanren kernel
 :toc: preamble
 
-Status: Accepted +
+Status: *Superseded by link:0003-ai-edit-rust-minikanren-spark.adoc[ADR-0003]* (2026-07-22) +
 Date: 2026-07-17 +
 Deciders: @hyperpolymath
+
+[IMPORTANT]
+====
+*Superseded as to language only.* The `ai_edit/` Python package this ADR names
+as the reference implementation has been deleted; the engine is now the Rust
+crate `crates/ums-ai-edit`, and the DLC validator is `crates/ums-dlc`. Every
+file path below beginning `ai_edit/` or `scripts/validate_dlc.py` describes
+code that no longer exists.
+
+The *reasoning* stands and is carried forward unchanged by ADR-0003: the Kautz
+type-6 positioning, the choice of miniKanren as the symbolic kernel, the verb
+surface, the validity proofs, the `edit-script` wire contract, and the honest
+caveat that the proposer loop is not yet closed. This document is kept as
+written rather than edited, so that argument remains readable in its original
+form.
+====
 
 == Context
 
