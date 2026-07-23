@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 # --- Zig FFI (ffi/zig) build output ---
@@ -6,12 +7,18 @@ zig-out/
 zig-cache/
 
 # Idris2 build output
+=======
+# Dependencies
+node_modules/
+.vendor/
+dist/
+>>>>>>> origin/main
 build/
-
-# Python bytecode (just test / lint / dlc-check produce these; NB cpython-313
-# pycs are tracked from before — untracking them is separate hygiene, this just
-# stops new ones)
+target/
+bin/
+*.egg-info/
 __pycache__/
+<<<<<<< HEAD
 *.pyc
 
 # Python bytecode (the Python sources themselves are removed in the Rust migration).
@@ -20,3 +27,41 @@ __pycache__/
 
 # Rust build artefacts
 /target/
+=======
+.venv/
+venv/
+.env/
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Cache
+harden/
+.cargo/registry/
+.cargo/git/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+>>>>>>> origin/main
