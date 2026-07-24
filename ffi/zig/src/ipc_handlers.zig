@@ -34,7 +34,8 @@
 //  17.  serialize_level    -- Serialise LevelData to JSON
 //  18.  deserialize_level  -- Deserialise JSON to LevelData
 //
-// The level storage path is /tmp/idaptik-ums/levels/ (development) or
+// Compatibility note: the IDApTIK profile retains the historical storage
+// path /tmp/idaptik-ums/levels/ (development) or
 // ~/.idaptik-ums/levels/ (production). The host must grant a
 // capability scope covering exactly these two prefixes, or every disk
 // command here fails at runtime: /tmp/idaptik-ums/levels/**, $HOME/.idaptik-ums/**

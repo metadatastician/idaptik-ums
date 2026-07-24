@@ -1,22 +1,25 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= idaptik-ums — EXPLAINME
+= Universal Modding Studio — EXPLAINME
 How each README claim maps to an artefact, a gate, and the evidence behind it.
 :toc: left
 :sectnums:
 :icons: font
 
-The link:README.md[README] is the orientation. This file is the engineering
+The link:README.adoc[README] is the orientation. This file is the engineering
 account: where each claim lives, which gate enforces it, and *where the
 evidence stops*.
 
 [IMPORTANT]
 ====
-*Boundary.* idaptik-ums is the editor and the bridge. It is not the game.
-Claims about gameplay, rendering or the simulation belong to
-link:https://github.com/metadatastician/IDApTIK[IDApTIK]'s own docs. What UMS
-owns is the `edit-script` payload format, the AI-edit engine that produces it,
-and the contract checker that gates it.
+*Boundary.* Universal Modding Studio is an independent authoring, generation,
+validation and packaging platform. It is not a game, renderer or universal
+runtime. Claims about IDApTIK gameplay belong to
+link:https://github.com/metadatastician/IDApTIK[IDApTIK]'s own docs; Slavia
+design belongs to
+link:https://github.com/metadatastician/chronicles-of-slavia[Chronicles of
+Slavia]. UMS owns host-neutral authoring contracts, the profile SDK, edit and
+solver seams, package envelopes and their evidence.
 ====
 
 [NOTE]
@@ -46,7 +49,8 @@ the state is built (`verbs.rs`, `apply`). This is generate-and-narrow, not
 generate-then-filter.
 
 Evidence::
-`cargo test -p ums-ai-edit` — 59 cases. Specifically
+`cargo test -p ums-ai-edit` — 61 cases at the 2026-07-25 realignment.
+Specifically
 `solve_only_proposes_constraint_satisfying_edits`,
 `solve_returns_nothing_when_no_zone_exists` (refusal, not fabrication) and
 `solve_refuses_to_invent_an_id`.
@@ -171,7 +175,7 @@ re-declared locally in `crates/ums-ai-edit/src/verbs.rs` (`LEVEL_KEYS`,
 Evidence::
 `schemas/taxonomy-map.json` is the versioned mapping at that seam, and
 `crates/ums-dlc/src/taxonomy.rs` enforces its coherence — the device half is a
-total 1:1 identity per ADR-0002, the zone tier bands must start at 0 and
+total 1:1 identity per ADR-0004, the zone tier bands must start at 0 and
 strictly increase.
 
 Caveat::

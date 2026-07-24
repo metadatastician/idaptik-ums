@@ -7,6 +7,10 @@ SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 ## [Unreleased]
 
 ### Changed
+- Renamed and realigned the product as independent **Universal Modding
+  Studio**, with IDApTIK as its first profile; added the versioned profile SDK,
+  a bounded Chronicles of Slavia profile, capability manifests and the
+  optional Enaction adapter boundary (2026-07-25).
 - **Relicensed to `AGPL-3.0-or-later` (code) and `CC-BY-SA-4.0` (documentation)**
   from MPL-2.0, so the studio and the AGPL game it mods share a licence.
   MPL-2.0 §3.3 names AGPLv3 a Secondary License, making this the permitted
@@ -80,4 +84,4 @@ SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 - `Justfile` project metadata still carried the `rsr-template-repo`
   placeholders (2026-07-10).
 
-[Unreleased]: https://github.com/hyperpolymath/idaptik-ums/compare/HEAD...HEAD
+[Unreleased]: https://github.com/metadatastician/universal-modding-studio/compare/HEAD...HEAD

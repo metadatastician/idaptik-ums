@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
-# Development environment for idaptik-ums.
+# Development environment for Universal Modding Studio.
 #
 # Estate policy is Guix primary / Nix fallback (hyperpolymath/standards).
 # This is the Nix fallback tier. It is a dev shell, not a package build:
@@ -14,7 +14,7 @@
 #   nix develop      # enter the shell
 #   nix flake check  # verify this file evaluates (run before committing)
 {
-  description = "idaptik-ums development environment";
+  description = "Universal Modding Studio development environment";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/b134951a4c9f3c995fd7be05f3243f8ecd65d798";
 

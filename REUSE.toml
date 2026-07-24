@@ -1,7 +1,7 @@
 version = 1
-SPDX-PackageName = "idaptik-ums"
+SPDX-PackageName = "universal-modding-studio"
 SPDX-PackageSupplier = "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
-SPDX-PackageDownloadLocation = "https://github.com/metadatastician/idaptik-ums"
+SPDX-PackageDownloadLocation = "https://github.com/metadatastician/universal-modding-studio"
 
 # JSON has no comment syntax, so these files cannot carry the two-line SPDX
 # header every other source file in this tree carries. They are declared here
@@ -14,7 +14,43 @@ SPDX-PackageDownloadLocation = "https://github.com/metadatastician/idaptik-ums"
 # fails CI rather than silently going unattributed.
 
 [[annotations]]
+path = "Cargo.lock"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "merged.txt"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "unmerged.txt"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
 path = "schemas/*.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "profiles/*/profile.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "profiles/*/tests/*.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "adapters/enaction/*.json"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"

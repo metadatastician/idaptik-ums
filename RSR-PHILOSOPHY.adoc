@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= RSR philosophy for Universal Modding Studio
+
+The repository applies RSR as evidence discipline: working paths remain
+working; generated sources have drift gates; a validator must have negative
+tests; formal, runtime, tested, designed and aspirational claims stay
+distinct; architectural migration proceeds through reversible, reviewed
+seams rather than directory theatre.
+
+Profile separation is an RSR boundary. Universal abstractions are admitted
+only when they survive unlike games. Game-specific concepts remain traceable
+to their source profile and provenance.

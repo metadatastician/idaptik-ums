@@ -3,11 +3,11 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 -->
 
-# idaptik-ums Component Readiness Assessment
+# Universal Modding Studio Component Readiness Assessment
 
 **Standard:** [Component Readiness Grades (CRG) v2.0](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)
-**Assessed:** 2026-07-22 (re-assessed after the Rust migration; previous
-assessment 2026-07-20)
+**Assessed:** 2026-07-25 (re-assessed for the profile realignment; previous
+assessment 2026-07-22)
 **Assessor:** Claude (PR E of the staged lineage migration), from real local runs
 and the repo's CI workflows — evidence over intuition, no aspirational grading.
 
@@ -17,8 +17,11 @@ and the repo's CI workflows — evidence over intuition, no aspirational grading
 
 | Component | Grade | Release stage | Evidence summary | Last assessed |
 |---|---|---|---|---|
-| AI-edit engine (`crates/ums-ai-edit`, Rust) | C | Alpha-stable | 59 tests (miniKanren kernel, verbs, the six proofs, both engine directions) + sample edit-script replay, gated by `rust-ci.yml` with `clippy -D warnings`. Parity with the deleted Python was measured: identical proposals AND identical search order, byte-identical final state. CI carries a negative step — an out-of-vocabulary rank must be refused. | 2026-07-22 |
-| DLC bridge (`crates/ums-dlc` + `schemas/`) | C | Alpha-stable | 37 tests; validates all 31 in-tree artifacts against manifest, puzzle, vault, edit-script and taxonomy contracts, now in CI (`rust-ci.yml`) rather than local-only. Parity fuzzed against the Python: 32/32 mutations, identical verdict and message. | 2026-07-22 |
+| Profile SDK (`crates/ums-profile-sdk`) | C | Alpha-stable | 8 tests cover registration, malformed ID/version rejection, reflection, fixtures, deterministic adapter behavior, duplicate refusal and two-way profile isolation. Both generated profile descriptors are validated at load. | 2026-07-25 |
+| IDApTIK edit compatibility engine (`crates/ums-ai-edit`, Rust) | C | Alpha-stable | 61 tests (miniKanren kernel, verbs, six runtime relations, deterministic replay and explicit profile dispatch) + sample replay, gated by `rust-ci.yml` with `clippy -D warnings`. | 2026-07-25 |
+| Package/DLC bridge (`crates/ums-dlc` + `schemas/`) | C | Alpha-stable | 39 tests; validates all in-tree artifacts, legacy-manifest compatibility, v1→v2 migration and capability declarations. | 2026-07-25 |
+| Chronicles of Slavia profile | D | Design fixture | Reflection and isolation are tested against a minimal Zone A fixture; no UMS compiler, loader or runtime integration exists. | 2026-07-25 |
+| Enaction adapter | X | Designed only | Typed preview seam and request schema exist; no real adapter or loader exists. | 2026-07-25 |
 | Generation source of truth (`config/*.ncl`) | C | Alpha-stable | `config-check` typechecks every source AND requires all three `config/bad/bad_*.ncl` negative fixtures to be rejected; `gen-check` diffs generated artifacts and fails when `nickel` is absent rather than skipping. Gated by `config-gen.yml`. | 2026-07-22 |
 | Zig FFI (`ffi/zig/`) | C | Alpha-stable | 24/24 integration tests pass; CI-gated (`zig-ci.yml`); zig 0.14.0 pin enforced locally by `_zig-guard` and in CI. | 2026-07-20 |
 | Licence hygiene gate | C | Alpha-stable | Three steps, each negative-tested: a planted MPL header, a truncated LICENSE and an unattributed JSON file each make it fail. Polarity inverted with the AGPL relicence. | 2026-07-22 |
@@ -36,7 +39,7 @@ is still **D**, but the reason has changed completely.
 The 2026-07-20 assessment was held at D by three things: the engine was Python
 with no CI, the DLC schema check ran local-only, and the ABI was 16/17. **Two
 of the three are now resolved.** The engine and the validator are Rust, CI-
-gated, with 96 tests between them and negative tests proving the gates can
+gated, with profile, engine and package negative tests proving the gates can
 fail. What remains is:
 
 - **`abi/ProvenBridge.idr`** — 2 typed holes and a commented-out `proven`

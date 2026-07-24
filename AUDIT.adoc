@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= Universal Modding Studio audit
+
+Last reviewed: 2026-07-25.
+
+== Verified surfaces
+
+* Rust profile registration, ID/version validation and profile isolation;
+* IDApTIK edit dispatch, refusal and deterministic replay;
+* capability-aware manifest validation and legacy migration;
+* all in-tree DLC artifacts;
+* Nickel generation drift;
+* documented optional Enaction dependency direction.
+
+== Open evidence
+
+* the full UMS → IDApTIK compiler → production loader round trip;
+* executable Chronicles of Slavia compiler/loader integration;
+* a real Enaction preview adapter;
+* the interactive multi-lens studio;
+* machine checking for any formal claim not accepted by its named checker.
+
+The authoritative commands and latest results belong in the change report and
+`READINESS.md`; this file does not turn designed work into a completed claim.

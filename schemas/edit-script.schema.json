@@ -331,7 +331,7 @@
       "type": "object"
     }
   },
-  "$id": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/edit-script.schema.json",
+  "$id": "https://github.com/metadatastician/universal-modding-studio/blob/main/schemas/edit-script.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "Payload for kind: edit-script DLC artifacts. An ordered list of edit verbs\nover a scenario's level object graph, produced by the UMS AI-edit engine.\nEdits are data: replayable, auditable, and constraint-checked — the engine\nonly emits a script when every intermediate state satisfies the validity\nproofs (guards-in-zones, defence-targets, zones-ordered, pbx-consistent,\ndevices-exist, items-in-zones). UMS owns this payload format as the editor\nauthority. GENERATED from config/edit-script-schema.ncl — do not edit by\nhand; run `just gen`. Architecture: docs/adr/0001-ai-edit-kautz6-nesy.adoc.",

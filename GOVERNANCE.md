@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->
+
 # Governance
 
 ## Overview
@@ -25,6 +28,11 @@ Contributors are expected to:
 - Update documentation as needed
 
 ## Decision Making
+
+Architecture decisions that change the universal/profile boundary require an
+ADR. A profile may evolve its own ontology without forcing the same vocabulary
+into UMS Core. Claims of machine checking or end-to-end compatibility require
+named, reproducible evidence.
 
 ### Minor Changes
 - Can be made by any maintainer

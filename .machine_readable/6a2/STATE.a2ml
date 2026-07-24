@@ -1,40 +1,34 @@
 ; SPDX-License-Identifier: AGPL-3.0-or-later
 ; SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-; STATE.a2ml — idaptik-ums
 
 [metadata]
-project = "idaptik-ums"
+project = "universal-modding-studio"
 version = "0.1.0-alpha"
 type = "modding-studio"
-last-updated = "2026-07-10"
-branch = "main"
-build-status = "scaffold"
-test-status = "pending — Zig FFI tests carry over from existing monorepo"
+last-updated = "2026-07-25"
+branch = "agent/universal-modding-studio"
+build-status = "profile-seams-implemented"
+test-status = "Rust profile/edit/package suites passing; wider toolchain gates pending final run"
 
 [project-context]
-description = "Unified Modding Studio: procedural generation of characters/levels/objects/DLC for the game."
-shell-language = "affinescript"
-abi-language = "idris2"
-ffi-language = "zig"
-host = "gossamer"
-depends-on = ["idaptik-contracts", "idaptik-shared", "gossamer"]
+description = "Universal Modding Studio: independent authoring, generation, validation and packaging platform."
+desired-repository = "metadatastician/universal-modding-studio"
+first-profile = "idaptik"
+second-profile = "chronicles-of-slavia"
 
 [component-status]
-scaffold = { percent = 25, notes = "README + STATE present." }
-shell-port = { percent = 0, notes = "Port from idaptik-ums/src/{App.res, editor/, abi/}." }
-abi = { percent = 95, notes = "17 Idris2 modules, 0 believe_me — carry over from existing monorepo (per audit STATE.a2ml)." }
-ffi = { percent = 95, notes = "11 Zig files, 20 tests — carry over." }
-proven-bridge = { percent = 30, notes = "Gated to experimental/; 2 typed holes; decision deferred per Recovery PR 4." }
-docs-runtime-claims = { percent = 100, notes = "RESOLVED 2026-07-22. The Tauri and Gossamer references were both wrong: the game is a Rust workspace with Bevy and Fyrox frontends. README/EXPLAINME/READINESS rewritten against the tree." }
-ums-game-bridge = { percent = 45, notes = "Envelope + puzzle schemas live in schemas/ with `just dlc-check` smoke test over all dlc/ artifacts; scenario-definition/actor-pack kinds reserved with payload.format tags (payload internals owned by idaptik-core). Generator side not yet wired; idaptik-contracts codegen alignment pending." }
+profile-sdk = { status = "tested", notes = "Versioned reflection, registration and isolation." }
+idaptik-profile = { status = "tested-compatibility", notes = "Generated reflection and executable edit facade; model/edit mismatch remains." }
+slavia-profile = { status = "reflection-only", notes = "Bounded Zone A fixture; no loader/compiler." }
+manifest-v2 = { status = "tested", notes = "Capabilities plus legacy compatibility and migration." }
+enaction-adapter = { status = "designed", notes = "Trait and schema seam only." }
+studio-ui = { status = "aspirational", notes = "Specified multi-lens target; no frontend." }
+end-to-end-roundtrip = { status = "aspirational", notes = "Real IDApTIK compiler/loader harness absent." }
 
 [route-to-mvp]
 remaining = [
-  { item = "ProvenBridge fate decision — 2 typed holes hold the project line at D", priority = "critical" },
-  { item = "Recovery PR 4 — UMS-game smoke test passing (DONE 2026-07-10: just dlc-check)", priority = "critical" },
-  { item = "Run scaffold-component.py to fill RSR + contractiles + remaining 6a2", priority = "high" },
-  { item = "Port shell from src/{App.res, editor/, abi/}", priority = "high" },
-  { item = "Carry over 17 Idris2 ABI modules", priority = "medium" },
-  { item = "Carry over 11 Zig FFI files", priority = "medium" },
-  { item = "ProvenBridge fate decision", priority = "medium" }
+  { item = "Implement loader-backed minimal IDApTIK round trip", priority = "critical" },
+  { item = "Close IDApTIK modelled-versus-editable gaps", priority = "high" },
+  { item = "Keep Slavia reflection aligned with its authoritative repository", priority = "medium" },
+  { item = "Implement interactive studio only after host-neutral selection/IR seams exist", priority = "medium" }
 ]

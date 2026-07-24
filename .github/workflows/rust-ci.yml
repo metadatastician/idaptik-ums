@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
-# Rust build + test gate for the AI-edit engine.
+# Rust build + test gate for UMS profiles, edit and package contracts.
 #
 # Standalone workflow, matching zig-ci / idris-ci / config-gen / licence-hygiene.
 #
 # Every step here can fail, and each was negative-tested locally before landing:
 #
 #   fmt/clippy  clippy runs with -D warnings, so a lint is a failure not advice
-#   test        the ported behavioural contract (59 cases)
+#   test        the edit, package and profile behavioral contracts
 #   replay      the shipped sample edit-script; a rejected script exits non-zero
 #   reflect     the compiled registry must equal the Nickel source that
 #               generated it — otherwise `describe` could drift into a
@@ -52,7 +52,7 @@ env:
 
 jobs:
   rust:
-    name: ums-ai-edit and ums-dlc build, lint, and pass their contracts
+    name: profile SDK, edit engine and package bridge pass their contracts
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

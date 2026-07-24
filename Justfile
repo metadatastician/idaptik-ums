@@ -19,9 +19,9 @@ set positional-arguments := true
 import? "build/contractile.just"
 
 # Project metadata — customize these
-project := "idaptik-ums"
+project := "universal-modding-studio"
 OWNER := "metadatastician"
-REPO := "idaptik-ums"
+REPO := "universal-modding-studio"
 version := "0.1.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 

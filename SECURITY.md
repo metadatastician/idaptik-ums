@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 ﻿# Security Policy
 
 Report vulnerabilities to j.d.a.jewell@open.ac.uk.
-Subject: `[security] <repo>: <summary>`.
+Subject: `[security] universal-modding-studio: <summary>`.
 
 Acknowledgement within 72 hours, initial assessment within 7 days.
 

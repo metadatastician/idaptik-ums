@@ -1,50 +1,103 @@
-= IDApTIK UMS (Universal Modding Studio)
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
-[quote]
-____
-Don't just infiltrate the network. Rewrite it.
-____
+= Universal Modding Studio
 
-Welcome to the **Universal Modding Studio (UMS)** for IDApTIK. 
+Universal Modding Studio (UMS) is an independent authoring, generation,
+validation and packaging platform for game worlds, systems, agents,
+narratives and rules.
 
-IDApTIK is an asymmetric infiltration game about trust and deception. UMS is the procedural-generation pipeline and integration toolkit that hands the keys over to you. It is the engine that allows you to tear the game apart, build it back together, and seamlessly inject your own rules, stories, and worlds directly into the core engine. 
+UMS is an authoring environment, modelling substrate, constraint-driven
+generation and transformation system, validator, packager, simulation-preview
+host through adapters, and SDK for game profiles. It is not IDApTIK, the
+Enaction Engine, a renderer required by released games, or a universal game
+runtime. Released games consume compiled packages; they do not depend on the
+studio application.
 
-== What can you mod?
+IDApTIK is the first and deepest profile and the immediate product focus.
+Chronicles of Slavia is the bounded second profile used to show that the
+abstractions travel without importing either game's ontology into the core.
+Its authoritative game design currently lives in the separate
+`metadatastician/chronicles-of-slavia` repository.
 
-Almost everything. If it exists in the IDApTIK universe, UMS provides the hooks to generate, validate, and inject it:
+== What exists now
 
-* **Worlds & Architecture:** Levels, zones, routing boundaries, and wiring diagrams.
-* **Entities:** Characters, animals, NPCs, and patrol dogs.
-* **Minds & Behavior:** Game AI for behavior, player character traits, and security responses.
-* **Narrative:** Storylines, plots, dialogue, themes, and tropes.
-* **Assets:** Objects, devices, and interactive terminals.
+This is a staged migration that preserves the repository's formal work and
+history:
 
-== How it works
+* `crates/ums-profile-sdk` implements the versioned `ums-profile/1` typed and
+  reflective profile contract.
+* `profiles/idaptik` owns generated reflection over the established Nickel
+  vocabularies, edit verbs, component model, constraints and package/runtime
+  declarations.
+* `profiles/chronicles-of-slavia` provides a minimal first-zone reflection and
+  fixture. It has no loader or runtime integration yet.
+* `crates/ums-ai-edit` is the tested miniKanren edit/generation engine. Its
+  unqualified API is retained as an IDApTIK compatibility facade.
+* `crates/ums-dlc` validates package envelopes, existing DLC, capability
+  declarations, edit scripts and IDApTIK payload contracts.
+* `config` remains the Nickel source of truth for the working IDApTIK closed
+  worlds and verbs; `just gen-check` detects generated drift.
+* `abi` contains the Idris2 ABI work and `ffi/zig` the Zig C-ABI bridge.
+* `dlc` contains the current package fixtures and reversible VM lineage.
 
-UMS isn't just a basic level editor; it's a robust procedural generation and validation pipeline designed to ensure that player-created DLC is completely bulletproof before it ever touches the game. 
+There is no interactive studio frontend in this tree. The current interfaces
+are command-line and LLM-driven. The multi-lens application target is
+specified in `docs/STUDIO-INTERFACE.adoc`.
 
-1. **Generative Truth (Nickel):** All content rules and schemas are defined in Nickel, providing a typed, functional source of truth for the universe's constraints.
-2. **Constraint-Driven Generation (Rust & miniKanren):** The `ai_edit` engine (now powered by a Rust miniKanren kernel) acts as a relational constraint solver. You define the *intent* of your edit or procedural generation, and the engine resolves it into a valid game state.
-3. **Rigorous Validation (DLC VM & Idris2):** Before any content is packaged, it is mathematically proven and validated. The Idris2 ABI provides dependent-type proofs for the game integration boundary, and the DLC VM executes payloads to verify their safety.
-4. **Seamless Injection (Zig FFI):** UMS produces `dlc-manifest.json` artifacts that match the game's exact AssetPack output. The game's native DLC loader consumes these payloads via a highly-optimized Zig C-ABI—requiring zero game-side code changes.
+== Architecture boundary
 
-== The Stack
+The host-neutral vocabulary is deliberately narrow: stable identities,
+components, state, events, space/time, agency, perception and knowledge,
+goals, relationships, affect, narrative relationships, asset references,
+constraints, tests, provenance, edit history and package capabilities.
 
-Based on the current repository state, the system is composed of several specialized subsystems:
+PBX systems, anti-hackers, keycards, remedies, security tiers, the Rift and
+living taxis are profile concepts. A profile publishes data that a future UI
+can inspect and implements typed service contracts where executable behaviour
+exists. UMS does not dynamically execute arbitrary plugin code named by a
+manifest.
 
-* **Schemas (`config/`, `schemas/`)**: Contracts ensuring UMS-generated content conforms to the game's expectations, written in Nickel.
-* **Idris2 ABI (`abi/`)**: Dependent-type proofs for the game integration boundary and core structures.
-* **Zig FFI (`ffi/zig/`)**: Zig-based C-ABI exports (built with Zig 0.14.0) that integrate the core data structures with host systems.
-* **DLC & VM (`dlc/`)**: Assets and runtimes for executing and verifying DLC payloads, including a 23-instruction reversible virtual machine.
+See `ARCHITECTURE.md`, `docs/PROFILE-SDK.adoc` and
+`docs/ENACTION-ADAPTER.adoc`.
 
-== Development & Testing
+== Formal and verification posture
 
-This project uses `just` as its command runner. Key recipes:
-* `just build` — Build the Zig FFI (requires Zig 0.14.0).
-* `just dlc-check` — Schema validation of all `dlc/` artifacts.
-* `just gen` / `gen-check` — Regenerate and verify JSON schemas from Nickel sources.
-* `just test-all` — Run all gates (DLC check, Zig FFI integration).
+UMS retains immutable state-to-state edit relations, replayable edit scripts,
+miniKanren and finite-domain generation, refusal rather than fabrication,
+Nickel registries and schema generation, runtime validation, Idris2 ABI work,
+Zig FFI, DLC packaging and claim-to-evidence documentation.
+
+Guarantees are labelled as machine-checked, runtime-validated, tested,
+designed or aspirational. Relational runtime checks are not described as
+machine-checked proofs. The full UMS → profile compiler → released-game loader
+round trip is not yet complete; `docs/ROUNDTRIP-STATUS.adoc` states the exact
+remaining seam.
+
+== Development
+
+[source,sh]
+----
+just gen-check
+cargo fmt --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+just dlc-check
+just test-all
+----
+
+`just test-all` also exercises the Zig and Idris2 gates when their pinned
+toolchains are available. Do not hand-edit generated profile JSON or the
+generated IDApTIK registry.
+
+== Repository identity
+
+The canonical product name is *Universal Modding Studio*, short name *UMS*,
+with desired GitHub slug
+`metadatastician/universal-modding-studio`. This repository is renamed in
+place when GitHub authentication and permissions permit it; history is never
+recreated or copied.
 
 == Licensing
 
-AGPL-3.0-or-later for code, CC-BY-SA-4.0 for documentation.
+Code is AGPL-3.0-or-later. Documentation is CC-BY-SA-4.0.
