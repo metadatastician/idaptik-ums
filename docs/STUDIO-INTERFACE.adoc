@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= Multi-lens studio target
+
+No interactive frontend currently exists. Today UMS is operated through Rust
+CLIs, generated schemas and LLM-driven workflows. This document specifies the
+eventual `apps/studio` interface.
+
+== Stable selection model
+
+One stable entity ID is selected in project state. Changing lenses changes
+the projection, not the selection. If a lens cannot render that entity, it
+shows the entity's identity and explains which profile data is absent.
+
+Required lenses:
+
+* World;
+* Systems;
+* Actors;
+* Cognition/Knowledge;
+* Affect;
+* Conation/Goals;
+* Behaviour;
+* Narrative and Tropes;
+* Missions;
+* Presentation;
+* Testing and Validation.
+
+== Workspace
+
+The left side contains the project/package navigator and profile palette. The
+centre is a lens-specific map, graph, timeline or table canvas. The right side
+contains the universal inspector followed by profile-provided inspector
+panels. Profile panels are reflection-driven contributions, not global
+hard-coded tabs.
+
+The lower workspace contains:
+
+* a constraint composer;
+* side-by-side solver proposal comparison;
+* immutable edit history and replay controls;
+* semantic diff;
+* problems and guarantees, with evidence levels;
+* deterministic simulation trace with seed and adapter version;
+* profile-provided custom panels.
+
+The interface must preserve refusal: an ungrounded identifier, unsupported
+verb, invalid package capability or missing runtime adapter is reported as a
+problem, never silently fabricated.

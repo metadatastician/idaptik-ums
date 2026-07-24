@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= Round-trip status
+
+== What is tested
+
+The IDApTIK edit engine immutably applies and deterministically replays edit
+scripts. The generated Nickel registry and compiled reflection are drift
+checked. The DLC validator accepts every existing in-tree artifact and rejects
+contract mutations. The profile SDK registers both profiles and enforces
+vocabulary/verb isolation.
+
+== What is not proved
+
+There is no test that compiles a complete UMS model into package bytes, loads
+those bytes through the real IDApTIK loader, exports the resulting canonical
+game model and compares it with the authored state. There is also no Slavia
+loader or compiler integration. Therefore the full UMS-to-game round trip is
+aspirational.
+
+== Precise next IDApTIK step
+
+Add a narrow IDApTIK integration crate or test harness that:
+
+. reads `profiles/idaptik/tests/minimal-level.json`;
+. replays it through the existing IDApTIK edit backend;
+. invokes a real profile package compiler to emit an `idaptik-scenario/1`
+  package with a v2 UMS manifest;
+. loads that package through IDApTIK's production typed loader;
+. exports the loader's canonical `LevelData`;
+. compares stable IDs, zone geometry, profile-owned vocabulary values and
+  provenance with the post-edit UMS state;
+. repeats the run and asserts byte-identical package output and equivalent
+  loaded state.
+
+Only after that fixture passes should the claim advance from aspirational to
+tested. Enaction preview is not a substitute for the loader round trip.

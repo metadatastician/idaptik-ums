@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= UMS profile SDK v1
+
+The interface version is `ums-profile/1`. A profile has a stable dotted-kebab
+ID and semantic version and declares its target game plus compatible game
+versions.
+
+== Reflection document
+
+The typed `ProfileDescriptor` includes:
+
+* domain vocabularies;
+* component types and reflective fields;
+* edit verbs and arguments;
+* constraints and capabilities;
+* generators;
+* importer and exporter formats;
+* inspectors and canvas lenses;
+* an optional simulation adapter;
+* an optional package compiler;
+* an optional runtime contract;
+* migrations, tests and guarantees.
+
+Guarantees carry an explicit evidence level: machine-checked,
+runtime-validated, tested, designed or aspirational. A future studio can
+construct palettes, forms, inspectors and validation views from this data
+without knowing IDApTIK or Slavia terms.
+
+== Executable contract
+
+`ums-profile-sdk` defines narrow Rust traits for validation, generation,
+import, export, compilation and deterministic simulation preview. Reflection
+names capabilities; it does not grant arbitrary execution. A host explicitly
+wires trusted trait implementations.
+
+Profile registration rejects malformed API versions, IDs, semantic versions,
+duplicate definitions, empty/duplicate vocabularies and edit fields that
+refer to missing vocabularies. Duplicate profile IDs are rejected.
+
+== Source and generation
+
+`profiles/idaptik/profile.ncl` imports the existing Nickel IDApTIK vocabulary
+and verb registries. Both the legacy Rust registry and profile reflection are
+generated from those Nickel sources during the staged migration.
+
+`profiles/chronicles-of-slavia/profile.ncl` is a bounded, separate source. Its
+terms never enter the IDApTIK registry or universal namespace. Its design was
+checked against the separate `metadatastician/chronicles-of-slavia` Zone A
+sources; that repository remains the game-design authority.
+
+== Compatibility
+
+`ums-ai-edit::engine::apply_edit_script` remains the original IDApTIK API.
+`apply_profile_edit_script` makes selection explicit, verifies the verb is
+owned by the selected profile, and refuses profiles without executable edit
+backends. This is a compatibility seam, not a universal dispatch engine.

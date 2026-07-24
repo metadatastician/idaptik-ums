@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0011: Use broad package kinds and declared capabilities
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+Manifests use broad kinds and separate namespaced `provides` and `patches`
+arrays. Existing IDApTIK v1 kinds remain valid. An opt-in migration maps them
+to v2 broad kinds and never guesses capabilities.
+
+== Consequences
+
+New content domains do not require proliferating global package enums.
+Existing in-tree DLC is not invalidated.

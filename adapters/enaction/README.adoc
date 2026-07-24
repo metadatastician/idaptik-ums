@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= Enaction preview adapter seam
+
+This directory contains the host-neutral request contract for a future
+optional Enaction Engine preview adapter. It is not a working adapter.
+
+The profile owns translation from its UMS model into runtime definitions.
+The adapter owns deterministic request/trace transport only. It must never
+acquire IDApTIK or Slavia ontology.

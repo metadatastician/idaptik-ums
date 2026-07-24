@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0013: Do not create speculative empty crates
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+The destination architecture guides dependency extraction, but a crate is
+added only with a concrete responsibility, implementation and tests.
+Compatibility facades are preferred to a mass move that breaks working gates.
+
+== Consequences
+
+This stage adds `ums-profile-sdk`; other proposed crates remain destination
+names until real code can be extracted with behavioral parity.
