@@ -1,0 +1,34 @@
+= Interface design references
+:toc:
+
+SPDX-FileCopyrightText: 2026 Universal Modding Studio contributors
+SPDX-License-Identifier: CC-BY-SA-4.0
+
+This directory preserves concrete interface outlines that inform implementation
+without presenting them as shipped application surfaces.
+
+== IDApTIK landing page
+
+`idaptik-landing-page.html` is the standalone IDApTIK startup-interface outline
+provided on 2026-07-25. It is retained as an executable HTML design reference.
+Its menus, status values, package counts, UMS hand-off, multiplayer controls,
+and operation-launch actions are simulated in the browser; they are not wired
+to IDApTIK, Universal Modding Studio, or Enaction Engine.
+
+The page belongs to the IDApTIK game/profile experience, not to the
+host-neutral UMS application. In particular:
+
+* "UMS Workshop" should hand off to an independently deployed UMS interface or
+  open an exported project/package through a typed boundary.
+* Package and profile status must eventually come from the IDApTIK package
+  loader and profile contract instead of static presentation text.
+* Operation selection, deterministic seeds, replay settings, and launch
+  commands must be represented by engine-neutral IDApTIK application data.
+* A renderer or host may present this design, but it must not become the owner
+  of package validation, scenario truth, or game-specific ontology.
+
+IDApTIK currently retains both Bevy and Fyrox as thin interchangeable
+frontends over `idaptik-core`. The first package round trip therefore remains
+headless. For the first graphical implementation, the present Gossamer-hosted
+client decision makes Bevy the closest integration target; Fyrox remains an
+evaluation and parity frontend unless a later ADR changes that decision.
