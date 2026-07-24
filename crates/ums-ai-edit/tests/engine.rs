@@ -776,3 +776,43 @@ fn describe_argument_order_matches_the_registry() {
         );
     }
 }
+
+#[test]
+fn profile_dispatch_preserves_the_idaptik_compatibility_backend() {
+    let script = json!({"edits": [
+        {"verb": "add_zone", "id": "lobby", "securityTier": 0, "worldXStart": 0, "worldXEnd": 40}
+    ]});
+    let (legacy_state, legacy_report) = engine::apply_edit_script(&verbs::initial_state(), &script);
+    let (profile_state, profile_report) =
+        engine::apply_profile_edit_script("idaptik", &verbs::initial_state(), &script);
+    assert_eq!(profile_state, legacy_state);
+    assert_eq!(profile_report.to_json(), legacy_report.to_json());
+}
+
+#[test]
+fn profile_dispatch_refuses_cross_profile_verbs() {
+    let idaptik_script = json!({"edits": [{"verb": "add_guard"}]});
+    let (_, report) = engine::apply_profile_edit_script(
+        "chronicles-of-slavia",
+        &verbs::initial_state(),
+        &idaptik_script,
+    );
+    assert!(!report.ok);
+    assert!(
+        report
+            .reason
+            .as_deref()
+            .is_some_and(|reason| reason.contains("not declared"))
+    );
+
+    let slavia_script = json!({"edits": [{"verb": "stabilise_bridge"}]});
+    let (_, report) =
+        engine::apply_profile_edit_script("idaptik", &verbs::initial_state(), &slavia_script);
+    assert!(!report.ok);
+    assert!(
+        report
+            .reason
+            .as_deref()
+            .is_some_and(|reason| reason.contains("not declared"))
+    );
+}

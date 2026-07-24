@@ -16,6 +16,7 @@ clap.workspace = true
 # config/verbs.ncl. Sharing them is the point: the validator and the engine
 # cannot disagree about what a valid edit is.
 ums-ai-edit = { path = "../ums-ai-edit" }
+ums-profile-sdk = { path = "../ums-profile-sdk" }
 
 [[bin]]
 name = "ums-dlc"

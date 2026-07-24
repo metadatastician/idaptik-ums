@@ -1,5 +1,7 @@
 {
-  "$schema": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/dlc-manifest.schema.json",
+  "$schema": "https://github.com/metadatastician/universal-modding-studio/blob/main/schemas/dlc-manifest.schema.json",
+  "manifest-version": 2,
+  "profile": "idaptik",
   "id": "ai-edit-sample",
   "name": "AI-edit sample script",
   "version": "0.1.0",
@@ -12,12 +14,19 @@
     "format": "idaptik-edit/1",
     "path": "edit-script.json"
   },
+  "provides": [
+    "spatial.zones",
+    "actors.security",
+    "actors.characters",
+    "systems.network-topology"
+  ],
+  "patches": [],
   "guarantees": [
     "constraint-checked-edits",
     "replayable-edit-history"
   ],
   "verification": {
-    "engine-tests": "tests/test_ai_edit.py",
+    "engine-tests": "crates/ums-ai-edit/tests/engine.rs",
     "architecture": "docs/adr/0001-ai-edit-kautz6-nesy.adoc",
     "replay": "cargo run -q -p ums-ai-edit -- check dlc/examples/ai-edit-sample/edit-script.json"
   }

@@ -1,19 +1,15 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
 [package]
-name = "ums-ai-edit"
+name = "ums-profile-sdk"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "The UMS AI-edit engine: a miniKanren relational kernel over the IDApTIK level object graph."
+description = "Versioned, reflective game-profile contracts for Universal Modding Studio."
 
 [dependencies]
+serde.workspace = true
 serde_json.workspace = true
-clap.workspace = true
-ums-profile-sdk = { path = "../ums-profile-sdk" }
-
-[[bin]]
-name = "ums-ai-edit"
-path = "src/main.rs"

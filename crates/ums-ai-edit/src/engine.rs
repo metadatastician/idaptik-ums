@@ -24,7 +24,7 @@ use serde_json::{Map, Value, json};
 
 use crate::microkanren::{Goal, Subst, Term, Var, conj, eq, membero, run};
 use crate::vocab::{self, VerbSpec};
-use crate::{FRESH, GUARANTEES, constraints, verbs};
+use crate::{COMPATIBILITY_PROFILE, FRESH, GUARANTEES, constraints, verbs};
 
 // ---------------------------------------------------------------------------
 // JSON <-> Term
@@ -245,6 +245,69 @@ pub fn apply_edit_script(state: &Term, script: &Value) -> (Term, Report) {
 
     report.ok = true;
     (current, report)
+}
+
+/// Dispatch an edit script through a named profile.
+///
+/// The staged implementation has one executable backend: IDApTIK. Other
+/// registered profiles are reflective and validatable but are refused here
+/// until they provide a real edit backend. The legacy [`apply_edit_script`]
+/// function remains an IDApTIK compatibility facade.
+pub fn apply_profile_edit_script(profile_id: &str, state: &Term, script: &Value) -> (Term, Report) {
+    let registry = ums_profile_sdk::ProfileRegistry::with_builtins();
+    let Some(profile) = registry.get(profile_id) else {
+        return (
+            state.clone(),
+            Report {
+                ok: false,
+                applied: 0,
+                total: 0,
+                steps: Vec::new(),
+                reason: Some(format!("unknown profile {profile_id:?}")),
+            },
+        );
+    };
+
+    let edits = script
+        .get("edits")
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if let Some(verb) = edits
+        .iter()
+        .filter_map(|edit| edit.get("verb").and_then(Value::as_str))
+        .find(|verb| profile.edit_verb(verb).is_none())
+    {
+        return (
+            state.clone(),
+            Report {
+                ok: false,
+                applied: 0,
+                total: edits.len(),
+                steps: Vec::new(),
+                reason: Some(format!(
+                    "verb {verb:?} is not declared by profile {profile_id:?}"
+                )),
+            },
+        );
+    }
+
+    if profile_id != COMPATIBILITY_PROFILE {
+        return (
+            state.clone(),
+            Report {
+                ok: false,
+                applied: 0,
+                total: edits.len(),
+                steps: Vec::new(),
+                reason: Some(format!(
+                    "profile {profile_id:?} has no executable edit backend yet"
+                )),
+            },
+        );
+    }
+
+    apply_edit_script(state, script)
 }
 
 // ---------------------------------------------------------------------------

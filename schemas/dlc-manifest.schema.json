@@ -1,13 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/dlc-manifest.schema.json",
-  "title": "IDApTIK DLC manifest",
-  "description": "Envelope for every UMS-produced DLC artifact. The game's DLC loader consumes this envelope; payload internals (puzzle files, scenario definitions, wasm modules) are validated by their own schemas or by the engine that owns the payload type.",
+  "$id": "https://github.com/metadatastician/universal-modding-studio/blob/main/schemas/dlc-manifest.schema.json",
+  "title": "Universal Modding Studio package manifest",
+  "description": "Capability-aware envelope for a UMS-produced package. Legacy IDApTIK v1 kinds remain accepted for migration compatibility.",
   "type": "object",
   "required": ["id", "name", "version", "description", "license", "kind"],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
+    "manifest-version": { "const": 2 },
+    "profile": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]*$",
+      "description": "Profile that owns payload semantics."
+    },
     "id": {
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9-]*$",
@@ -24,14 +30,22 @@
     "author": { "type": "string" },
     "kind": {
       "enum": [
+        "scenario",
+        "campaign",
+        "content-pack",
+        "ruleset",
+        "generator",
+        "presentation-pack",
+        "compatibility-patch",
+        "studio-extension",
+        "edit-script",
         "gameplay-mechanic",
         "puzzle-pack",
         "scenario-definition",
         "actor-pack",
-        "asset-pack",
-        "edit-script"
+        "asset-pack"
       ],
-      "description": "What the artifact is to the game. scenario-definition payloads (buildings/levels, e.g. the Exchange House) and actor-pack payloads (archetype + modifier registries) are validated by idaptik-core's typed loaders — the Rust types are the source of truth for payload internals. edit-script payloads (ordered, replayable edit verbs targeting a scenario, produced by the AI-edit engine) are validated by schemas/edit-script.schema.json — UMS owns the payload as the editor authority."
+      "description": "Broad package classification. gameplay-mechanic, puzzle-pack, scenario-definition, actor-pack and asset-pack are retained v1 compatibility aliases; profile-owned payload contracts define their internal meaning."
     },
     "loads": {
       "type": "string",
@@ -60,22 +74,40 @@
       "properties": {
         "format": {
           "type": "string",
-          "pattern": "^idaptik-(scenario|actors|puzzles|assets|edit)/\\d+$",
-          "description": "Payload wire-format tag, e.g. idaptik-scenario/1 or idaptik-edit/1. Versioned independently of the manifest."
+          "pattern": "^[a-z0-9][a-z0-9-]*-[a-z0-9-]+/\\d+$",
+          "description": "Profile-owned payload wire-format tag, e.g. idaptik-scenario/1 or idaptik-edit/1. Versioned independently of the manifest."
         },
         "path": { "type": "string", "description": "Payload file relative to the manifest." }
       },
-      "description": "Where the typed payload lives for scenario-definition / actor-pack / asset-pack kinds."
+      "description": "Where a profile-owned typed payload lives."
     },
     "guarantees": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Machine-checkable claims the payload makes (free-form tags backed by verification)."
+      "description": "Claim tags backed by verification evidence. A tag is not implicitly a machine-checked proof."
     },
     "verification": {
       "type": "object",
       "additionalProperties": { "type": "string" },
       "description": "Pointers to the evidence for each guarantee (test suites, soundness docs)."
+    },
+    "provides": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)+$"
+      },
+      "description": "Namespaced capabilities supplied by this package."
+    },
+    "patches": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)+$"
+      },
+      "description": "Namespaced capabilities this package modifies."
     }
   }
 }

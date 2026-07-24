@@ -1,0 +1,324 @@
+{
+  "apiVersion": "ums-profile/1",
+  "canvasLenses": [
+    {
+      "applies_to": [
+        "world.mythic-landscape-zone",
+        "world.living-entity"
+      ],
+      "id": "slavia.receptivity-lens",
+      "label": "Environmental receptivity"
+    }
+  ],
+  "capabilities": [
+    "world.mythic-landscape",
+    "world.place-memory",
+    "actors.autonomous-animals",
+    "systems.natural-response",
+    "systems.rift-corruption",
+    "systems.bridge-stability",
+    "narrative.folklore",
+    "narrative.moral-choice",
+    "missions.zone-a"
+  ],
+  "componentTypes": [
+    {
+      "fields": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "receptivity",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "environmental-receptivity"
+        }
+      ],
+      "id": "world.mythic-landscape-zone",
+      "label": "Mythic landscape zone"
+    },
+    {
+      "fields": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "nature",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "nature-kinds"
+        },
+        {
+          "id": "responseRule",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "response-rule-kinds"
+        }
+      ],
+      "id": "world.living-entity",
+      "label": "Autonomous living entity"
+    },
+    {
+      "fields": [],
+      "id": "world.environmental-receptivity",
+      "label": "Environmental receptivity"
+    },
+    {
+      "fields": [
+        {
+          "id": "kind",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "heroine-influences"
+        },
+        {
+          "id": "present",
+          "required": true,
+          "valueType": "boolean",
+          "vocabulary": null
+        }
+      ],
+      "id": "world.influence",
+      "label": "Quickening or settling influence"
+    },
+    {
+      "fields": [],
+      "id": "world.natural-response-rule",
+      "label": "Natural response rule"
+    },
+    {
+      "fields": [],
+      "id": "world.rift-response-rule",
+      "label": "Rift-corrupted response rule"
+    },
+    {
+      "fields": [
+        {
+          "id": "place",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "kind",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "place-memory-kinds"
+        }
+      ],
+      "id": "world.place-memory",
+      "label": "Place memory"
+    },
+    {
+      "fields": [
+        {
+          "id": "bridge",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "stable",
+          "required": true,
+          "valueType": "boolean",
+          "vocabulary": null
+        }
+      ],
+      "id": "systems.bridge-stability",
+      "label": "Bridge stability"
+    },
+    {
+      "fields": [],
+      "id": "world.shrine-interaction",
+      "label": "Shrine interaction"
+    },
+    {
+      "fields": [],
+      "id": "actors.cooperation",
+      "label": "Two-character cooperation"
+    },
+    {
+      "fields": [],
+      "id": "missions.zone-a-objective",
+      "label": "Zone A objective"
+    }
+  ],
+  "constraints": [
+    {
+      "id": "living-entities-have-natural-agency",
+      "version": "design-1"
+    },
+    {
+      "id": "rift-rules-transform-not-replace-nature",
+      "version": "design-1"
+    },
+    {
+      "id": "bridge-requires-two-character-cooperation",
+      "version": "design-1"
+    }
+  ],
+  "editVerbs": [
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "receptivity",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "environmental-receptivity"
+        }
+      ],
+      "collection": "mythicZones",
+      "id": "declare_mythic_zone",
+      "summary": "Declare a bounded mythic landscape zone."
+    },
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "collection": "livingEntities",
+      "id": "add_living_entity",
+      "summary": "Add an autonomous animal or other living entity with its own natural response."
+    },
+    {
+      "arguments": [
+        {
+          "id": "place",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "kind",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "place-memory-kinds"
+        }
+      ],
+      "collection": "placeMemories",
+      "id": "set_place_memory",
+      "summary": "Record what a place remembers without reducing it to a scalar alignment."
+    },
+    {
+      "arguments": [
+        {
+          "id": "bridge",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "mode",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "cooperation-modes"
+        }
+      ],
+      "collection": "bridgeStability",
+      "id": "stabilise_bridge",
+      "summary": "Describe cooperation that stabilises the first bridge metaphor."
+    }
+  ],
+  "exporters": [],
+  "generators": [],
+  "guarantees": [
+    {
+      "evidence": "crates/ums-profile-sdk/tests/profiles.rs",
+      "id": "profile-isolation",
+      "level": "tested"
+    },
+    {
+      "evidence": "profiles/chronicles-of-slavia/README.adoc",
+      "id": "runtime-integration",
+      "level": "aspirational"
+    }
+  ],
+  "importers": [],
+  "inspectors": [
+    {
+      "applies_to": [
+        "world.mythic-landscape-zone",
+        "world.place-memory"
+      ],
+      "id": "slavia.place-memory",
+      "label": "Place memory"
+    }
+  ],
+  "migrations": [],
+  "packageCompiler": null,
+  "profileId": "chronicles-of-slavia",
+  "runtimeContract": null,
+  "simulationAdapter": null,
+  "targetGame": {
+    "compatibleVersions": [
+      "first-zone-design"
+    ],
+    "id": "chronicles-of-slavia",
+    "name": "Chronicles of Slavia"
+  },
+  "tests": [
+    {
+      "id": "zone-a-profile-fixture",
+      "version": "1"
+    }
+  ],
+  "version": "0.1.0",
+  "vocabularies": {
+    "cooperation-modes": [
+      "Alternating",
+      "Simultaneous",
+      "Preparatory"
+    ],
+    "environmental-receptivity": [
+      "Receptive",
+      "Guarded",
+      "Dormant",
+      "Wounded"
+    ],
+    "heroine-influences": [
+      "Quickening",
+      "Settling"
+    ],
+    "nature-kinds": [
+      "Natural"
+    ],
+    "place-memory-kinds": [
+      "Care",
+      "Courage",
+      "Loss",
+      "Folklore",
+      "Medicine"
+    ],
+    "response-rule-kinds": [
+      "Natural",
+      "RiftCorrupted"
+    ],
+    "world-disruptions": [
+      "RiftCorruption",
+      "Inversion",
+      "Severance"
+    ]
+  }
+}

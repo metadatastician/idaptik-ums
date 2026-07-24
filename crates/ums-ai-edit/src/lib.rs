@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 //
-//! The UMS AI-edit engine.
+//! The UMS edit engine's IDApTIK compatibility facade.
 //!
 //! A Kautz type-6 neurosymbolic system over a miniKanren relational kernel
 //! (`docs/adr/0001-ai-edit-kautz6-nesy.adoc`): the symbolic engine sits inside
@@ -11,7 +11,8 @@
 //!
 //! - [`microkanren`] — the relational kernel: terms, unification, interleaved
 //!   streams, goals.
-//! - [`vocab`] — the closed worlds, generated from `config/vocab.ncl`.
+//! - [`vocab`] — the IDApTIK closed worlds, generated from
+//!   `config/vocab.ncl` and reflected by the IDApTIK profile.
 //! - [`verbs`] — the edit verbs as state-in/state-out relations.
 //! - [`constraints`] — the six validity proofs, as goals over a state term.
 //! - [`engine`] — `solve()` (generative) and `apply_edit_script()` (checking).
@@ -34,3 +35,8 @@ pub const FRESH: &str = "?";
 
 /// Guarantees (in the `dlc-manifest` sense) this engine backs.
 pub const GUARANTEES: [&str; 2] = ["constraint-checked-edits", "replayable-edit-history"];
+
+/// The profile implemented by this compatibility crate. New callers should
+/// select a profile through `ums-profile-sdk` and use
+/// [`engine::apply_profile_edit_script`] explicitly.
+pub const COMPATIBILITY_PROFILE: &str = "idaptik";

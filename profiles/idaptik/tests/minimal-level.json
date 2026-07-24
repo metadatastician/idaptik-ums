@@ -1,0 +1,13 @@
+{
+  "profile": "idaptik",
+  "target": "exchange-house",
+  "edits": [
+    {
+      "verb": "add_zone",
+      "id": "lobby",
+      "securityTier": 0,
+      "worldXStart": 0,
+      "worldXEnd": 40
+    }
+  ]
+}
