@@ -22,6 +22,12 @@ Slavia]. UMS owns host-neutral authoring contracts, the profile SDK, edit and
 solver seams, package envelopes and their evidence.
 ====
 
+The newer profile boundary follows the same rule more strictly:
+`crates/ums-profiles` consumes versioned game artifacts. It does not link
+`idaptik-core` or `slavia-core`. `just roundtrip-idaptik` is the evidence that
+the artifact produced here is accepted by the sibling game's actual loader;
+`just slavia-profile-check` is descriptive-profile evidence only.
+
 [NOTE]
 ====
 *Why this file exists.* Until 2026-07-22 the README described an *AffineScript

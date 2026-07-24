@@ -1,0 +1,84 @@
+= Cross-project contracts and shared primitives
+:toc:
+
+== Dependency direction
+
+[source,text]
+----
+UMS source/editor
+  -> isolated game profile compiler
+  -> game-owned versioned package contract
+  -> game-owned loader and deterministic runtime
+  -> selected Enaction facilities
+----
+
+Enaction does not depend on UMS. Neither game depends on the UMS UI. UMS Core
+does not link either game runtime. The IDApTIK and Slavia profiles are sibling
+data directories and do not import one another. `just architecture-check`
+enforces these negative relationships from the four sibling repositories.
+
+IDApTIK owns `ScenarioDefinition`, package loading, semantic validation IDs,
+snapshot compatibility and runtime migrations. The UMS IDApTIK profile owns
+source authoring rules, taxonomy mapping and package generation. The compiler
+reads IDApTIK's `contracts/idaptik/v1/contract.json` and authoritative scenario
+fixture; it does not maintain another `LevelData` or action/objective enum.
+
+The Slavia profile is currently descriptive and validated. No Slavia runtime
+package loader is claimed.
+
+== Similar primitives, different meanings
+
+[cols="1,1,1",options="header"]
+|===
+| Enaction primitive | IDApTIK use | Chronicles of Slavia use
+
+| event
+| camera feed failure
+| heroine enters a clearing
+
+| appraisal
+| possible interference
+| creature senses quickening
+
+| affective state
+| guard anxiety/composure
+| animal agitation/settling
+
+| conative state
+| verify feed/call support
+| approach/flee/perch
+
+| behaviour selection
+| investigate the device
+| fly, calm or stabilise
+
+| world memory
+| incident history
+| place remembers care or harm
+
+| relationship
+| security hierarchy
+| heroine/world bond
+
+| field or influence
+| lockdown tension
+| quickening/settling
+|===
+
+These are structural correspondences, not a shared narrative ontology.
+`quickening`, `settling`, Rift grammar and the heroines belong to Slavia.
+Camera, intrusion, guard and network vocabulary belongs to IDApTIK. Enaction's
+new `enaction-cognition` seam knows only typed domains, ordering and causality.
+
+== Evidence boundary
+
+The IDApTIK vertical slice is executable with `just roundtrip-idaptik`. The
+same UMS-emitted temporary JSON is loaded by `idaptik-core`, executed,
+snapshotted, restored and replayed.
+
+Enaction's `DoubleBuffer` is extracted from and proven in IDApTIK. The
+`idaptik_parity` test pins continuous interpolation, discrete reads,
+discontinuities, healthy fixed-step accounting, hostile elapsed time and
+restart/snapshot behaviour. Enaction's `FixedStep` accumulator and
+`enaction-cognition` crate remain new engine facilities; IDApTIK has not linked
+them and its Bevy timing was not replaced.

@@ -1,0 +1,67 @@
+{
+  "format": "ums-profile-source/v1",
+  "profile": {
+    "id": "idaptik",
+    "version": "1.0.0"
+  },
+  "contract": {
+    "id": "dev.metadatastician.idaptik.package",
+    "version": "1.0.0",
+    "metadata_path": "contracts/idaptik/v1/contract.json",
+    "scenario_path": "contracts/idaptik/v1/fixtures/ghost-lobby-scenario.json"
+  },
+  "package": {
+    "scenario_id": "envelope-001-ghost-lobby",
+    "seed": 31029276,
+    "run_ticks": 8,
+    "snapshot_tick": 2,
+    "taxonomy": {
+      "room": "idaptik.room",
+      "traversal": "idaptik.door",
+      "camera_device": "idaptik.camera",
+      "security_actor": "idaptik.actor.security",
+      "non_security_actor": "idaptik.actor.civilian",
+      "prop": "idaptik.prop",
+      "objective": "idaptik.objective",
+      "network_action": "idaptik.uplink.camera",
+      "physical_effect": "idaptik.camera.feed_looped"
+    },
+    "actors": [
+      {
+        "id": "billy",
+        "role": "security",
+        "runtime_binding": "billy"
+      },
+      {
+        "id": "night-cleaner",
+        "role": "non_security",
+        "runtime_binding": null
+      }
+    ],
+    "commands": [
+      {
+        "tick": 0,
+        "command": {
+          "cmd": "Pivot",
+          "target": "Bridge"
+        }
+      },
+      {
+        "tick": 2,
+        "command": {
+          "cmd": "Uplink",
+          "kind": "Camera"
+        }
+      }
+    ],
+    "guarantees": {
+      "deterministic": true,
+      "snapshot_format": "idaptik-ghost-lobby-runtime-v2",
+      "required_events": [
+        "PivotOpened",
+        "UplinkAction",
+        "CameraPinged"
+      ]
+    }
+  }
+}

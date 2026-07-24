@@ -6,9 +6,9 @@ project = "universal-modding-studio"
 version = "0.1.0-alpha"
 type = "modding-studio"
 last-updated = "2026-07-25"
-branch = "agent/universal-modding-studio"
-build-status = "profile-seams-implemented"
-test-status = "Rust profile/edit/package suites passing; wider toolchain gates pending final run"
+branch = "docs/estate-architecture-settlement"
+build-status = "profile seams implemented; package compiler merged from canonical"
+test-status = "Rust profile/edit/package/compiler suites passing; wider toolchain gates pending final run"
 
 [project-context]
 description = "Universal Modding Studio: independent authoring, generation, validation and packaging platform."
@@ -17,13 +17,15 @@ first-profile = "idaptik"
 second-profile = "chronicles-of-slavia"
 
 [component-status]
-profile-sdk = { status = "tested", notes = "Versioned reflection, registration and isolation." }
+profile-sdk = { status = "tested", notes = "Versioned reflection, registration and isolation. Complementary to ums-profiles, not superseded by it (ADR-0015)." }
+profile-compiler = { status = "tested", notes = "ums-profiles consumes IDApTIK contracts/idaptik/v1 by path and emits the exact package the real game loader accepts. Merged from idaptik-ums-canonical branch agent/idaptik-roundtrip." }
 idaptik-profile = { status = "tested-compatibility", notes = "Generated reflection and executable edit facade; model/edit mismatch remains." }
-slavia-profile = { status = "reflection-only", notes = "Bounded Zone A fixture; no loader/compiler." }
+slavia-profile = { status = "reflection-only", notes = "Bounded Zone A fixture validated through the generic profile protocol; no loader, compiler or runtime adapter." }
 manifest-v2 = { status = "tested", notes = "Capabilities plus legacy compatibility and migration." }
 enaction-adapter = { status = "designed", notes = "Trait and schema seam only." }
 studio-ui = { status = "aspirational", notes = "Specified multi-lens target; no frontend." }
-end-to-end-roundtrip = { status = "aspirational", notes = "Real IDApTIK compiler/loader harness absent." }
+dependency-boundaries = { status = "tested", notes = "scripts/check-architecture-boundaries.sh rejects reverse runtime/UI dependencies and cross-game profile imports; hard-fails on a missing sibling." }
+end-to-end-roundtrip = { status = "harness-present-unverified", notes = "just roundtrip-idaptik now exists on this branch, having existed on no main branch anywhere. Not yet executed in CI, so ADR-0014's condition is not yet met." }
 
 [route-to-mvp]
 remaining = [

@@ -124,6 +124,43 @@ clean-all: clean
 test *args:
     cargo test --workspace {{args}}
 
+# Compile the UMS Ghost Lobby source against IDApTIK's published v1 contract,
+# then hand that exact temporary artifact to the real game loader/simulator.
+roundtrip-idaptik IDAPTIK_ROOT="../IDApTIK":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    artifact="$(mktemp --suffix=.idaptik-package.json)"
+    result="$(mktemp --suffix=.idaptik-result.json)"
+    trap 'rm -f "$artifact" "$result"' EXIT
+    cargo run -q -p ums-profiles --bin ums-profile -- compile-idaptik \
+      --source profiles/idaptik/v1/ghost-lobby.ums.json \
+      --idaptik-root "{{IDAPTIK_ROOT}}" \
+      --output "$artifact"
+    cargo run -q --manifest-path "{{IDAPTIK_ROOT}}/Cargo.toml" \
+      -p idaptik-core --example package-runner -- "$artifact" > "$result"
+    jq -e '
+      .package_format == "idaptik-package/v1"
+      and .scenario_id == "envelope-001-ghost-lobby"
+      and .seed == 31029276
+      and .replay_equal == true
+      and .package_guarantees_met == true
+      and .snapshot.format == "idaptik-ghost-lobby-runtime-v2"
+      and ([.events[].event] | index("CameraPinged") != null)
+      and ([.cognitive_trace[].stage] | unique | length == 6)
+    ' "$result" >/dev/null
+    echo "roundtrip-idaptik: UMS artifact accepted, executed, snapshotted, restored and replayed identically"
+
+# Validate the bounded Zone A / Border Path profile through the generic profile
+# protocol. No Slavia runtime loader is claimed or required by this gate.
+slavia-profile-check:
+    cargo run -q -p ums-profiles --bin ums-profile -- validate \
+      --profile profiles/slavia/v1/profile.json \
+      --fixture profiles/slavia/v1/fixtures/zone-a-border-path.json
+
+# Enforce the four-repository dependency direction and profile isolation.
+architecture-check:
+    bash scripts/check-architecture-boundaries.sh
+
 # NOTE: the former test-verbose / test-smoke / e2e / aspect / bench /
 # readiness recipes were template stubs that echoed "passed!" without
 # running anything. Deleted 2026-07-20 — a gate that cannot fail is not a

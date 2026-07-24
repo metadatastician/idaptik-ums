@@ -34,8 +34,11 @@ UMS isn't just a basic level editor; it's a robust procedural generation and val
 
 1. **Generative Truth (Nickel):** All content rules and schemas are defined in Nickel, providing a typed, functional source of truth for the universe's constraints.
 2. **Constraint-Driven Generation (Rust & miniKanren):** The `ai_edit` engine (now powered by a Rust miniKanren kernel) acts as a relational constraint solver. You define the *intent* of your edit or procedural generation, and the engine resolves it into a valid game state.
-3. **Rigorous Validation (DLC VM & Idris2):** Before any content is packaged, it is mathematically proven and validated. The Idris2 ABI provides dependent-type proofs for the game integration boundary, and the DLC VM executes payloads to verify their safety.
-4. **Seamless Injection (Zig FFI):** UMS produces `dlc-manifest.json` artifacts that match the game's exact AssetPack output. The game's native DLC loader consumes these payloads via a highly-optimized Zig C-ABI—requiring zero game-side code changes.
+3. **Layered Validation (DLC VM & Idris2):** Before content is packaged, the applicable schema, profile, ABI, and DLC VM checks run. The Idris2 ABI proves the properties encoded in its integration types; this is not a claim that arbitrary authored content is mathematically proven safe.
+4. **Versioned Game Boundary:** the IDApTIK profile consumes the game-owned
+   `contracts/idaptik/v1` artifacts and emits `idaptik-package/v1`. The actual
+   Rust game loader consumes that artifact. UMS is not linked into the game,
+   and the UMS UI is not a released-game dependency.
 
 == The Stack
 
@@ -53,6 +56,28 @@ This project uses `just` as its command runner. Key recipes:
 * `just dlc-check` — Schema validation of all `dlc/` artifacts.
 * `just gen` / `gen-check` — Regenerate and verify JSON schemas from Nickel sources.
 * `just test-all` — Run all gates (DLC check, Zig FFI integration).
+* `just roundtrip-idaptik` — Compile the UMS source, load the exact artifact in
+  IDApTIK, execute, snapshot, restore and compare replay.
+* `just slavia-profile-check` — Validate the bounded Zone A / Border Path
+  profile without claiming a Slavia runtime loader.
+* `just architecture-check` — Enforce dependency direction and profile
+  isolation across the sibling repositories.
+
+== Profile status
+
+The IDApTIK profile has an executable round trip. IDApTIK owns scenario syntax,
+vocabulary, semantic validation, migrations and loading; UMS owns profile
+generation and taxonomy mapping.
+
+The Slavia profile captures quickening, settling, animal response according to
+the recipient's nature, bridge and shrine interactions, environmental
+receptivity, place memory, moral marking, Rift effects and heroine-absence
+costs in one Border Path fixture. It is validated through a generic profile
+protocol, and an isolation test prevents that vocabulary leaking into UMS
+Core. Runtime consumption is future work.
+
+See `docs/architecture/CROSS-PROJECT-CONTRACTS.adoc` for the dependency graph,
+ownership table and shared-primitive mapping.
 
 == Licensing
 

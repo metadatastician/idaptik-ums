@@ -1,0 +1,118 @@
+{
+  "format": "ums-profile-fixture/v1",
+  "profile": {
+    "id": "chronicles-of-slavia",
+    "version": "1.0.0"
+  },
+  "name": "Zone A — Border Path",
+  "uses": [
+    "quickening",
+    "settling",
+    "recipient_nature",
+    "bridge_stabilisation",
+    "shrine_interaction",
+    "environmental_receptivity",
+    "place_memory",
+    "moral_world_marking",
+    "rift_disruption",
+    "rift_inversion",
+    "rift_corruption",
+    "rift_severance",
+    "absence_cost"
+  ],
+  "demonstrates": [
+    "anya_quickens",
+    "donna_settles",
+    "animals_answer_by_own_nature",
+    "bridge_requires_stabilisation",
+    "shrine_is_receptive",
+    "place_remembers_care",
+    "acts_mark_world_morally",
+    "rift_can_disrupt_invert_corrupt_or_sever",
+    "either_heroine_absent_has_a_cost",
+    "completion_is_cooperative"
+  ],
+  "entities": [
+    {
+      "id": "anya",
+      "kind": "heroine",
+      "influence": "quickening",
+      "absence_cost": "motion_without_a_quickening_catalyst"
+    },
+    {
+      "id": "donna",
+      "kind": "heroine",
+      "influence": "settling",
+      "absence_cost": "instability_without_a_settling_anchor"
+    },
+    {
+      "id": "border-birds",
+      "kind": "natural_animal",
+      "nature": "wary_social_flock"
+    },
+    {
+      "id": "unstable-bridge",
+      "kind": "living_crossing",
+      "state": "unstable"
+    },
+    {
+      "id": "border-shrine",
+      "kind": "receptive_place",
+      "memory": []
+    },
+    {
+      "id": "rift-disturbance",
+      "kind": "world_wound",
+      "capabilities": [
+        "rift_disruption",
+        "rift_inversion",
+        "rift_corruption",
+        "rift_severance"
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "rule": "influence_draws_out_recipient_nature",
+      "participants": ["anya", "border-birds"],
+      "influence": "quickening",
+      "result": "the_wary_social_flock_stirs_and_emboldens"
+    },
+    {
+      "rule": "influence_draws_out_recipient_nature",
+      "participants": ["donna", "border-birds"],
+      "influence": "settling",
+      "result": "the_wary_social_flock_perches_and_quiets"
+    },
+    {
+      "rule": "settling_stabilises_crossing",
+      "participants": ["donna", "unstable-bridge"],
+      "result": "bridge_stabilized"
+    },
+    {
+      "rule": "quickened_heroine_crosses_stabilised_bridge",
+      "participants": ["anya", "unstable-bridge"],
+      "requires": ["bridge_stabilized"],
+      "result": "anya_crossed"
+    },
+    {
+      "rule": "receptive_shrine_records_care_and_moral_mark",
+      "participants": ["anya", "donna", "border-shrine"],
+      "result": "shrine_answered_and_place_memory_marked"
+    },
+    {
+      "rule": "rift_interrupts_natural_answer",
+      "participants": ["rift-disturbance", "border-birds"],
+      "result": "rift_disturbance_witnessed"
+    }
+  ],
+  "completion": {
+    "mode": "cooperative",
+    "requires": [
+      "bridge_stabilized",
+      "anya_crossed",
+      "shrine_answered_and_place_memory_marked",
+      "rift_disturbance_witnessed"
+    ]
+  }
+}
