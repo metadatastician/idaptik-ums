@@ -769,7 +769,7 @@ verify-maintenance path=".":
     @./session/dispatch.sh verify maintenance "{{path}}"
 
 verify-substantial path=".":
-    @./session/dispatch.sh verify substantial "{{path}}"
+    @./scripts/verify-substantial.sh
 
 verify-release path=".":
     @./session/dispatch.sh verify release "{{path}}"
