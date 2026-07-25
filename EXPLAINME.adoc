@@ -27,7 +27,7 @@ solver seams, package envelopes and their evidence.
 *Why this file exists.* Until 2026-07-22 the README described an *AffineScript
 shell over a Gossamer host runtime*, ported from ReScript, and referenced
 Tauri. None of it was ever built here, and the game is a Rust workspace with
-Bevy and Fyrox frontends. A reader following that diagram would have ported to
+Bevy as its selected graphical frontend. A reader following that diagram would have ported to
 a runtime the game does not use. Every claim below is now tied to a command
 you can run.
 ====
@@ -208,7 +208,7 @@ path name is stale.
 | *Not started.* `ffi/zig/` is the existing 11-file C-ABI surface, not the
   16-protocol unified connector.
 
-| Editor frontends (Bevy / Fyrox / TUI)
+| Interactive studio frontend
 | *Not started.* The engine has no interactive consumer.
 
 | Reversible VM (`dlc/vm/`)

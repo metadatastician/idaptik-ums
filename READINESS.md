@@ -28,7 +28,7 @@ and the repo's CI workflows — evidence over intuition, no aspirational grading
 | Idris2 ABI (`abi/`) | D | Alpha-unstable | 16 of the intended 17 modules typecheck under `idris-ci.yml`; ProvenBridge (the 17th) is still in flight with 2 typed holes. **This is what holds the project line at D.** | 2026-07-22 |
 | SPARK/GNATprove reference model (`spark/`) | X | — | Does not exist. Decided in ADR-0003 (§3) and not started; `gnatprove` is not installed on the development machine. | 2026-07-22 |
 | Zig hexadeca connector | X | — | Does not exist. `ffi/zig/` is the existing 11-file C-ABI surface, not the 16-protocol unified connector. | 2026-07-22 |
-| Editor frontends (Bevy / Fyrox / TUI) | X | — | 0% — not started. The engine has no interactive consumer. Supersedes the former "AffineScript shell" row: the game is a Rust workspace with Bevy and Fyrox frontends, and the shell was never built. | 2026-07-22 |
+| Interactive studio frontend | X | — | 0% — not started. The engine has no interactive consumer. Supersedes the former "AffineScript shell" row: IDApTIK uses Bevy, but UMS remains an independent authoring application and its portal is currently a design reference. | 2026-07-25 |
 | Reversible VM (`dlc/vm/`, `.affine`) | X | — | Has never compiled. No AffineScript toolchain is wired to this repo; the `.affine` sources have never been exercised by anything, so its declared `every-instruction-has-an-inverse` guarantee has never been checked. | 2026-07-22 |
 
 ## Why Grade D — for a much narrower reason than before
