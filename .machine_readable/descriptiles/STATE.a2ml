@@ -29,8 +29,60 @@ end-to-end-roundtrip = { status = "harness-present-unverified", notes = "just ro
 
 [route-to-mvp]
 remaining = [
-  { item = "Implement loader-backed minimal IDApTIK round trip", priority = "critical" },
+  { item = "Unify the public profile surface: expose the ums-profiles compiler through ums-profile-sdk's packageCompiler capability so there is one public abstraction, not two. Both crates stay; the second public surface does not (ADR-0015)", priority = "critical" },
+  { item = "Execute the IDApTIK round trip in CI. The harness is merged and reachable; ADR-0014's condition is met only when it runs", priority = "critical" },
+  { item = "ProvenBridge fate decision - 2 typed holes hold the project line at D; discharge or formally descope", priority = "critical" },
+  { item = "Migrate profiles/chronicles-of-slavia to profiles/slavia/v1 and retire the unversioned layout (ADR-0017)", priority = "high" },
   { item = "Close IDApTIK modelled-versus-editable gaps", priority = "high" },
+  { item = "Rewrite ROUNDTRIP-STATUS.adoc and re-grade READINESS.md against the merged tree", priority = "high" },
   { item = "Keep Slavia reflection aligned with its authoritative repository", priority = "medium" },
   { item = "Implement interactive studio only after host-neutral selection/IR seams exist", priority = "medium" }
+]
+
+[cross-repository-reconciliation]
+coordination-id = "ums-idaptik-slavia-enaction-2026-07-25"
+decision-status = "working direction recorded for the next agent; consolidation is required before publication"
+role = "Authoring, profile reflection, validation orchestration, game-specific compilation, and package emission; never game-runtime truth."
+settled = [
+  "Released games must not depend on the UMS user interface",
+  "UMS Core must not depend on IDApTIK or Chronicles of Slavia runtime crates",
+  "Game profiles consume game-owned versioned contracts",
+  "IDApTIK and Slavia vocabulary must remain isolated from one another and from UMS Core",
+]
+roundtrip-proof-branch = "agent/idaptik-roundtrip"
+roundtrip-proof-commit = "657e4f3682ec74643f14bd335c436446be99cc26"
+roundtrip-proof-status = "Clean except for a pre-existing untracked .claude directory; one local commit ahead of origin/main; no remote branch or pull request."
+profile-architecture-branch = "origin/agent/universal-modding-studio"
+profile-architecture-head = "4b302842940d37e37f445949306f71487b4424dd"
+profile-architecture-status = "Six branch commits, five origin/main commits behind, no pull request or recorded branch CI."
+reconciliation-decision = "Use ums-profile-sdk as the public profile abstraction and migrate the working exact IDApTIK compiler, same-artifact loader gate, dependency checks, and Slavia semantic fixture into it."
+contract-authority = "metadatastician/IDApTIK contracts/idaptik/v1; legacy UMS Nickel registries may be migration or authoring inputs but are not final game authority."
+canonical-profile-layout = [
+  "profiles/idaptik",
+  "profiles/chronicles-of-slavia",
+]
+preserve-from-profile-architecture = [
+  "typed ProfileDescriptor and capability model",
+  "explicit evidence levels",
+  "profile vocabulary isolation",
+  "optional Enaction adapter boundary",
+]
+preserve-from-roundtrip-proof = [
+  "real IDApTIK contract consumption",
+  "one reproducibly emitted package artifact",
+  "acceptance by the actual IDApTIK loader",
+  "deterministic execution, snapshot, restore, and replay comparison",
+  "bounded Zone A / Border Path semantic coverage",
+]
+required-order = [
+  "Rebase the profile-architecture work onto current origin/main",
+  "Port the exact-roundtrip compiler and tests into ums-profile-sdk",
+  "Consolidate both IDApTIK profile layouts and both Slavia profile layouts",
+  "Delete or keep private any superseded second SDK rather than publishing two abstractions",
+  "Rerun roundtrip-idaptik, slavia-profile-check, architecture-check, workspace tests, Clippy, generation checks, and DLC checks",
+]
+do-not = [
+  "Do not merge both profile SDKs unchanged",
+  "Do not make legacy UMS declarations authoritative over the game-owned contract",
+  "Do not claim the broad profile-architecture branch already proves a real game-loader round trip",
 ]
