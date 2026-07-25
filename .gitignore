@@ -43,3 +43,6 @@ harden/
 *.temp
 tmp/
 temp/
+
+.editorconfig
+.claude/
