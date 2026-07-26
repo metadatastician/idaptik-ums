@@ -19,6 +19,7 @@ on:
       - '.github/workflows/idris-ci.yml'
   workflow_dispatch:
 permissions:
+  actions: read
   contents: read
 env:
   # hyperpolymath/proven main as of 2026-07-20. abi/ProvenBridge.idr is
