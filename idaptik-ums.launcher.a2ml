@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# idaptik-ums.launcher.a2ml — per-app launcher config for IDApTIK Universal Modding Studio.
+# Compliant with launcher-standard.a2ml v0.3.0
+#
+# IDApTIK UMS: Procedural generation and validation pipeline for IDApTIK game modding
+
+[project]
+name         = "idaptik-ums"
+display      = "IDApTIK Universal Modding Studio"
+description  = "Procedural-generation pipeline and integration toolkit for IDApTIK game modding"
+categories   = ["Development", "Game", "Modding"]
+version      = "0.1.0"
+license      = "AGPL-3.0-or-later"
+
+[repo]
+# NOTE: repo-dir is resolved at runtime from the launcher script location.
+# Do NOT hardcode absolute paths. Leave empty or use relative paths.
+path = ""
+
+[runtime]
+# UMS is a server-based application (web UI at port 4000)
+kind = "server-url"
+port = 4000
+url  = "http://localhost:4000"
+# Uses just recipes for setup
+startup-command-search = [
+    "{repo-dir}/target/release/ums-ai-edit",
+    "{repo-dir}/ums-ai-edit",
+    "ums-ai-edit",
+]
+# Per launcher-standard.a2ml [runtime] section:
+# PID files MUST use XDG_RUNTIME_DIR or TMPDIR, NEVER /tmp directly
+# Log files MUST use XDG_STATE_HOME, NEVER /tmp directly
+pid-file = "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/idaptik-ums.pid"
+log-file = "${XDG_STATE_HOME:-$HOME/.local/state}/idaptik-ums/ums.log"
+wait-for-url-timeout-seconds = 30
+
+[version-output]
+# Per launcher-standard.a2ml [version-output] section
+first-line-format = "idaptik-ums {version} ({build-sha-short}) [{platform}]"
+example = "idaptik-ums 0.1.0 (abc1234) [linux-x86_64]"
+exit-code = 0
+
+[icon]
+source = "{repo-dir}/brand/icon-256.png"
