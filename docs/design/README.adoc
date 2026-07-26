@@ -1,0 +1,29 @@
+= Interface design references
+:toc:
+
+SPDX-FileCopyrightText: 2026 Universal Modding Studio contributors
+SPDX-License-Identifier: CC-BY-SA-4.0
+
+This directory preserves concrete interface outlines that inform implementation
+without presenting them as shipped application surfaces.
+
+== Universal Modding Studio portal
+
+`ums-portal.html` is the standalone Universal Modding Studio interface outline
+provided on 2026-07-25. It is retained as an executable HTML design reference.
+Its project data, profile state, validation results, generation proposals,
+simulation controls, and package actions are simulated in the browser; they
+are not wired to the current CLI, profile SDK, solver, package tooling, game
+runtimes, or Enaction Engine adapter.
+
+The portal belongs to the independent UMS authoring application. It is not an
+IDApTIK game menu and must not become a renderer required by released games.
+In particular:
+
+* profile-provided forms, palettes, inspectors, lenses, and problems must be
+  constructed from versioned reflection rather than hard-coded game nouns;
+* displayed validation and guarantees must be backed by real evidence;
+* solver proposals must remain proposals until accepted as replayable edits;
+* simulation preview must cross an optional adapter boundary;
+* packaging must produce game-consumable artifacts without making the game
+  depend on this portal.

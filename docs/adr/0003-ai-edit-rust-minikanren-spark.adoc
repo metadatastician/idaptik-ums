@@ -156,6 +156,6 @@ exits 0 when the prover is not installed proves nothing while looking green.
 == References
 
 * link:0001-ai-edit-kautz6-nesy.adoc[ADR-0001] — the type-6 argument, superseded only as to language.
-* link:0002-ums-game-taxonomy-map.adoc[ADR-0002] — the extend-the-enum ruling.
+* link:0004-ums-game-taxonomy-map.adoc[ADR-0004] — the extend-the-enum ruling.
 * Jason Hemann and Daniel P. Friedman, "microKanren: A Minimal Functional Core for Relational Programming" (Scheme Workshop 2013).
 * Henry Kautz, "The Third AI Summer" (AAAI Robert S. Engelmore Memorial Lecture, 2020).

@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0012: Generate and validate profile reflection
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+Profile reflection is checked data consumed through typed Rust structures.
+IDApTIK reflection and its working registry share Nickel sources.
+`just gen-check` detects drift. Reflection carries UI and integration
+metadata, while executable behavior requires explicit typed implementations.
+
+== Consequences
+
+Forms and palettes can eventually be data-driven without turning profiles
+into unrestricted plugins.

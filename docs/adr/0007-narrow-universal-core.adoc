@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0007: Keep the universal core narrow
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+The core may understand identity, composition, state, events, space/time,
+agency, cognition, goals, relationships, affect, narrative relations, asset
+references, constraints, provenance, edits and package capabilities. It may
+not name game objects or doctrines.
+
+== Consequences
+
+PBX, anti-hackers and security tiers remain IDApTIK concepts. The Rift,
+living taxis and remedies remain Slavia concepts. Commonality is earned
+through stable host-neutral structure, not vocabulary flattening.

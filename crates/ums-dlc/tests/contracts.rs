@@ -15,7 +15,7 @@ use serde_json::{Value, json};
 use ums_ai_edit::vocab;
 use ums_dlc::{
     check_edit_script, check_manifest, check_register_puzzle, check_vault_sequence,
-    classify_and_check, taxonomy,
+    classify_and_check, migrate_manifest_v1, taxonomy,
 };
 
 fn repo_root() -> PathBuf {
@@ -86,7 +86,7 @@ fn device_mapping_is_lossless_one_to_one() {
 
 #[test]
 fn extend_the_enum_ruling_is_reflected_in_the_game_enum() {
-    // ADR-0002: the game enum was extended to a SUPERSET of the UMS enum, so
+    // ADR-0004: the game enum was extended to a SUPERSET of the UMS enum, so
     // every mapped target must exist game-side.
     let map = taxonomy_map();
     let game: Vec<&str> = map["game-device-kinds"]
@@ -467,6 +467,39 @@ fn edit_script_kind_and_payload_format_must_agree() {
         manifest_errors(&m)
             .iter()
             .any(|e| e.contains("requires kind edit-script"))
+    );
+}
+
+#[test]
+fn old_manifests_remain_valid_and_migrate_without_inventing_capabilities() {
+    let old = load("dlc/vm/dlc-manifest.json");
+    assert_eq!(manifest_errors(&old), Vec::<String>::new());
+
+    let migrated = migrate_manifest_v1(&old).expect("valid v1 manifest migrates");
+    assert_eq!(migrated["manifest-version"], json!(2));
+    assert_eq!(migrated["kind"], json!("ruleset"));
+    assert_eq!(migrated["provides"], json!([]));
+    assert_eq!(migrated["patches"], json!([]));
+    assert_eq!(manifest_errors(&migrated), Vec::<String>::new());
+}
+
+#[test]
+fn manifests_accept_namespaced_provides_and_patches() {
+    let mut manifest = migrate_manifest_v1(&load("dlc/vm/dlc-manifest.json")).unwrap();
+    manifest["profile"] = json!("idaptik");
+    manifest["provides"] = json!([
+        "systems.network-topology",
+        "ai.behaviours",
+        "narrative.tropes"
+    ]);
+    manifest["patches"] = json!(["security.alert-doctrine", "rules.stealth"]);
+    assert_eq!(manifest_errors(&manifest), Vec::<String>::new());
+
+    manifest["provides"] = json!(["hardcoded-global"]);
+    assert!(
+        manifest_errors(&manifest)
+            .iter()
+            .any(|error| error.contains("namespaced capabilities"))
     );
 }
 

@@ -1,4 +1,6 @@
-# Toolchain pins for idaptik-ums, managed by mise (https://mise.jdx.dev).
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+# Toolchain pins for Universal Modding Studio, managed by mise (https://mise.jdx.dev).
 #
 # Rust is managed by rustup (not mise), matching the sibling IDApTIK repo, so
 # cargo subcommands and the rust-analyzer/clippy components resolve the same

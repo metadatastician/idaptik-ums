@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0009: Use Chronicles of Slavia as the second abstraction test
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+A bounded Zone A profile expresses Anya's quickening, Donna's settling,
+autonomous natural response, place memory, the Rift, shrine and bridge
+cooperation. It does not reduce these to chaos/order scores. The separate
+`metadatastician/chronicles-of-slavia` repository is authoritative.
+
+== Consequences
+
+Reflection and isolation are tested. Loader, compiler and runtime integration
+remain future work and are not claimed.

@@ -23,6 +23,7 @@ on:
     branches: [main]
     paths:
       - 'config/**'
+      - 'profiles/**'
       - 'schemas/**'
       - 'scripts/gen.sh'
       - 'Justfile'
@@ -31,6 +32,7 @@ on:
     branches: [main]
     paths:
       - 'config/**'
+      - 'profiles/**'
       - 'schemas/**'
       - 'scripts/gen.sh'
       - 'Justfile'

@@ -25,7 +25,7 @@ form.
 
 == Context
 
-The Unified Modding Studio needs an AI-edit capability: a way for an AI
+Universal Modding Studio needs an AI-edit capability: a way for an AI
 assistant to take *direct action* on the contents of a level — characters,
 NPCs, objects, devices, wiring — rather than merely emitting prose
 suggestions a human then transcribes. The archive editor

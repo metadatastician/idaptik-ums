@@ -12,6 +12,7 @@ description = "The UMS AI-edit engine: a miniKanren relational kernel over the I
 [dependencies]
 serde_json.workspace = true
 clap.workspace = true
+ums-profile-sdk = { path = "../ums-profile-sdk" }
 
 [[bin]]
 name = "ums-ai-edit"

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/metadatastician/universal-modding-studio/blob/main/adapters/enaction/preview-request.schema.json",
+  "title": "UMS deterministic preview request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "profileVersion", "adapterContract", "seed", "model"],
+  "properties": {
+    "profile": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]*$"
+    },
+    "profileVersion": {
+      "type": "string"
+    },
+    "adapterContract": {
+      "const": "ums-enaction-preview/1"
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "model": {
+      "type": "object"
+    }
+  }
+}

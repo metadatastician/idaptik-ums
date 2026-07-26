@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= Chronicles of Slavia profile
+
+This deliberately bounded second profile tests whether the UMS profile
+contract travels beyond IDApTIK. It covers only the first-zone design.
+
+Anya expresses quickening: movement, courage, excitement and stirring. Donna
+expresses settling: care, structure, calm and holding. These are presences and
+absences that affect the world; they are not interchangeable generic chaos
+and order point totals. Animals retain agency and respond according to their
+own nature. Places can remember. Medicine, folklore and moral choice are
+world dimensions. The Rift may corrupt, invert or sever natural response.
+Bridge stabilisation is the first cooperation metaphor.
+
+The profile currently provides reflective vocabulary, component, constraint,
+verb, lens and inspector declarations plus a minimal Zone A: Border Path
+fixture using the design's grove birds and stream bridge. The source was
+checked against the separate `metadatastician/chronicles-of-slavia`
+repository; that repository remains authoritative. There is no loader,
+compiler or runtime adapter here, so runtime integration is explicitly future
+work.

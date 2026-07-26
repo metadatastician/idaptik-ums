@@ -7,6 +7,13 @@ SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 ## [Unreleased]
 
 ### Changed
+- Aligned the IDApTIK profile and host documentation with IDApTIK ADR-0008:
+  Bevy is the selected game frontend and the unimplemented Fyrox evaluation
+  stub is retired. UMS itself remains renderer-neutral (2026-07-25).
+- Renamed and realigned the product as independent **Universal Modding
+  Studio**, with IDApTIK as its first profile; added the versioned profile SDK,
+  a bounded Chronicles of Slavia profile, capability manifests and the
+  optional Enaction adapter boundary (2026-07-25).
 - **Relicensed to `AGPL-3.0-or-later` (code) and `CC-BY-SA-4.0` (documentation)**
   from MPL-2.0, so the studio and the AGPL game it mods share a licence.
   MPL-2.0 §3.3 names AGPLv3 a Secondary License, making this the permitted
@@ -28,8 +35,9 @@ SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
   verdict and message (2026-07-22).
 - Documentation rewritten against the tree: the README's *AffineScript shell
   over a Gossamer host runtime, ported from ReScript* was never built, and the
-  game is a Rust workspace with Bevy and Fyrox frontends. `EXPLAINME.adoc`
-  added; `READINESS.md` regraded; ADR-0001 superseded by ADR-0003 (2026-07-22).
+  game was a Rust workspace with Bevy and Fyrox evaluation frontends.
+  `EXPLAINME.adoc` added; `READINESS.md` regraded; ADR-0001 superseded by
+  ADR-0003 (2026-07-22; Bevy selected by IDApTIK ADR-0008 on 2026-07-25).
 
 ### Fixed
 - `dlc/examples/ai-edit-sample/dlc-manifest.json` declared
@@ -80,4 +88,4 @@ SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 - `Justfile` project metadata still carried the `rsr-template-repo`
   placeholders (2026-07-10).
 
-[Unreleased]: https://github.com/hyperpolymath/idaptik-ums/compare/HEAD...HEAD
+[Unreleased]: https://github.com/metadatastician/universal-modding-studio/compare/HEAD...HEAD

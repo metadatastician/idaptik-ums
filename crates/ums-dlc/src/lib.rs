@@ -73,17 +73,17 @@ pub fn is_iso_date(s: &str) -> bool {
         && p.iter().all(|q| q.chars().all(|c| c.is_ascii_digit()))
 }
 
-/// `idaptik-<scenario|actors|puzzles|assets|edit>/<n>`.
+/// A versioned profile payload tag such as `idaptik-edit/1`.
 pub fn is_payload_format(s: &str) -> bool {
-    let Some(rest) = s.strip_prefix("idaptik-") else {
+    let Some((name, n)) = s.split_once('/') else {
         return false;
     };
-    let Some((kind, n)) = rest.split_once('/') else {
-        return false;
-    };
-    matches!(kind, "scenario" | "actors" | "puzzles" | "assets" | "edit")
-        && !n.is_empty()
-        && n.chars().all(|c| c.is_ascii_digit())
+    is_kebab(name) && name.contains('-') && !n.is_empty() && n.chars().all(|c| c.is_ascii_digit())
+}
+
+/// A namespaced package capability such as `systems.network-topology`.
+pub fn is_capability(s: &str) -> bool {
+    s.split('.').count() >= 2 && s.split('.').all(is_kebab)
 }
 
 /// A JSON number that is not a bool.
@@ -123,18 +123,30 @@ fn sorted_strs(items: &[&str]) -> Vec<String> {
 // Closed worlds owned by the bridge (not by the edit vocabulary)
 // ---------------------------------------------------------------------------
 
-const MANIFEST_KINDS: [&str; 6] = [
+const MANIFEST_KINDS: [&str; 14] = [
+    "scenario",
+    "campaign",
+    "content-pack",
+    "ruleset",
+    "generator",
+    "presentation-pack",
+    "compatibility-patch",
+    "studio-extension",
+    "edit-script",
+    // v1 compatibility aliases. These remain valid until an explicit
+    // package migration is selected by the author.
     "gameplay-mechanic",
     "puzzle-pack",
     "scenario-definition",
     "actor-pack",
     "asset-pack",
-    "edit-script",
 ];
 const COMPILE_TARGETS: [&str; 3] = ["wasmgc", "wasm32", "none"];
 const MANIFEST_REQUIRED: [&str; 6] = ["id", "name", "version", "description", "license", "kind"];
-const MANIFEST_EXTRA: [&str; 10] = [
+const MANIFEST_EXTRA: [&str; 14] = [
     "$schema",
+    "manifest-version",
+    "profile",
     "author",
     "loads",
     "exports",
@@ -144,6 +156,8 @@ const MANIFEST_EXTRA: [&str; 10] = [
     "payload",
     "guarantees",
     "verification",
+    "provides",
+    "patches",
 ];
 
 /// The reversible VM's instruction set (`dlc/vm/src/instructions/`).
@@ -228,6 +242,16 @@ pub fn check_manifest(doc: &Value, errors: &mut Vec<String>) {
     {
         errors.push("version must be semver".into());
     }
+    if let Some(v) = doc.get("manifest-version")
+        && v.as_u64().is_none_or(|version| version != 2)
+    {
+        errors.push("manifest-version must be 2 when present".into());
+    }
+    if let Some(profile) = doc.get("profile")
+        && !profile.as_str().is_some_and(ums_profile_sdk::is_profile_id)
+    {
+        errors.push("profile must be a lowercase dotted-kebab profile ID".into());
+    }
     for field in ["name", "description", "license"] {
         if let Some(v) = doc.get(field)
             && v.as_str().is_none_or(|s| s.is_empty())
@@ -269,6 +293,19 @@ pub fn check_manifest(doc: &Value, errors: &mut Vec<String>) {
             errors.push(format!("{field} must be an array of strings"));
         }
     }
+    for field in ["provides", "patches"] {
+        if let Some(v) = doc.get(field)
+            && !v.as_array().is_some_and(|items| {
+                items
+                    .iter()
+                    .all(|item| item.as_str().is_some_and(is_capability))
+            })
+        {
+            errors.push(format!(
+                "{field} must be an array of namespaced capabilities"
+            ));
+        }
+    }
 
     let kind = doc.get("kind").and_then(|k| k.as_str());
     match doc.get("payload") {
@@ -307,6 +344,40 @@ pub fn check_manifest(doc: &Value, errors: &mut Vec<String>) {
             }
         }
     }
+}
+
+/// Upgrade a valid v1 manifest to the capability-aware v2 envelope.
+///
+/// Migration is opt-in and non-destructive: [`check_manifest`] continues to
+/// accept every shipped v1 kind. The mapping deliberately stays broad; it
+/// does not manufacture capabilities that the old manifest never declared.
+pub fn migrate_manifest_v1(doc: &Value) -> Result<Value, String> {
+    let mut errors = Vec::new();
+    check_manifest(doc, &mut errors);
+    if !errors.is_empty() {
+        return Err(errors.join("; "));
+    }
+    let mut migrated = doc.clone();
+    let object = migrated
+        .as_object_mut()
+        .ok_or_else(|| "manifest must be an object".to_string())?;
+    let new_kind = match object.get("kind").and_then(Value::as_str) {
+        Some("gameplay-mechanic") => "ruleset",
+        Some("puzzle-pack" | "actor-pack") => "content-pack",
+        Some("scenario-definition") => "scenario",
+        Some("asset-pack") => "presentation-pack",
+        Some(kind) => kind,
+        None => return Err("manifest has no kind".into()),
+    };
+    object.insert("kind".into(), Value::String(new_kind.into()));
+    object.insert("manifest-version".into(), Value::from(2));
+    object
+        .entry("provides")
+        .or_insert_with(|| Value::Array(Vec::new()));
+    object
+        .entry("patches")
+        .or_insert_with(|| Value::Array(Vec::new()));
+    Ok(migrated)
 }
 
 // ---------------------------------------------------------------------------

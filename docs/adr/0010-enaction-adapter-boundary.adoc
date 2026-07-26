@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0010: Keep Enaction Engine behind an optional adapter
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+UMS Core and Enaction Engine do not depend on each other. A trusted adapter
+may run deterministic previews using profile-supplied translation. The
+adapter owns transport and trace behavior, not game ontology. Released games
+consume packages, not the studio.
+
+== Consequences
+
+The `SimulationAdapter` trait and preview schema are real seams. No working
+Enaction integration is claimed.
