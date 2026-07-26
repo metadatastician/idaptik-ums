@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/puzzle.schema.json",
+  "$id": "https://github.com/metadatastician/universal-modding-studio/blob/main/schemas/puzzle.schema.json",
   "title": "IDApTIK reversible-VM puzzle",
   "description": "One authored puzzle for the 23-instruction reversible VM (dlc/vm). Two formats exist: the standard register puzzle (initial state -> goal state under an instruction whitelist) and the vault sequence (a scripted chain of reversible ops over named bits). Cross-field invariants the schema language cannot express \u2014 initialState and goalState sharing one key set, optimalMoves <= maxMoves \u2014 are enforced by the `ums-dlc` crate.",
   "oneOf": [

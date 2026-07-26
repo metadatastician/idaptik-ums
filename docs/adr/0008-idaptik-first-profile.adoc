@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0008: Make IDApTIK the first and deepest profile
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+IDApTIK reflection is generated from the existing Nickel vocabularies and
+verbs. `ums-ai-edit` remains its executable compatibility backend and
+`ums-dlc` retains its package validation. Wiring, assassins, transitions,
+device defences, PBX, mission and physical blocks are declared as modelled;
+the missing direct edit verbs remain explicit debt.
+
+== Consequences
+
+Present development stays IDApTIK-driven without making IDApTIK ontology the
+universal type system.

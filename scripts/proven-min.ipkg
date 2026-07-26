@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: AGPL-3.0-or-later
 -- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 -- proven-min.ipkg — minimal installable subset of hyperpolymath/proven
--- for typechecking idaptik-ums.
+-- for typechecking the Universal Modding Studio IDApTIK ABI.
 --
 -- CI copies this file into a checkout of hyperpolymath/proven pinned to
 -- commit 0368e08f61d4cb6a39530f594b2bdf7c40ca1414 and runs

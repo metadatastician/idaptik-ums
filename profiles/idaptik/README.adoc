@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= IDApTIK profile
+
+IDApTIK is Universal Modding Studio's first, deepest and immediate proving
+profile. `profile.ncl` derives reflection from the existing Nickel vocabulary
+and verb registries. `profile.json` is generated and consumed by
+`ums-profile-sdk`.
+
+The compatibility-stage edit engine still implements ten verbs: zones,
+devices, guards, dogs, drones, NPCs, named characters, items, mission blocks
+and physical blocks. The model is already wider: it contains wiring,
+assassins, zone transitions, device defences, PBX state, mission data and
+physical data. Those modelled-but-not-directly-editable areas are not claimed
+as complete. The next profile work must add typed verbs and tests for them
+without weakening the existing constraints or inventing data.
+
+`crates/ums-ai-edit::{vocab,verbs,constraints}` remains a compatibility facade
+for callers while the implementation is progressively moved behind this
+profile. Its unqualified API always means the IDApTIK profile.

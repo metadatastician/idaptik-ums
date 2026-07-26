@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= ADR 0002: The UMS <-> game taxonomy map at the DLC manifest seam
+= ADR 0004: The UMS <-> IDApTIK taxonomy map at the package seam
 :toc: preamble
 
 Status: Accepted (device kinds 2026-07-20; zones ratified 2026-07-21) +
@@ -42,7 +42,7 @@ The mapping still exists as an explicit, versioned artifact —
 happen to match", because implicit identity is exactly how drift starts.
 It is load-bearing: `crates/ums-dlc` derives its `add_device`
 kind vocabulary from the table (an incoherent map fails the validator at
-load), and `tests/test_taxonomy_map.py` pins the table to
+load), and `crates/ums-dlc/tests/contracts.rs` pins the table to
 `config/vocab.ncl`, from which both the engine's vocabularies and the enums in
 `schemas/edit-script.schema.json` are generated.
 

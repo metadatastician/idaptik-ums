@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 # a2ml-metadata-block
-# id = "idaptik-ums-launcher"
+# id = "universal-modding-studio-launcher"
 # type = "launcher"
 # version = "0.1.0"
-# app-name = "idaptik-ums"
-# app-display = "IDApTIK Universal Modding Studio"
+# app-name = "universal-modding-studio"
+# app-display = "Universal Modding Studio"
 # app-url = "http://localhost:4000"
 # standards-compliance = ["hyperpolymath-launcher-v1"]
 # modes = ["runtime", "integration", "meta"]
@@ -15,7 +17,7 @@
 
 set -euo pipefail
 
-APP_NAME="idaptik-ums"
+APP_NAME="universal-modding-studio"
 VERSION="0.1.0"
 BUILD_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')

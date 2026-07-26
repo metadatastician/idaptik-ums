@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0005: Rename the product to Universal Modding Studio
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Context
+
+The repository identity made IDApTIK appear to be the universal product.
+That prevents an independent studio from serving games with unlike ontology.
+
+== Decision
+
+The product is *Universal Modding Studio* (UMS), described as an independent
+authoring, generation, validation and packaging platform for game worlds,
+systems, agents, narratives and rules. The desired repository slug is
+`metadatastician/universal-modding-studio`, renamed in place. IDApTIK remains
+the first profile.
+
+== Consequences
+
+History and provenance remain intact. Old names remain only for compatibility
+paths, historical statements and the IDApTIK profile.

@@ -7,7 +7,7 @@
 //! ground to the game's own enums, so an incoherent map must fail loudly
 //! rather than silently loosening edit-script validation.
 //!
-//! Per ADR-0002 the game enum was extended to a superset of the UMS enum, so
+//! Per ADR-0004 the game enum was extended to a superset of the UMS enum, so
 //! the device half is a total 1:1 identity — kept as an explicit table
 //! precisely so drift on either side is caught here. The zone half was
 //! ratified 2026-07-21: the tier-band ladder stands, `Iot`/`Isp`/`Service`

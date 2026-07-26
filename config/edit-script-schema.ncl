@@ -54,7 +54,7 @@ in
 
 {
   "$schema" = "https://json-schema.org/draft/2020-12/schema",
-  "$id" = "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/edit-script.schema.json",
+  "$id" = "https://github.com/metadatastician/universal-modding-studio/blob/main/schemas/edit-script.schema.json",
   title = "IDApTIK edit script (idaptik-edit/1)",
   description = m%"
     Payload for kind: edit-script DLC artifacts. An ordered list of edit verbs

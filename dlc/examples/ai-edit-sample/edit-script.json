@@ -1,5 +1,5 @@
 {
-  "$schema": "https://github.com/metadatastician/idaptik-ums/blob/main/schemas/edit-script.schema.json",
+  "$schema": "https://github.com/metadatastician/universal-modding-studio/blob/main/schemas/edit-script.schema.json",
   "format-note": "idaptik-edit/1 — ordered, replayable edit verbs; every intermediate state satisfies the five validity proofs",
   "target": "exchange-house",
   "edits": [

@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 <!-- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->
 
-# Contributing to idaptik-ums
+# Contributing to Universal Modding Studio
 
 Thanks for your interest. This repository follows the Hyperpolymath estate
 standards defined in [hyperpolymath/standards](https://github.com/hyperpolymath/standards).
@@ -60,6 +60,11 @@ for the C-ABI FFI, **`just`** as the task runner. `ai_edit/` was Python — an
 exception that lasted months — and was removed on 2026-07-22 (ADR-0003).
 Adding a generated file by hand fails `just gen-check`; adding a vocabulary
 anywhere but `config/vocab.ncl` fails `just ai-edit-reflect`.
+
+Game-specific vocabulary belongs under `profiles/<profile-id>`. Do not add
+IDApTIK or Chronicles of Slavia concepts to a universal namespace. A new
+crate must contain a real responsibility, code and tests; destination-layout
+placeholders are not accepted.
 
 ## Documentation format
 

@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+cff-version: 1.2.0
+message: "If you use Universal Modding Studio, cite this software."
+title: "Universal Modding Studio"
+type: software
+authors:
+  - family-names: "Jewell"
+    given-names: "Jonathan D. A."
+repository-code: "https://github.com/metadatastician/universal-modding-studio"
+license: "AGPL-3.0-or-later"
+version: "0.1.0"
+date-released: "2026-07-25"

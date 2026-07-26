@@ -1,0 +1,19 @@
+{
+  "profile": "chronicles-of-slavia",
+  "zone": {
+    "id": "zone-a-border-path",
+    "receptivity": "Wounded",
+    "placeMemory": ["Care", "Loss"]
+  },
+  "livingEntities": [
+    {
+      "id": "grove-birds",
+      "responseRule": "Natural"
+    }
+  ],
+  "objective": {
+    "id": "stabilise-stream-bridge",
+    "requires": ["Quickening", "Settling"],
+    "cooperation": "Preparatory"
+  }
+}
