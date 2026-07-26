@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+# Toolchain pins for Universal Modding Studio, managed by mise (https://mise.jdx.dev).
+#
+# Rust is managed by rustup (not mise), matching the sibling IDApTIK repo, so
+# cargo subcommands and the rust-analyzer/clippy components resolve the same
+# way in editors, CI and Claude Code sessions.
+
+[tools]
+# --- Systems / FFI + config + task runner
+zig    = "0.14.0"    # C ABI + cross-compilation for FFI/APIs (see ADR-0001)
+just   = "1.46.0"    # task runner (this repo's justfile)
+"aqua:nickel-lang/nickel" = "1.16.0"  # typed config for game/level/network
+
+# --- Idris2 is intentionally NOT auto-installed here.
+# It bootstraps through Chez Scheme + GMP (no clean prebuilt), so a bare
+# `mise install` would fail on machines without Chez. Provision it on demand with
+# `just install-idris2` (uses idris2-pack), matching how opsm handles it via guix.
+
+[env]
+RUST_BACKTRACE = "1"

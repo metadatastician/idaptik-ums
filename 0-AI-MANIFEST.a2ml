@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+[project]
+name = "Universal Modding Studio"
+short-name = "UMS"
+repository = "metadatastician/universal-modding-studio"
+purpose = "Independent authoring, generation, validation and packaging platform for game worlds, systems, agents, narratives and rules."
+
+[boundaries]
+universal-core = ["identity", "components", "state", "events", "space-time", "agency", "knowledge", "goals", "relationships", "affect", "narrative-relations", "assets", "constraints", "provenance", "edits", "package-capabilities"]
+profile-owned = ["game-vocabulary", "component-types", "edit-verbs", "constraints", "compilers", "runtime-contracts", "custom-ui"]
+forbidden = ["game-ontology-in-core", "core-dependency-on-enaction", "released-game-dependency-on-studio-ui", "unrestricted-plugin-execution"]
+
+[current-profiles]
+idaptik = "first, deepest, executable compatibility backend"
+chronicles-of-slavia = "bounded Zone A reflection; no runtime integration"
+
+[verification]
+primary = ["just gen-check", "cargo fmt --check", "cargo clippy --workspace --all-targets -- -D warnings", "cargo test --workspace", "just test-all"]
+claim-levels = ["machine-checked", "runtime-validated", "tested", "designed", "aspirational"]

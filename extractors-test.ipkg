@@ -1,0 +1,21 @@
+package extractors-test
+
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+--
+-- Executable test for abi/ProvenBridge.idr's JSON extractors.
+-- Shares sourcedir with idaptik-ums.ipkg so the test main imports the
+-- ABI modules directly (they are not installed as a package).
+--
+-- Run: idris2 --build extractors-test.ipkg && ./build/exec/extractors-test
+
+version = 0.1.0
+authors = "Jonathan D.A. Jewell"
+
+sourcedir = "abi"
+main = ExtractorsTest
+executable = extractors-test
+
+modules = ExtractorsTest
+
+depends = proven

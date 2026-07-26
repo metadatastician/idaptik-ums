@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= Universal Modding Studio affirmation
+
+This repository affirms an independent, inspectable modding studio whose
+universal layer stays smaller than any game it serves. Profiles retain their
+own language, ethics and mechanics. Generation must refuse unsupported facts
+rather than fabricate them. Claims must name their evidence level.
+
+IDApTIK drives the present implementation. Chronicles of Slavia challenges
+the abstraction. Neither is flattened to fit the other.

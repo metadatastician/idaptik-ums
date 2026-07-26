@@ -1,0 +1,703 @@
+{
+  "apiVersion": "ums-profile/1",
+  "canvasLenses": [
+    {
+      "applies_to": [
+        "spatial.zone",
+        "actors.guard",
+        "systems.device"
+      ],
+      "id": "idaptik.security-lens",
+      "label": "Security"
+    }
+  ],
+  "capabilities": [
+    "spatial.zones",
+    "actors.security",
+    "actors.characters",
+    "systems.network-topology",
+    "systems.pbx",
+    "missions.blocks",
+    "physical.blocks",
+    "edit.replay"
+  ],
+  "componentTypes": [
+    {
+      "fields": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "securityTier",
+          "required": true,
+          "valueType": "integer",
+          "vocabulary": null
+        },
+        {
+          "id": "segment",
+          "required": false,
+          "valueType": "string",
+          "vocabulary": "zone-segments"
+        }
+      ],
+      "id": "spatial.zone",
+      "label": "Zone"
+    },
+    {
+      "fields": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "kind",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "device-kinds"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "worldX",
+          "required": true,
+          "valueType": "number",
+          "vocabulary": null
+        }
+      ],
+      "id": "systems.device",
+      "label": "Device"
+    },
+    {
+      "fields": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "rank",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "guard-ranks"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "id": "actors.guard",
+      "label": "Guard"
+    },
+    {
+      "fields": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "breed",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "dog-breeds"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "id": "actors.dog",
+      "label": "Dog"
+    },
+    {
+      "fields": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "archetype",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "drone-archetypes"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "id": "actors.drone",
+      "label": "Drone"
+    },
+    {
+      "fields": [],
+      "id": "actors.assassin",
+      "label": "Assassin"
+    },
+    {
+      "fields": [],
+      "id": "actors.npc",
+      "label": "Ambient NPC"
+    },
+    {
+      "fields": [],
+      "id": "actors.character",
+      "label": "Named character"
+    },
+    {
+      "fields": [],
+      "id": "items.item",
+      "label": "Item"
+    },
+    {
+      "fields": [
+        {
+          "id": "type",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "wiring-types"
+        },
+        {
+          "id": "from",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "to",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "id": "systems.wiring",
+      "label": "Wiring run"
+    },
+    {
+      "fields": [],
+      "id": "spatial.zone-transition",
+      "label": "Zone transition"
+    },
+    {
+      "fields": [],
+      "id": "systems.device-defence",
+      "label": "Device defence"
+    },
+    {
+      "fields": [
+        {
+          "id": "hasPBX",
+          "required": true,
+          "valueType": "boolean",
+          "vocabulary": null
+        },
+        {
+          "id": "pbxIp",
+          "required": false,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "pbxWorldX",
+          "required": false,
+          "valueType": "number",
+          "vocabulary": null
+        }
+      ],
+      "id": "systems.pbx",
+      "label": "PBX configuration"
+    },
+    {
+      "fields": [],
+      "id": "missions.mission",
+      "label": "Mission block"
+    },
+    {
+      "fields": [],
+      "id": "world.physical",
+      "label": "Physical block"
+    }
+  ],
+  "constraints": [
+    {
+      "id": "guards-in-zones",
+      "version": "1"
+    },
+    {
+      "id": "defence-targets",
+      "version": "1"
+    },
+    {
+      "id": "zones-ordered",
+      "version": "1"
+    },
+    {
+      "id": "pbx-consistent",
+      "version": "1"
+    },
+    {
+      "id": "devices-exist",
+      "version": "1"
+    },
+    {
+      "id": "items-in-zones",
+      "version": "1"
+    }
+  ],
+  "editVerbs": [
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "securityTier",
+          "required": true,
+          "valueType": "integer",
+          "vocabulary": null
+        },
+        {
+          "id": "worldXStart",
+          "required": true,
+          "valueType": "number",
+          "vocabulary": null
+        },
+        {
+          "id": "worldXEnd",
+          "required": true,
+          "valueType": "number",
+          "vocabulary": null
+        },
+        {
+          "id": "segment",
+          "required": false,
+          "valueType": "string",
+          "vocabulary": "zone-segments"
+        }
+      ],
+      "collection": "zones",
+      "id": "add_zone",
+      "summary": "Declare a zone: a worldX interval with a security tier."
+    },
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "kind",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "device-kinds"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "worldX",
+          "required": true,
+          "valueType": "number",
+          "vocabulary": null
+        }
+      ],
+      "collection": "devices",
+      "id": "add_device",
+      "summary": "Place a device of a known kind in a declared zone."
+    },
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "rank",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "guard-ranks"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "collection": "guards",
+      "id": "add_guard",
+      "summary": "Place a security guard of a known rank in a declared zone."
+    },
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "breed",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "dog-breeds"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "collection": "dogs",
+      "id": "add_dog",
+      "summary": "Place a patrol dog of a known breed in a declared zone."
+    },
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "archetype",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "drone-archetypes"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "collection": "drones",
+      "id": "add_drone",
+      "summary": "Place a drone of a known archetype in a declared zone."
+    },
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "role",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "npc-roles"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "collection": "npcs",
+      "id": "add_npc",
+      "summary": "Place an ambient civilian NPC in a declared zone."
+    },
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "archetype",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "character-archetypes"
+        },
+        {
+          "id": "modifier",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "character-modifiers"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "collection": "characters",
+      "id": "add_character",
+      "summary": "Place a named character: an ActorArchetype + Modifier pair."
+    },
+    {
+      "arguments": [
+        {
+          "id": "id",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        },
+        {
+          "id": "category",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": "item-categories"
+        },
+        {
+          "id": "zone",
+          "required": true,
+          "valueType": "string",
+          "vocabulary": null
+        }
+      ],
+      "collection": "items",
+      "id": "add_item",
+      "summary": "Place an object/item of a known category in a declared zone."
+    },
+    {
+      "arguments": [
+        {
+          "id": "mission",
+          "required": true,
+          "valueType": "object",
+          "vocabulary": null
+        }
+      ],
+      "collection": "mission",
+      "id": "set_mission",
+      "summary": "Set the mission block. Its internals remain game-owned."
+    },
+    {
+      "arguments": [
+        {
+          "id": "physical",
+          "required": true,
+          "valueType": "object",
+          "vocabulary": null
+        }
+      ],
+      "collection": "physical",
+      "id": "set_physical",
+      "summary": "Set the physical-setup block. Its internals remain game-owned."
+    }
+  ],
+  "exporters": [
+    {
+      "format": "idaptik-edit/1",
+      "id": "idaptik-edit"
+    }
+  ],
+  "generators": [
+    {
+      "id": "relational-edit-solver",
+      "version": "1"
+    }
+  ],
+  "guarantees": [
+    {
+      "evidence": "crates/ums-ai-edit/tests/engine.rs",
+      "id": "immutable-state-transitions",
+      "level": "tested"
+    },
+    {
+      "evidence": "crates/ums-ai-edit/tests/engine.rs",
+      "id": "deterministic-edit-replay",
+      "level": "tested"
+    },
+    {
+      "evidence": "abi/",
+      "id": "idris2-abi-types",
+      "level": "machine-checked"
+    },
+    {
+      "evidence": "docs/ROUNDTRIP-STATUS.adoc",
+      "id": "profile-runtime-roundtrip",
+      "level": "aspirational"
+    }
+  ],
+  "importers": [
+    {
+      "format": "idaptik-level/1",
+      "id": "idaptik-level"
+    }
+  ],
+  "inspectors": [
+    {
+      "applies_to": [
+        "systems.device",
+        "systems.wiring"
+      ],
+      "id": "idaptik.network-inspector",
+      "label": "Network topology"
+    },
+    {
+      "applies_to": [
+        "systems.pbx"
+      ],
+      "id": "idaptik.pbx-inspector",
+      "label": "PBX"
+    }
+  ],
+  "migrations": [
+    {
+      "from": "idaptik-edit/1",
+      "id": "identity-v1",
+      "to": "idaptik-edit/1"
+    }
+  ],
+  "packageCompiler": {
+    "id": "idaptik-package-compiler",
+    "version": "1"
+  },
+  "profileId": "idaptik",
+  "runtimeContract": {
+    "id": "idaptik-level",
+    "version": "1"
+  },
+  "simulationAdapter": null,
+  "targetGame": {
+    "compatibleVersions": [
+      "0.x"
+    ],
+    "id": "idaptik",
+    "name": "IDApTIK"
+  },
+  "tests": [
+    {
+      "id": "idaptik-edit-engine-contracts",
+      "version": "1"
+    },
+    {
+      "id": "idaptik-dlc-contracts",
+      "version": "1"
+    }
+  ],
+  "version": "1.0.0",
+  "vocabularies": {
+    "character-archetypes": [
+      "Protagonist",
+      "Handler",
+      "Fixer",
+      "Contact",
+      "Insider",
+      "Rival",
+      "Mark",
+      "Bystander"
+    ],
+    "character-modifiers": [
+      "Unarmed",
+      "Armed",
+      "Disguised",
+      "Alerted",
+      "Wounded",
+      "Corrupt",
+      "Loyal",
+      "Undercover"
+    ],
+    "device-kinds": [
+      "Laptop",
+      "Desktop",
+      "Server",
+      "Router",
+      "Switch",
+      "Firewall",
+      "Camera",
+      "AccessPoint",
+      "PatchPanel",
+      "PowerSupply",
+      "PhoneSystem",
+      "FibreHub"
+    ],
+    "dog-breeds": [
+      "Patrol",
+      "Bloodhound",
+      "RoboDog"
+    ],
+    "drone-archetypes": [
+      "Helper",
+      "Hunter",
+      "Killer"
+    ],
+    "guard-ranks": [
+      "BasicGuard",
+      "Enforcer",
+      "AntiHacker",
+      "Sentinel",
+      "Assassin",
+      "EliteGuard",
+      "SecurityChief",
+      "RivalHacker"
+    ],
+    "item-categories": [
+      "Keycard",
+      "Document",
+      "Weapon",
+      "Tool",
+      "Loot",
+      "Consumable",
+      "Container",
+      "Contraband"
+    ],
+    "npc-roles": [
+      "Pedestrian",
+      "Shopkeeper",
+      "Resident",
+      "Doorman",
+      "StreetVendor",
+      "Busker",
+      "Commuter",
+      "Concierge"
+    ],
+    "wiring-types": [
+      "PatchPanel",
+      "SwitchBackplane",
+      "ServerRack",
+      "FibreSplicing",
+      "PBXComms"
+    ],
+    "zone-segments": [
+      "Lan",
+      "Dmz",
+      "Internal",
+      "Iot",
+      "Management",
+      "Scada",
+      "Isp",
+      "Service"
+    ]
+  }
+}

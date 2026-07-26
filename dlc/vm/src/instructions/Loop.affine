@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // LOOP — Janus from-do-loop-until.
 //
 //   from <entry_guard> == 0 do [body] loop [step] until <exit_guard> == 0

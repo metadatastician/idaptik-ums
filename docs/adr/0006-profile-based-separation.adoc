@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0006: Separate games through versioned profiles
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+Each game supplies a versioned `ums-profile/1` descriptor plus explicitly
+wired typed services. Profiles own vocabularies, components, verbs,
+constraints, compilers, runtime contracts and UI contributions. Registration
+is validated; arbitrary manifest-named code is not executed.
+
+== Consequences
+
+The UI can reflect a game without global hard-coding. Existing APIs may remain
+compatibility facades while their ownership moves in testable stages.

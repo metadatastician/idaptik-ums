@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= ADR 0014: Require loader-backed end-to-end round trips
+
+Status: Accepted +
+Date: 2026-07-25 +
+Deciders: @hyperpolymath
+
+== Decision
+
+A profile's full round trip is tested only when an authored fixture is
+validated, compiled, loaded by the real game loader and compared with the
+post-edit model, including deterministic repeat output. Preview adapters and
+schema-only validation do not satisfy this requirement.
+
+== Consequences
+
+The current IDApTIK replay and DLC tests are necessary but insufficient. The
+full round trip remains aspirational until the harness in
+`docs/ROUNDTRIP-STATUS.adoc` exists.

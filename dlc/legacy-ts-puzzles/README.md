@@ -1,4 +1,5 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->
 # Legacy TS puzzles (preserved from `hyperpolymath/idaptik-dlc-iky`)
 
 These 27 puzzle JSON files were authored against the TypeScript/ReScript

@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# Zig FFI build + test gate, ported from the lineage repo
+# (hyperpolymath/idaptik-ums .github/workflows/ci.yml, ffi-zig job).
+#
+# Deliberately a STANDALONE workflow: parallel PRs add licence-hygiene and
+# Idris2 CI as their own files, so nothing here needs to merge into a shared
+# ci.yml. Scope is the Zig FFI only — the one layer that builds and tests in a
+# default checkout.
+
+name: Zig CI
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'ffi/zig/**'
+      - 'mise.toml'
+      - 'Justfile'
+      - '.github/workflows/zig-ci.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'ffi/zig/**'
+      - 'mise.toml'
+      - 'Justfile'
+      - '.github/workflows/zig-ci.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: zig-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ffi-zig:
+    name: Zig FFI — build + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Must match mise.toml, which matches the game (IDApTIK ADR-0001). This
+      # code does NOT build on 0.16: that release's explicit-Io rework removed
+      # std.fs.openFileAbsolute / makeDirAbsolute and std.io.fixedBufferStream.
+      ZIG_VERSION: '0.14.0'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@8d6198c65fb0feaa111df26e6b467fea8345e46f # v1
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build (shared + static)
+        run: |
+          set -euo pipefail
+          cd ffi/zig
+          zig build --summary all
+
+      - name: Test
+        run: |
+          set -euo pipefail
+          cd ffi/zig
+          zig build test --summary all
+
+      - name: Assert artefacts exist
+        run: |
+          set -euo pipefail
+          cd ffi/zig
+          test -f zig-out/lib/libidaptik_ums.a
+          ls zig-out/lib/libidaptik_ums.so* >/dev/null
+          echo "artefacts present"

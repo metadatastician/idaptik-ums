@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+name: Idris2 ABI CI
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'abi/**'
+      - 'idaptik-ums.ipkg'
+      - 'extractors-test.ipkg'
+      - 'scripts/proven-min.ipkg'
+      - '.github/workflows/idris-ci.yml'
+  pull_request:
+    paths:
+      - 'abi/**'
+      - 'idaptik-ums.ipkg'
+      - 'extractors-test.ipkg'
+      - 'scripts/proven-min.ipkg'
+      - '.github/workflows/idris-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  # hyperpolymath/proven main as of 2026-07-20. abi/ProvenBridge.idr is
+  # typechecked against exactly this commit; bump deliberately, and
+  # re-verify scripts/proven-min.ipkg's module closure when you do.
+  PROVEN_SHA: 0368e08f61d4cb6a39530f594b2bdf7c40ca1414
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: ghcr.io/stefan-hoeck/idris2-pack@sha256:f0758996a931fb35d9ecb1de273c4d59dabe2a09b433afc7e357f65a08b7e1ff
+    steps:
+      - name: Checkout
+        # Full-SHA pin: this repo's Actions policy sets
+        # sha_pinning_required, so tag refs like @v4 startup_failure.
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - name: Install proven (pinned minimal closure)
+        run: |
+          set -eux
+          idris2 --version
+          git init /tmp/proven
+          git -C /tmp/proven remote add origin https://github.com/hyperpolymath/proven
+          git -C /tmp/proven fetch --depth 1 origin "$PROVEN_SHA"
+          git -C /tmp/proven checkout FETCH_HEAD
+          # Register package `proven` from the 13-module import closure
+          # of abi/ProvenBridge.idr. scripts/proven-min.ipkg documents
+          # why the full proven.ipkg is not installable here.
+          cp scripts/proven-min.ipkg /tmp/proven/
+          # proven@PROVEN_SHA's SafeMath.Proofs compiles on no current
+          # toolchain (its `import Data.Nat.Division` is gone from
+          # base-0.8.0; idris2 0.7.0 rejects its ItIsSucc evidence).
+          # Nothing in this repo or SafeMath.idr uses Proofs names, so
+          # drop its lone re-export. Reported upstream as
+          # hyperpolymath/proven#184; remove this sed (and re-add the
+          # module to proven-min.ipkg) once fixed.
+          sed -i '/import public Proven.SafeMath.Proofs/d' /tmp/proven/src/Proven/SafeMath.idr
+          cd /tmp/proven && idris2 --install proven-min.ipkg
+      - name: Typecheck ABI package
+        run: idris2 --typecheck idaptik-ums.ipkg
+      - name: Build and run extractor tests
+        # Executes the ProvenBridge JSON extractors against a fixture
+        # covering every LevelData section plus negative fixtures —
+        # typechecking alone never runs the extraction code.
+        run: |
+          idris2 --build extractors-test.ipkg
+          ./build/exec/extractors-test

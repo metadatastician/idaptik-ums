@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+// build.zig.zon -- Package manifest for IDApTIK UMS Zig FFI.
+// Author: Jonathan D.A. Jewell
+
+.{
+    .name = .idaptik_ums_ffi,
+    .fingerprint = 0xdc4de70248c679e2,
+    .version = "0.1.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "test",
+    },
+}

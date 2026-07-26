@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= Optional Enaction Engine adapter boundary
+
+Enaction Engine is an optional deterministic preview and simulation target,
+not part of UMS Core and not the studio's runtime.
+
+[source,text]
+----
+UMS model
+    |
+    v
+game profile validation
+    |
+    v
+profile translation/compiler
+    |
+    v
+game package or deterministic preview request
+    |
+    v
+game runtime using Enaction Engine
+----
+
+Rules:
+
+* UMS Core does not depend on Enaction Engine.
+* Enaction Engine does not depend on the UMS application.
+* the adapter accepts host-neutral preview requests and deterministic seeds;
+* the selected game profile translates its ontology into runtime definitions;
+* the adapter does not define IDApTIK or Slavia vocabulary;
+* released games consume compiled packages, never the editor UI;
+* the same input model, profile/compiler version and seed must produce the
+  same trace, or the adapter must refuse the request.
+
+`ums-profile-sdk::SimulationAdapter` is the current tested interface seam.
+`adapters/enaction/preview-request.schema.json` records the host boundary.
+There is no real Enaction loader in this repository, so adapter integration is
+designed, not implemented.

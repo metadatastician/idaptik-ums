@@ -1,8 +1,9 @@
-; SPDX-License-Identifier: MPL-2.0
+; SPDX-License-Identifier: AGPL-3.0-or-later
+; SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 (contractile :kind trust :version 1)
 
 (trust license-content :cmd "grep -q 'PMPL\\|License' LICENSE")
 (trust no-secrets-committed :cmd "test ! -f .env && test ! -f credentials.json")
 (trust container-images-pinned :cmd "test ! -f Containerfile || grep -q '@sha256:' Containerfile")
 (trust stapeln-images-pinned :cmd "test ! -f stapeln.toml || ! grep -E '^from\\s*=\\s*\".*:latest\"' stapeln.toml")
-(trust dlc-manifest-schema :doc "dlc-manifest.json validates against the game's DLC schema." :cmd "test -f dlc-manifest.json && python -c \"import json; json.load(open('dlc-manifest.json'))\"")
+(trust dlc-manifest-schema :doc "dlc-manifest.json validates against the game's DLC schema." :cmd "test -f dlc-manifest.json && cargo run -q -p ums-dlc --manifest-path ../../Cargo.toml -- --root ../..")
