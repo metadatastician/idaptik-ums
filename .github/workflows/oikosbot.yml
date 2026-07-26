@@ -15,6 +15,7 @@ jobs:
   oikosbot:
     name: Sustainability Analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     container:
       image: ghcr.io/hyperpolymath/oikos:latest
     steps:
