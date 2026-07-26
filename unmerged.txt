@@ -1,6 +1,0 @@
-  origin/chore/push-email-notify
-  origin/ci/repin-standards-reusables-d7c2271
-  origin/feat/nickel-generation
-  origin/feat/ums-ai-edit-rust
-  origin/feat/ums-dlc-validator
-  origin/hyperpolymath-patch-2

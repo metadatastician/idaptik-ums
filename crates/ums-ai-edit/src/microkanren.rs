@@ -311,10 +311,10 @@ pub fn take(n: Option<usize>, stream: Stream) -> Vec<Subst> {
     let mut answers = Vec::new();
     let mut cur = stream;
     loop {
-        if let Some(limit) = n
-            && answers.len() >= limit
-        {
-            break;
+        if let Some(limit) = n {
+            if answers.len() >= limit {
+                break;
+            }
         }
         // Force through immature points without growing the Rust stack.
         loop {
