@@ -9,7 +9,7 @@
                        maintained, never compiled, update only under
                        repo-wide sweeps; candidate for removal — see
                        `vm/README.adoc`.**
-- `legacy-ts-puzzles/` — Authored puzzle JSON preserved from the retired
+- `legacy-puzzles/` — Authored puzzle JSON preserved from the retired
                          `hyperpolymath/idaptik-dlc-iky` repo. Loadable by
                          `vm/` (instruction set is a superset).
 
