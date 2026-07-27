@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) 2026 Jonathan D.A. Jewell (metadatastician) <jonathan.jewell@gmail.com>
+= ADR-0017: Versioned profile layout
+
+Date: 2026-07-27
+
+== Status
+
+Accepted
+
+== Context
+
+The two UMS repositories disagree about where a profile lives, and the
+disagreement is load-bearing rather than cosmetic.
+
+This repository has `profiles/idaptik/` and `profiles/chronicles-of-slavia/`,
+unversioned, holding generated reflection descriptors.
+
+`idaptik-ums-canonical`'s roundtrip branch has `profiles/idaptik/v1/` and
+`profiles/slavia/v1/`, holding compiler source and declarative validation data.
+
+`scripts/check-architecture-boundaries.sh` — the executable form of ADR-0016 —
+hard-asserts the `v1` paths. **It therefore fails against this repository's
+`main` today**, before the merge in ADR-0015 has even begun.
+
+A profile is a versioned artefact by nature. It targets a kernel version and a
+profile version, it needs a migration story for breaking changes, and a game
+must be able to load an old one. A layout with no version in it cannot express
+any of that.
+
+== Decision
+
+Profiles live at `profiles/<game>/v<N>/`.
+
+`<game>` is the game's own identifier: `idaptik`, `slavia`. Directory names
+follow the identifier, not the marketing title — which is why the current
+`profiles/chronicles-of-slavia/` is wrong even though the profile id inside it
+is right.
+
+Migrate the existing unversioned profiles into `v1/` as part of the ADR-0015
+merge, so the two layouts converge once rather than being reconciled twice.
+
+A `Mustfile.a2ml` invariant asserts the layout:
+
+[source]
+----
+### profile-layout-versioned
+- run: test -d profiles/idaptik/v1 && test -d profiles/slavia/v1
+- severity: critical
+----
+
+== Consequences
+
+* The boundary script can pass, which it cannot today.
+* Profile versioning becomes expressible rather than aspirational.
+* This must land **before** ADR-0016's script changes, or the script is adopted
+  in a state where it fails for a reason unrelated to the boundary it checks —
+  which is how a gate acquires a reputation for crying wolf.
+* Any external reference to `profiles/chronicles-of-slavia/` breaks. There are
+  few, and they are inside this repository.

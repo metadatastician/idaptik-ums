@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) 2026 Jonathan D.A. Jewell (metadatastician) <jonathan.jewell@gmail.com>
+= ADR-0015: Consolidate to one UMS repository
+
+Date: 2026-07-27
+
+== Status
+
+Accepted
+
+== Context
+
+Two repositories claim to be UMS. `idaptik-ums` and `idaptik-ums-canonical`
+share 56 commits and diverged on 2026-07-23 at `5e4bbf2`, after which they
+accumulated 44 and 74 unique commits respectively.
+
+They are not a spec-and-implementation pair. They are two parallel attempts at
+the same 2026-07-25 realignment, made about an hour apart, which produced
+different and incompatible solutions to the same problem — and neither is aware
+of the other.
+
+`abi/`, `ffi/zig/`, `dlc/`, `schemas/`, `config/` and the CI workflows are
+near-verbatim duplicates. Divergence in the shared Rust is small: tens of lines
+per file.
+
+The unique value is asymmetric and both sides hold some:
+
+**This repository** has the product realignment — the Universal Modding Studio
+identity, ADRs 0005 to 0014, `crates/ums-profile-sdk` (reflection descriptors
+and a registry, with no compiler), the two generated profiles, the Enaction
+adapter stub, and the AGENTS.md doctrine that profiles are not aliases for the
+core.
+
+**`idaptik-ums-canonical`** has, on the unmerged branch `agent/idaptik-roundtrip`,
+`crates/ums-profiles` — the working package compiler and a generic declarative
+profile validator — together with the `roundtrip-idaptik` and
+`slavia-profile-check` recipes and `scripts/check-architecture-boundaries.sh`.
+It also holds two cognitive-model design documents, one of which was untracked
+until 2026-07-27.
+
+Two consequences follow that are worth stating plainly. `just
+roundtrip-idaptik`, which IDApTIK's README instructs a reader to run from the
+sibling UMS repository, **exists on no `main` branch anywhere**. And the harness
+that ADR-0014 demands as the condition for a real round trip already exists —
+in the repository that was about to be abandoned.
+
+An intended public/private split was documented, but in practice the two
+repositories diverged rather than specialised, and the private side is the one
+that was less maintained. IDApTIK ADR-0011 withdraws the split.
+
+== Decision
+
+`idaptik-ums` is the sole UMS repository.
+
+Merge from `idaptik-ums-canonical`, branch by branch, with the roundtrip branch
+first:
+
+* `crates/ums-profiles` — the package compiler and declarative validator;
+* the `roundtrip-idaptik` and `slavia-profile-check` recipes;
+* `scripts/check-architecture-boundaries.sh`;
+* `docs/architecture/idaptik-ai-model-private.md` and
+  `evidence-ledger-design-private.md`, which continue to IDApTIK
+  `docs/architecture/` with the `-private` suffix dropped, per IDApTIK ADR-0011.
+
+`ums-profile-sdk` and `ums-profiles` are **complementary, not competing**. The
+SDK has a reflection model and no compiler; the profiles crate has a compiler
+and no reflection model. The merge keeps both. Anyone reading them as rivals and
+deleting one will destroy work that cannot be recovered from the other.
+
+Everything else is discarded as a near-verbatim duplicate.
+
+Archive `idaptik-ums-canonical` read-only, with an appendix recording **what was
+not taken and why**. It carries roughly twenty local branches and several stale
+worktree entries; an archive without that inventory is a repository nobody will
+dare delete and nobody will read.
+
+== Consequences
+
+* One UMS, matching the doctrine already written in AGENTS.md.
+* The round trip becomes reachable from a `main` branch for the first time.
+* The merge is not clean. The known conflict is the profile layout (ADR-0017);
+  there may be more in `Cargo.toml`, the justfile and `.machine_readable/`.
+* `docs/ROUNDTRIP-STATUS.adoc` and `docs/READINESS.md` are both stale relative
+  to the merge. Rewrite them **after** it lands, not before: a pre-written grade
+  would be the same class of claim this ADR exists to retire.
+* Until the merge lands, any document asserting that the round trip is runnable
+  must name the branch. IDApTIK's README now does.
