@@ -31,7 +31,7 @@ end-to-end-roundtrip = { status = "harness-present-unverified", notes = "just ro
 remaining = [
   { item = "Unify the public profile surface: expose the ums-profiles compiler through ums-profile-sdk's packageCompiler capability so there is one public abstraction, not two. Both crates stay; the second public surface does not (ADR-0015)", priority = "critical" },
   { item = "Execute the IDApTIK round trip in CI. The harness is merged and reachable; ADR-0014's condition is met only when it runs", priority = "critical" },
-  { item = "ProvenBridge fate decision - 2 typed holes hold the project line at D; discharge or formally descope", priority = "critical" },
+  { item = "Write Dec-returning deciders for the four invariants abi/Validation.idr declares, so a ValidatedLevel can actually be constructed and the extractor path is obliged to produce one. The module currently has zero top-level function signatures and proves nothing", priority = "high" },
   { item = "Migrate profiles/chronicles-of-slavia to profiles/slavia/v1 and retire the unversioned layout (ADR-0017)", priority = "high" },
   { item = "Close IDApTIK modelled-versus-editable gaps", priority = "high" },
   { item = "Rewrite ROUNDTRIP-STATUS.adoc and re-grade READINESS.md against the merged tree", priority = "high" },

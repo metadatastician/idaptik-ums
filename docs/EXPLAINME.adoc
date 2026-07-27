@@ -222,9 +222,19 @@ path name is stale.
   to this repo. Its manifest declares
   `every-instruction-has-an-inverse`; nothing has ever checked that.
 
-| Idris2 `ProvenBridge`
-| 2 typed holes and a commented-out `proven` dependency. The ABI is 16/17.
+| Idris2 `abi/Validation.idr`
+| Declares six proof-witness types and a `ValidatedLevel` record with four
+  erased proof fields, and contains **zero top-level function signatures**.
+  Nothing constructs a witness; nothing outside the module mentions
+  `ValidatedLevel`; the extractor returns raw `LevelData`. The invariants are
+  stated, never established. It typechecks because declaring a datatype always
+  does. (`ProvenBridge` itself landed 2026-07-20 and is 17/17 — the earlier
+  "2 typed holes" entry here was stale for five days.)
 
 | UMS → game round trip
-| Never executed end to end.
+| Executed successfully on 2026-07-27: `just roundtrip-idaptik` compiles the
+  profile source, IDApTIK's real loader accepts it, and the run snapshots,
+  restores and replays identically. **Not yet gated in CI**, so it is
+  demonstrated but not defended against regression. ADR-0014's condition is
+  met only when it runs there.
 |===
