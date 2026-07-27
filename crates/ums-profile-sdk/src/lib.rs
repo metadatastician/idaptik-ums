@@ -305,16 +305,12 @@ fn load(text: &str) -> ProfileDescriptor {
 
 pub fn idaptik() -> &'static ProfileDescriptor {
     static PROFILE: OnceLock<ProfileDescriptor> = OnceLock::new();
-    PROFILE.get_or_init(|| load(include_str!("../../../profiles/idaptik/profile.json")))
+    PROFILE.get_or_init(|| load(include_str!("../../../profiles/idaptik/v1/descriptor.json")))
 }
 
 pub fn chronicles_of_slavia() -> &'static ProfileDescriptor {
     static PROFILE: OnceLock<ProfileDescriptor> = OnceLock::new();
-    PROFILE.get_or_init(|| {
-        load(include_str!(
-            "../../../profiles/chronicles-of-slavia/profile.json"
-        ))
-    })
+    PROFILE.get_or_init(|| load(include_str!("../../../profiles/slavia/v1/descriptor.json")))
 }
 
 #[derive(Default)]

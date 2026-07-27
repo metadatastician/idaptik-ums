@@ -28,8 +28,8 @@ fi
 TARGETS=(
     "config/edit-script-schema.ncl:schemas/edit-script.schema.json:json"
     "config/vocab-rs.ncl:crates/ums-ai-edit/src/vocab.rs:raw"
-    "profiles/idaptik/profile.ncl:profiles/idaptik/profile.json:json"
-    "profiles/chronicles-of-slavia/profile.ncl:profiles/chronicles-of-slavia/profile.json:json"
+    "profiles/idaptik/v1/descriptor.ncl:profiles/idaptik/v1/descriptor.json:json"
+    "profiles/slavia/v1/descriptor.ncl:profiles/slavia/v1/descriptor.json:json"
 )
 
 mode="${1:-write}"

@@ -25,7 +25,7 @@ and the repo's CI workflows — evidence over intuition, no aspirational grading
 | Generation source of truth (`config/*.ncl`) | C | Alpha-stable | `config-check` typechecks every source AND requires all three `config/bad/bad_*.ncl` negative fixtures to be rejected; `gen-check` diffs generated artifacts and fails when `nickel` is absent rather than skipping. Gated by `config-gen.yml`. | 2026-07-22 |
 | Zig FFI (`ffi/zig/`) | C | Alpha-stable | 24/24 integration tests pass; CI-gated (`zig-ci.yml`); zig 0.14.0 pin enforced locally by `_zig-guard` and in CI. | 2026-07-20 |
 | Licence hygiene gate | C | Alpha-stable | Three steps, each negative-tested: a planted MPL header, a truncated LICENSE and an unattributed JSON file each make it fail. Polarity inverted with the AGPL relicence. | 2026-07-22 |
-| Idris2 ABI (`abi/`) | D | Alpha-unstable | 16 of the intended 17 modules typecheck under `idris-ci.yml`; ProvenBridge (the 17th) is still in flight with 2 typed holes. **This is what holds the project line at D.** | 2026-07-22 |
+| Idris2 ABI (`abi/`) | C | Beta | All 17 modules typecheck under `idris-ci.yml`, including `ProvenBridge`; the extractor test executable passes 40/40. `%default total` in every module, no `believe_me`, `postulate` or `assert_total`. Caveat: CI builds against a `proven` with `Proven.SafeMath.Proofs` removed (upstream issue), disclosed in `scripts/proven-min.ipkg`. See `Validation.idr` below. | 2026-07-27 |
 | SPARK/GNATprove reference model (`spark/`) | X | — | Does not exist. Decided in ADR-0003 (§3) and not started; `gnatprove` is not installed on the development machine. | 2026-07-22 |
 | Zig hexadeca connector | X | — | Does not exist. `ffi/zig/` is the existing 11-file C-ABI surface, not the 16-protocol unified connector. | 2026-07-22 |
 | Interactive studio frontend | X | — | 0% — not started. The engine has no interactive consumer. Supersedes the former "AffineScript shell" row: IDApTIK uses Bevy, but UMS remains an independent authoring application and its portal is currently a design reference. | 2026-07-25 |
@@ -37,14 +37,31 @@ CRG defines the project line as the grade of the worst deployed component. It
 is still **D**, but the reason has changed completely.
 
 The 2026-07-20 assessment was held at D by three things: the engine was Python
-with no CI, the DLC schema check ran local-only, and the ABI was 16/17. **Two
-of the three are now resolved.** The engine and the validator are Rust, CI-
-gated, with profile, engine and package negative tests proving the gates can
-fail. What remains is:
+with no CI, the DLC schema check ran local-only, and the ABI was 16/17. **All
+three are now resolved.** The engine and the validator are Rust, CI-gated, with
+profile, engine and package negative tests proving the gates can fail.
 
-- **`abi/ProvenBridge.idr`** — 2 typed holes and a commented-out `proven`
-  dependency. One D-graded deployed component sets the line. Landing it, or
-  formally descoping it, moves the project to C.
+`abi/ProvenBridge.idr` landed on 2026-07-20 (`c86c84c`) and its extractors on
+2026-07-21 (`a8b7663`). It has no typed holes, `idaptik-ums.ipkg` declares
+`depends = proven` uncommented, and `idris-ci.yml` has been green on every run
+since 2026-07-22. **The D grade was held for five days by this table, not by
+the tree** — the row was never re-run after the work landed. Re-assessed
+2026-07-27 against a local reproduction of the CI pipeline: 17/17 modules
+typecheck, extractor tests 40/40.
+
+What remains:
+
+- **`abi/Validation.idr` — declared obligations, no deciders.** 114 lines
+  headed "Cross-domain validation proofs for level integrity", containing
+  **zero top-level function signatures**. It declares six proof-witness types
+  and a `ValidatedLevel` record with four erased proof fields, but there is no
+  decision procedure that constructs any witness, and `ValidatedLevel` appears
+  nowhere else in the repository. The extractor returns raw, unvalidated
+  `LevelData`, so no `ValidatedLevel` can be built by any code that exists.
+  The module typechecks trivially — declaring a datatype always does — and
+  counts toward the 17/17. The invariants are *stated*, never *established*.
+  This is the repository's one piece of real proof debt, and it sits inside
+  the component the estate points to as its verification success story.
 - **Not X or E:** every component above the D-line runs real, failing-able
   tests that currently pass, with documented scope.
 - The X-graded components (frontends, SPARK model, hexadeca connector, VM) are
@@ -86,9 +103,13 @@ stated rather than papered over.
 
 ## Promotion paths
 
-- **PROJECT D → C:** land `ProvenBridge` or formally descope it (the STATE.a2ml
-  "fate decision"), so the module-count claim and the tree agree. This is the
-  single remaining blocker on the project line.
+- **PROJECT D → C: done, 2026-07-27.** `ProvenBridge` landed on 2026-07-20 and
+  the tree and the module-count claim now agree. No descope ADR is needed:
+  descoping something that works would be the wrong record.
+- **PROJECT C → B:** write `Dec`-returning deciders for the four invariants
+  `Validation.idr` declares, so a `ValidatedLevel` can actually be constructed
+  and the extractor path is obliged to produce one. This is real work — a few
+  days — and unlike the phantom holes it is genuine.
 - **ai-edit C → B:** grow a real consumer, and close the type-6 loop so the
   proposer consults `solve()` in-process rather than across a boundary.
 - **DLC bridge C → B:** execute the round trip in CI — generate an artifact

@@ -83,11 +83,11 @@ fn simulation_adapter_contract_is_deterministic_for_the_same_seed() {
 #[test]
 fn minimal_fixtures_name_their_profile_and_stay_isolated() {
     let idaptik_fixture: Value = serde_json::from_str(include_str!(
-        "../../../profiles/idaptik/tests/minimal-level.json"
+        "../../../profiles/idaptik/v1/tests/minimal-level.json"
     ))
     .unwrap();
     let slavia_fixture: Value = serde_json::from_str(include_str!(
-        "../../../profiles/chronicles-of-slavia/tests/zone-a.json"
+        "../../../profiles/slavia/v1/tests/zone-a.json"
     ))
     .unwrap();
     assert_eq!(idaptik_fixture["profile"], "idaptik");

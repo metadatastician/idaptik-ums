@@ -13,8 +13,8 @@ cargo test --workspace
 ./scripts/gen.sh --check
 
 grep -q '^= Universal Modding Studio$' README.adoc
-grep -q 'profileId.*idaptik' profiles/idaptik/profile.json
-grep -q 'profileId.*chronicles-of-slavia' profiles/chronicles-of-slavia/profile.json
+grep -q 'profileId.*idaptik' profiles/idaptik/v1/descriptor.json
+grep -q 'profileId.*chronicles-of-slavia' profiles/slavia/v1/descriptor.json
 
 if rg -n 'github\.com/(metadatastician|hyperpolymath)/idaptik-ums' \
     -g '!target' -g '!.git'; then

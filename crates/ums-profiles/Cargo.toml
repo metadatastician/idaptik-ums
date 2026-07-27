@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+[package]
+name = "ums-profiles"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Isolated game-profile validation and package compilation for UMS."
+
+[dependencies]
+serde_json.workspace = true
+clap.workspace = true
+
+[[bin]]
+name = "ums-profile"
+path = "src/main.rs"

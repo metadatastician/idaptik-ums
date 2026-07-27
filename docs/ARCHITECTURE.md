@@ -17,11 +17,11 @@ host-neutral orchestration, IR, edit, solver, validation and package seams
         v
 ums-profile-sdk  <--- profile reflection + typed services
         |
-        +---- profiles/idaptik
+        +---- profiles/idaptik/v1
         |          |
         |          +---- IDApTIK package/runtime contracts
         |
-        +---- profiles/chronicles-of-slavia
+        +---- profiles/slavia/v1
                    |
                    +---- future Slavia package/runtime contracts
 

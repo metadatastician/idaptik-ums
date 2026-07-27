@@ -1,0 +1,201 @@
+= IDApTIK / Slavia architecture integration report
+:date: 2026-07-25
+:status: implemented and locally verified
+
+== Repository identity
+
+[cols="1,1,1",options="header"]
+|===
+| Project | Local working location | GitHub estate repository
+
+| Enaction Engine
+| `meta-repos/enaction-engine` (feature work in a linked worktree)
+| `metadatastician/enaction-engine`
+
+| Universal Modding Studio
+| `meta-repos/idaptik-ums-canonical` (historical local slug)
+| `metadatastician/idaptik-ums` (historical remote slug)
+
+| IDApTIK
+| `meta-repos/IDApTIK`
+| `metadatastician/IDApTIK`
+
+| Chronicles of Slavia
+| `meta-repos/chronicles-of-slavia`
+| `metadatastician/chronicles-of-slavia`
+|===
+
+Slavia was transferred from the `hyperpolymath` GitHub organisation and its
+existing checkout was moved from `hyper-repos` to `meta-repos`; no second clone
+was created.
+
+== Dependency graph
+
+[source,text]
+----
+UMS editor/source
+  -> isolated profile compiler
+  -> game-owned versioned contract/package
+  -> game-owned loader and runtime
+  -> selected Enaction facilities
+----
+
+`just architecture-check` rejects reverse Enaction-to-UMS dependencies,
+game-to-UMS runtime/UI dependencies, UMS-to-game-runtime Cargo links, and
+IDApTIK/Slavia profile imports in either direction.
+
+== Contract ownership and artifacts
+
+IDApTIK owns scenario, room, floor, door, camera, hide-spot, prop, actor,
+objective, action, tuning, difficulty, scoring, grounded-network,
+physical-effect, snapshot and package-loading semantics.
+
+Introduced or exposed artifacts:
+
+* IDApTIK `contracts/idaptik/v1/contract.json`
+* IDApTIK `contracts/idaptik/v1/package.schema.json`
+* IDApTIK authoritative Ghost Lobby contract fixture
+* IDApTIK `idaptik-core::package` loader and headless runner
+* UMS `ums-profiles` generic validator/compiler
+* UMS IDApTIK Ghost Lobby profile source
+* UMS Slavia v1 profile and Zone A / Border Path fixture
+
+UMS does not re-declare `ScenarioDefinition`, `LevelData`, game action enums or
+objective enums. It reads the sibling game's published metadata and fixture.
+
+== Exact IDApTIK round trip
+
+[source,text]
+----
+profiles/idaptik/v1/ghost-lobby.ums.json
+ -> ums-profile compile-idaptik
+ -> temporary idaptik-package/v1 JSON
+ -> idaptik-core::load_package (same bytes)
+ -> ScenarioDefinition::validate
+ -> GhostLobbySim
+ -> PivotOpened + UplinkAction(Camera) + CameraPinged
+ -> RuntimeSnapshot v2
+ -> GhostLobbySim::restore
+ -> replay of the post-snapshot command tail
+ -> byte-structural event and final-snapshot equality
+ -> RoundTripResult consumed by the just gate
+----
+
+The fixture carries the existing five-room Ghost Lobby, four traversal doors,
+three cameras, hide spots, props, Billy, a non-runtime-bound civilian roster
+entry, objectives with service-exit/laundry alternatives, a grounded bridge
+pivot, and a camera network action producing the physical feed-loop effect.
+The package guarantee requires the deterministic seed, snapshot v2 and the
+three boundary events.
+
+Run from UMS:
+
+[source,sh]
+----
+just roundtrip-idaptik
+----
+
+== Enaction evidence
+
+Actually proven in IDApTIK:
+
+* endpoint-exact interpolation;
+* the inline `DoubleBuffer`;
+* continuous position/door blending;
+* discrete facing reads;
+* commit-then-snap restart behaviour.
+
+Proven by comparison tests but not adopted:
+
+* healthy 60 Hz `FixedStep` accounting;
+* hostile/non-finite elapsed-time policy;
+* accumulator reset at a discontinuity.
+
+New and not yet run in a game:
+
+* `enaction-cognition`, the generic six-domain causal trace seam.
+
+No IDApTIK timing code was replaced. IDApTIK still uses Bevy's fixed clock.
+
+== Bounded cognitive-affective-conative seam
+
+The IDApTIK package slice emits a deterministic, serialisable trace:
+
+[source,text]
+----
+camera signal failed
+ -> possible interference appraised (epistemic, not confirmed)
+ -> anxiety changed (affective)
+ -> verification goal raised (conative)
+ -> verify-feed behaviour selected
+ -> security-team protection context recorded
+----
+
+IDApTIK stores game-specific guard stages. Enaction stores game-neutral domains.
+They are not duplicate enums; a future explicit adapter may map between them.
+
+== Slavia profile coverage
+
+The Zone A / Border Path fixture contains Anya, Donna, birds, the unstable
+bridge, a receptive shrine, one Rift disturbance and a cooperative completion
+condition. It covers quickening, settling, natural response according to the
+recipient's own nature, bridge stabilisation, shrine interaction,
+environmental receptivity, place memory, moral/world marking, Rift disruption,
+inversion, corruption and severance, plus the cost of either heroine's absence.
+
+The validator is generic and an isolation test scans UMS Core for profile
+vocabulary. Slavia does not load the package in this pass.
+
+== Verification evidence
+
+Green:
+
+* `just roundtrip-idaptik`
+* `just slavia-profile-check`
+* `just architecture-check`
+* UMS `cargo test --workspace` (99 unit/integration tests; one ignored doc test)
+* UMS `cargo clippy --workspace --all-targets -- -D warnings`
+* UMS `just gen-check`, `just dlc-check`, `just config-check`
+* Slavia engine workspace tests (51 tests; two ignored doc tests)
+* Slavia engine workspace Clippy with warnings denied
+* Enaction workspace tests (41 unit/integration tests plus three doc tests)
+* Enaction workspace Clippy with warnings denied
+* Enaction `just verify`
+* IDApTIK `cargo fmt --all -- --check`
+* IDApTIK `cargo test --workspace` (core, headless, network, FFI, TUI, Bevy and
+  Fyrox targets)
+* IDApTIK `cargo clippy --workspace --all-targets -- -D warnings`
+* IDApTIK `just test-ghost`, `just config-check` and
+  `just config-scenario-check`
+* IDApTIK `just loopback-check`, including deterministic relay, peer loss,
+  live lockstep and snapshot resynchronisation
+
+The loopback gate needs permission to bind a local TCP socket. Its first run in
+the restricted sandbox was denied by the host; the same unmodified gate passed
+outside that restriction.
+
+== Designed, not implemented
+
+* Slavia runtime package loading;
+* a UMS live preview adapter to Enaction;
+* IDApTIK adoption of Enaction `FixedStep` or `enaction-cognition`;
+* shared field/influence, place-memory or relationship runtime components;
+* v1-to-v2 package migrations;
+* a production authoring UI for either profile.
+
+== Compatibility and migration concerns
+
+The v1 IDApTIK envelope accepts exactly game version `0.1.0`, profile `1.0.0`,
+Ghost Lobby scenario format v2 and snapshot format v2. This is deliberately
+strict. Any incompatible scenario or snapshot change needs a new contract
+version or an IDApTIK-owned migration. The current fixture references the
+authoritative game scenario artifact, so repository-relative orchestration
+assumes the four sibling checkouts remain together under `meta-repos`.
+
+== Next smallest vertical slice
+
+Publish a game-owned Slavia package contract for only the existing
+`slavia-core` Zone A spec, then make UMS compile the current Border Path fixture
+and have a new headless Slavia loader execute the already-tested five-beat
+success condition. Do not add combat, inventory, factions or a general field
+system during that slice.
