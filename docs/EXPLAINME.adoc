@@ -189,11 +189,6 @@ Evidence::
 `git ls-files '*.py'` is empty. `.machine_readable/6a2/AGENTIC.a2ml` forbids
 them. `licence-hygiene.yml` gates attributability of every tracked file.
 
-Caveat::
-`dlc/legacy-ts-puzzles/` still carries a directory name from its
-ReScript/TypeScript origin. The 27 files in it are plain JSON data; only the
-path name is stale.
-
 == Where the evidence stops
 
 [cols="2,3"]
