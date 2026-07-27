@@ -36,15 +36,27 @@ IDApTIK out as a sibling and building the game's own crate from it. The exact
 raw-cargo sequence CI uses (not merely the `just` recipe) was verified locally
 on 2026-07-27.
 
-**Honest status: gated, not yet observed green.** The workflow step exists and
-its commands are proven, but this branch has not been pushed, so no CI run has
-executed it. The claim advances from *aspirational* to *gated* now, and to
-*tested* on the first green run — not before.
+**Observed green in CI on 2026-07-27**, run `30288163489`, step
+"UMS to IDApTIK round trip through the real game loader". The gate is real: it
+checks the game out as a sibling, builds the game's own crate, and fails the
+build if the loader rejects the artifact or the replay diverges.
 
-ADR-0014's condition — a profile's round trip is tested only when an authored
-fixture is validated, compiled, loaded by the real game loader and compared,
-including deterministic repeat output — is met on every clause except
-deterministic repeat output, which is still not asserted (see below).
+**Status: gated and green — but ADR-0014's condition is still not fully met.**
+That ADR requires an authored fixture to be validated, compiled, loaded by the
+real game loader **and compared with the post-edit model, including
+deterministic repeat output**. Two clauses are outstanding:
+
+* *Compared with the post-edit model.* The gate proves the game accepts the
+  artifact and replays it deterministically. It does not compare the loader's
+  exported canonical model against the authored UMS state, so it does not prove
+  the authored content survived the trip intact — only that whatever arrived is
+  internally consistent.
+* *Deterministic repeat output.* The artifact is compiled once. Byte-identical
+  output across repeated compiles is not asserted.
+
+So the honest label is **gated**, not **tested**. What changed today is that
+the claim went from unreachable to defended; what has not changed is that the
+comparison is weaker than the ADR asks for.
 
 == Slavia: validated, no loader
 
