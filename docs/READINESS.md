@@ -11,7 +11,8 @@ assessment 2026-07-22)
 **Assessor:** Claude (PR E of the staged lineage migration), from real local runs
 and the repo's CI workflows — evidence over intuition, no aspirational grading.
 
-**Current Grade:** D
+**Current Grade:** C  
+*(was D until 2026-07-27; the blocker was a stale row, not the tree — see below)*
 
 ## Summary
 
@@ -31,7 +32,7 @@ and the repo's CI workflows — evidence over intuition, no aspirational grading
 | Interactive studio frontend | X | — | 0% — not started. The engine has no interactive consumer. Supersedes the former "AffineScript shell" row: IDApTIK uses Bevy, but UMS remains an independent authoring application and its portal is currently a design reference. | 2026-07-25 |
 | Reversible VM (`dlc/vm/`, `.affine`) | X | — | Has never compiled. No AffineScript toolchain is wired to this repo; the `.affine` sources have never been exercised by anything, so its declared `every-instruction-has-an-inverse` guarantee has never been checked. | 2026-07-22 |
 
-## Why Grade D — for a much narrower reason than before
+## Why the grade moved D → C
 
 CRG defines the project line as the grade of the worst deployed component. It
 is still **D**, but the reason has changed completely.
@@ -51,23 +52,16 @@ typecheck, extractor tests 40/40.
 
 What remains:
 
-- **`abi/Validation.idr` — declared obligations, no deciders.** 114 lines
-  headed "Cross-domain validation proofs for level integrity", containing
-  **zero top-level function signatures**. It declares six proof-witness types
-  and a `ValidatedLevel` record with four erased proof fields, but there is no
-  decision procedure that constructs any witness, and `ValidatedLevel` appears
-  nowhere else in the repository. The extractor returns raw, unvalidated
-  `LevelData`, so no `ValidatedLevel` can be built by any code that exists.
-  The module typechecks trivially — declaring a datatype always does — and
-  counts toward the 17/17. The invariants are *stated*, never *established*.
-  This is the repository's one piece of real proof debt, and it sits inside
-  the component the estate points to as its verification success story.
-- **Not X or E:** every component above the D-line runs real, failing-able
-  tests that currently pass, with documented scope.
-- The X-graded components (frontends, SPARK model, hexadeca connector, VM) are
-  not deployed and gate nothing — but they are why this cannot claim more than
-  alpha-unstable, because the studio still has no interactive surface and the
-  VM has never compiled.
+- **`abi/Validation.idr` — closed 2026-07-27.** It previously declared six
+  proof-witness types and a `ValidatedLevel` record with four erased proof
+  fields, and contained **zero top-level function signatures** — no decision
+  procedure constructed any witness, and `ValidatedLevel` appeared nowhere else
+  in the repository. It typechecked because declaring a datatype always does.
+  It now carries seven `Dec`-returning deciders, a `DecEq IpAddress` instance,
+  and `validateLevel : LevelData -> Maybe ValidatedLevel`, which is the only
+  route from raw level data to a validated one. Seven compile-time assertions
+  pin decider behaviour so a decider that always answered `No` would fail the
+  build. 15 top-level signatures, 0 holes, 0 escape hatches, `%default total`.
 
 **Assessment basis.** The Rust and Nickel gates were verified by local runs of
 the exact commands CI executes. `rust-ci.yml` and `config-gen.yml` are new
@@ -90,9 +84,14 @@ stated rather than papered over.
   hand-written: `abi/Types.idr` and `ffi/zig/src/types.zig`. They are checked
   by tests, not generated from `config/vocab.ncl` — the obvious next extension
   of `scripts/gen.sh`.
-- The UMS → game round trip has never been executed end to end. Both sides
-  validate against the same declared contract, but nothing proves the game
-  accepts what UMS emits.
+- ~~The UMS → game round trip has never been executed end to end.~~
+  **Resolved 2026-07-27.** `just roundtrip-idaptik` compiles the profile
+  source, IDApTIK's real loader accepts it, and the run snapshots, restores
+  and replays identically. Gated in `rust-ci.yml` and observed green.
+  Remaining gap, stated precisely: the gate proves acceptance and
+  deterministic replay, not that authored state survived the trip — that
+  needs `package-runner` to export the canonical `LevelData`. See
+  `docs/ROUNDTRIP-STATUS.adoc`.
 - `dlc/legacy-ts-puzzles/` carries a directory name from its
   ReScript/TypeScript origin. The 27 files are plain JSON; only the path is
   stale.

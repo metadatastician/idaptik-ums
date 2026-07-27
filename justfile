@@ -188,9 +188,9 @@ architecture-check:
 crg-grade:
     #!/usr/bin/env bash
     set -euo pipefail
-    grade=$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md | head -1 || true)
+    grade=$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' docs/READINESS.md | head -1 || true)
     if [ -z "$grade" ]; then
-        echo "error: no '**Current Grade:** <A-F|X>' line in READINESS.md" >&2
+        echo "error: no '**Current Grade:** <A-F|X>' line in docs/READINESS.md" >&2
         exit 1
     fi
     echo "$grade"
