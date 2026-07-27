@@ -62,6 +62,22 @@ jobs:
         with:
           persist-credentials: false
 
+      # The profile compiler reads the game's versioned contract as data, by
+      # path -- it is not a Cargo dependency, and must never become one
+      # (ADR-0016). The contract therefore has to exist for the compiler test
+      # to run. Locally the game is at ../IDApTIK; actions/checkout cannot
+      # write above the workspace, so CI places it in a subdirectory and points
+      # IDAPTIK_ROOT at it.
+      #
+      # This is a read-only checkout of published contract files. It does not
+      # make UMS depend on the game at build time.
+      - name: Checkout the sibling game contract (IDApTIK)
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          repository: metadatastician/IDApTIK
+          path: .sibling/IDApTIK
+          persist-credentials: false
+
       # rust-toolchain.toml pins the channel and components; rustup honours it
       # automatically, so the version is declared in one place.
       - name: Show toolchain
@@ -85,6 +101,8 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
 
       - name: Test suite
+        env:
+          IDAPTIK_ROOT: ${{ github.workspace }}/.sibling/IDApTIK
         run: cargo test --workspace
 
       - name: Replay the shipped sample edit script

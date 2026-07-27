@@ -52,8 +52,19 @@ fn slavia_vocabulary_does_not_leak_into_ums_rust_core() {
 
 #[test]
 fn idaptik_compiler_consumes_the_sibling_game_contract() {
-    let Some(idaptik_root) = root().parent().map(|meta| meta.join("IDApTIK")) else {
-        panic!("UMS must have a meta-repos parent");
+    // The sibling checkout defaults to ../IDApTIK, which is the local estate
+    // layout. IDAPTIK_ROOT overrides it so CI can place the game elsewhere --
+    // actions/checkout cannot write above the workspace, so the two repos are
+    // not siblings there.
+    //
+    // Deliberately no skip path. If the contract is missing the test fails:
+    // a gate that quietly passes when it cannot run is not a gate.
+    let idaptik_root = match std::env::var_os("IDAPTIK_ROOT") {
+        Some(explicit) => PathBuf::from(explicit),
+        None => match root().parent() {
+            Some(meta) => meta.join("IDApTIK"),
+            None => panic!("UMS must have a meta-repos parent, or set IDAPTIK_ROOT"),
+        },
     };
     let package = compile_idaptik(
         &root().join("profiles/idaptik/v1/ghost-lobby.ums.json"),
