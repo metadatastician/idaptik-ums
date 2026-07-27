@@ -4,6 +4,18 @@
 = idaptik-dlc-vm
 :toc:
 
+[IMPORTANT]
+====
+*STATUS: FROZEN DEVELOPMENT SAMPLE (owner ruling, 2026-07-27).*
+`dlc/vm` was a sample DLC built to exercise the UMS DLC pipeline during
+development. It is *not maintained*: do not extend it, do not build new
+work on it, and do not treat its contents as current practice. It has
+never been compiled (no installable AffineScript toolchain exists in CI
+or locally). Touch it only when a repo-wide sweep (licence, security,
+CI) must pass over every tree. It is a candidate for outright removal
+once a real DLC exercises the pipeline in its place.
+====
+
 A 23-instruction reversible virtual machine, packaged as a DLC for the
 idaptik game. Written in AffineScript; compiles to WasmGC via typed-wasm.
 

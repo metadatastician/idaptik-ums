@@ -5,6 +5,10 @@
 - `vm/`              — 23-instruction reversible VM in AffineScript with
                        property tests. Consolidated from the retired
                        `hyperpolymath/idaptik-dlc-vm` repo.
+                       **FROZEN development sample (2026-07-27): not
+                       maintained, never compiled, update only under
+                       repo-wide sweeps; candidate for removal — see
+                       `vm/README.adoc`.**
 - `legacy-ts-puzzles/` — Authored puzzle JSON preserved from the retired
                          `hyperpolymath/idaptik-dlc-iky` repo. Loadable by
                          `vm/` (instruction set is a superset).
