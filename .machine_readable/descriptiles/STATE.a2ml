@@ -5,7 +5,7 @@
 project = "universal-modding-studio"
 version = "0.1.0-alpha"
 type = "modding-studio"
-last-updated = "2026-07-25"
+last-updated = "2026-07-27"
 branch = "docs/estate-architecture-settlement"
 build-status = "profile seams implemented; package compiler merged from canonical"
 test-status = "Rust profile/edit/package/compiler suites passing; wider toolchain gates pending final run"
@@ -25,16 +25,15 @@ manifest-v2 = { status = "tested", notes = "Capabilities plus legacy compatibili
 enaction-adapter = { status = "designed", notes = "Trait and schema seam only." }
 studio-ui = { status = "aspirational", notes = "Specified multi-lens target; no frontend." }
 dependency-boundaries = { status = "tested", notes = "scripts/check-architecture-boundaries.sh rejects reverse runtime/UI dependencies and cross-game profile imports; hard-fails on a missing sibling." }
-end-to-end-roundtrip = { status = "harness-present-unverified", notes = "just roundtrip-idaptik now exists on this branch, having existed on no main branch anywhere. Not yet executed in CI, so ADR-0014's condition is not yet met." }
+end-to-end-roundtrip = { status = "gated-not-yet-observed", notes = "Executed successfully 2026-07-27; rust-ci.yml now runs the same sequence as a release-blocking step against a sibling checkout of the game. Advances to tested on the first green CI run." }
 
 [route-to-mvp]
 remaining = [
   { item = "Unify the public profile surface: expose the ums-profiles compiler through ums-profile-sdk's packageCompiler capability so there is one public abstraction, not two. Both crates stay; the second public surface does not (ADR-0015)", priority = "critical" },
-  { item = "Execute the IDApTIK round trip in CI. The harness is merged and reachable; ADR-0014's condition is met only when it runs", priority = "critical" },
+  { item = "Observe the round-trip CI gate green. The rust-ci.yml step is written and its raw-cargo sequence verified locally; it advances to tested on the first green run, not before", priority = "critical" },
   { item = "Write Dec-returning deciders for the four invariants abi/Validation.idr declares, so a ValidatedLevel can actually be constructed and the extractor path is obliged to produce one. The module currently has zero top-level function signatures and proves nothing", priority = "high" },
-  { item = "Migrate profiles/chronicles-of-slavia to profiles/slavia/v1 and retire the unversioned layout (ADR-0017)", priority = "high" },
+  { item = "Archive idaptik-ums-canonical read-only with a what-was-not-taken-and-why appendix (ADR-0015)", priority = "high" },
   { item = "Close IDApTIK modelled-versus-editable gaps", priority = "high" },
-  { item = "Rewrite ROUNDTRIP-STATUS.adoc and re-grade READINESS.md against the merged tree", priority = "high" },
   { item = "Keep Slavia reflection aligned with its authoritative repository", priority = "medium" },
   { item = "Implement interactive studio only after host-neutral selection/IR seams exist", priority = "medium" }
 ]
@@ -51,15 +50,15 @@ settled = [
 ]
 roundtrip-proof-branch = "agent/idaptik-roundtrip"
 roundtrip-proof-commit = "657e4f3682ec74643f14bd335c436446be99cc26"
-roundtrip-proof-status = "Clean except for a pre-existing untracked .claude directory; one local commit ahead of origin/main; no remote branch or pull request."
+roundtrip-proof-status = "Merged 2026-07-27 into this repository by cherry-pick with history (ADR-0015). idaptik-ums-canonical is superseded and awaits archival."
 profile-architecture-branch = "origin/agent/universal-modding-studio"
 profile-architecture-head = "4b302842940d37e37f445949306f71487b4424dd"
 profile-architecture-status = "Six branch commits, five origin/main commits behind, no pull request or recorded branch CI."
 reconciliation-decision = "Use ums-profile-sdk as the public profile abstraction and migrate the working exact IDApTIK compiler, same-artifact loader gate, dependency checks, and Slavia semantic fixture into it."
 contract-authority = "metadatastician/IDApTIK contracts/idaptik/v1; legacy UMS Nickel registries may be migration or authoring inputs but are not final game authority."
 canonical-profile-layout = [
-  "profiles/idaptik",
-  "profiles/chronicles-of-slavia",
+  "profiles/idaptik/v1",
+  "profiles/slavia/v1",
 ]
 preserve-from-profile-architecture = [
   "typed ProfileDescriptor and capability model",
@@ -75,11 +74,11 @@ preserve-from-roundtrip-proof = [
   "bounded Zone A / Border Path semantic coverage",
 ]
 required-order = [
-  "Rebase the profile-architecture work onto current origin/main",
-  "Port the exact-roundtrip compiler and tests into ums-profile-sdk",
-  "Consolidate both IDApTIK profile layouts and both Slavia profile layouts",
-  "Delete or keep private any superseded second SDK rather than publishing two abstractions",
-  "Rerun roundtrip-idaptik, slavia-profile-check, architecture-check, workspace tests, Clippy, generation checks, and DLC checks",
+  "DONE 2026-07-27: cherry-picked ums-profiles, the roundtrip and slavia-profile-check recipes, and the boundary script into this repository",
+  "DONE 2026-07-27: consolidated both IDApTIK and both Slavia profile layouts under profiles/<game>/v<N>/",
+  "DONE 2026-07-27: reran roundtrip-idaptik, slavia-profile-check, architecture-check, gen-check, config-check, dlc-check, ai-edit-check, workspace tests and Clippy -- all pass",
+  "OPEN: expose the ums-profiles compiler through ums-profile-sdk so one public abstraction is published, not two",
+  "OPEN: archive idaptik-ums-canonical read-only with a what-was-not-taken appendix",
 ]
 do-not = [
   "Do not merge both profile SDKs unchanged",
