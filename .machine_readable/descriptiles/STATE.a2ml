@@ -25,12 +25,12 @@ manifest-v2 = { status = "tested", notes = "Capabilities plus legacy compatibili
 enaction-adapter = { status = "designed", notes = "Trait and schema seam only." }
 studio-ui = { status = "aspirational", notes = "Specified multi-lens target; no frontend." }
 dependency-boundaries = { status = "tested", notes = "scripts/check-architecture-boundaries.sh rejects reverse runtime/UI dependencies and cross-game profile imports; hard-fails on a missing sibling." }
-end-to-end-roundtrip = { status = "gated", notes = "Observed green in CI 2026-07-27 (run 30288163489). Not yet tested per ADR-0014: the gate proves loader acceptance and deterministic replay, but does not compare the exported canonical model against authored state, and does not assert byte-identical output across repeated compiles." }
+end-to-end-roundtrip = { status = "gated", notes = "Observed green in CI 2026-07-27 (run 30288163489). ADR-0014 deterministic-repeat-output clause now met: the gate compiles twice and requires byte-identical artifacts. Remaining clause: no comparison of the loader exported canonical model against authored state, which is blocked on IDApTIK package-runner exporting LevelData." }
 
 [route-to-mvp]
 remaining = [
   { item = "Unify the public profile surface: expose the ums-profiles compiler through ums-profile-sdk's packageCompiler capability so there is one public abstraction, not two. Both crates stay; the second public surface does not (ADR-0015)", priority = "critical" },
-  { item = "Advance the round trip from gated to tested: compare the loader's exported canonical model field by field against authored UMS state, and assert byte-identical artifacts across repeated compiles. Both clauses of ADR-0014 are still unmet", priority = "critical" },
+  { item = "Advance the round trip from gated to tested: have IDApTIK package-runner export the canonical LevelData the loader built, then compare it field by field against authored UMS state. Artifact determinism is now asserted; this is the last ADR-0014 clause outstanding", priority = "critical" },
   { item = "Write Dec-returning deciders for the four invariants abi/Validation.idr declares, so a ValidatedLevel can actually be constructed and the extractor path is obliged to produce one. The module currently has zero top-level function signatures and proves nothing", priority = "high" },
   { item = "Archive idaptik-ums-canonical read-only with a what-was-not-taken-and-why appendix (ADR-0015)", priority = "high" },
   { item = "Close IDApTIK modelled-versus-editable gaps", priority = "high" },

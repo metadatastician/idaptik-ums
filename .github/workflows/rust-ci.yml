@@ -123,12 +123,22 @@ jobs:
         run: |
           set -euo pipefail
           artifact="$(mktemp --suffix=.idaptik-package.json)"
+          repeat="$(mktemp --suffix=.idaptik-package.json)"
           result="$(mktemp --suffix=.idaptik-result.json)"
-          trap 'rm -f "$artifact" "$result"' EXIT
+          trap 'rm -f "$artifact" "$repeat" "$result"' EXIT
           cargo run -q -p ums-profiles --bin ums-profile -- compile-idaptik \
             --source profiles/idaptik/v1/ghost-lobby.ums.json \
             --idaptik-root "$IDAPTIK_ROOT" \
             --output "$artifact"
+          # ADR-0014's deterministic-repeat-output clause.
+          cargo run -q -p ums-profiles --bin ums-profile -- compile-idaptik \
+            --source profiles/idaptik/v1/ghost-lobby.ums.json \
+            --idaptik-root "$IDAPTIK_ROOT" \
+            --output "$repeat"
+          cmp -s "$artifact" "$repeat" || {
+            echo "::error::compiler is not deterministic; repeated compiles differ"
+            exit 1
+          }
           cargo run -q --manifest-path "$IDAPTIK_ROOT/Cargo.toml" \
             -p idaptik-core --example package-runner -- "$artifact" > "$result"
           jq -e '

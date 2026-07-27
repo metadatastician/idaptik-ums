@@ -136,6 +136,20 @@ roundtrip-idaptik IDAPTIK_ROOT="../IDApTIK":
       --source profiles/idaptik/v1/ghost-lobby.ums.json \
       --idaptik-root "{{IDAPTIK_ROOT}}" \
       --output "$artifact"
+    # ADR-0014 requires deterministic repeat output. Compile a second time and
+    # demand byte-identical bytes: a compiler that emits a timestamp, an
+    # unordered map or a random id would still pass the loader and still be
+    # unfit to ship.
+    repeat="$(mktemp --suffix=.idaptik-package.json)"
+    trap 'rm -f "$artifact" "$result" "$repeat"' EXIT
+    cargo run -q -p ums-profiles --bin ums-profile -- compile-idaptik \
+      --source profiles/idaptik/v1/ghost-lobby.ums.json \
+      --idaptik-root "{{IDAPTIK_ROOT}}" \
+      --output "$repeat"
+    cmp -s "$artifact" "$repeat" || {
+      echo "roundtrip-idaptik: compiler is not deterministic; artifacts differ" >&2
+      exit 1
+    }
     cargo run -q --manifest-path "{{IDAPTIK_ROOT}}/Cargo.toml" \
       -p idaptik-core --example package-runner -- "$artifact" > "$result"
     jq -e '
