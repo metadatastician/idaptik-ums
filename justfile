@@ -162,6 +162,11 @@ roundtrip-idaptik IDAPTIK_ROOT="../IDApTIK":
       and ([.events[].event] | index("CameraPinged") != null)
       and ([.cognitive_trace[].stage] | unique | length == 6)
     ' "$result" >/dev/null
+    # ADR-0014's remaining clause: compare against the post-edit model. The jq
+    # gate above proves acceptance and deterministic replay; neither would
+    # notice a compiler that dropped a taxonomy term or retimed a command.
+    ./scripts/compare-authored-vs-accepted.py \
+      profiles/idaptik/v1/ghost-lobby.ums.json "$result"
     echo "roundtrip-idaptik: UMS artifact accepted, executed, snapshotted, restored and replayed identically"
 
 # Validate the bounded Zone A / Border Path profile through the generic profile
