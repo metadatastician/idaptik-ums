@@ -1,19 +1,13 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
-;; SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+; SPDX-License-Identifier: MPL-2.0
+;; guix.scm — GNU Guix package definition for squisher-corpus
+;; Usage: guix shell -f guix.scm
+
 (use-modules (guix packages)
-             (guix download)
              (guix build-system gnu)
-             (guix licenses)
-             (gnu packages)
-             (gnu packages rust)
-             (gnu packages zig)
-             (gnu packages build-tools)
-             (gnu packages elixir)
-             (gnu packages erlang)
-             (gnu packages idris))
+             (guix licenses))
 
 (package
-  (name "universal-modding-studio-env")
+  (name "squisher-corpus")
   (version "0.1.0")
   (source #f)
   (build-system gnu-build-system)
