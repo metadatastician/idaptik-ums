@@ -22,9 +22,8 @@
 # Denote all TOML files as text
 *.toml text
 
-# Denote all JavaScript/TypeScript files as text
-*.js text
-*.ts text
+# AffineScript sources are text
+*.affine text
 *.jsx text
 *.tsx text
 
@@ -70,8 +69,6 @@ Dockerfile eol=lf
 
 # Language-specific attributes
 *.py diff=python
-*.js diff=javascript
-*.ts diff=typescript
 *.rs diff=rust
 *.go diff=go
 *.java diff=java

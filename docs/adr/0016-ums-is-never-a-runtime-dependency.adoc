@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) 2026 Jonathan D.A. Jewell (metadatastician) <jonathan.jewell@gmail.com>
+= ADR-0016: UMS is never a runtime dependency
+
+Date: 2026-07-27
+
+== Status
+
+Accepted
+
+Binds Enaction Engine ADR-0013 from the studio side.
+
+== Context
+
+The estate has settled a two-layer shape: the Enaction Engine is the runtime
+kernel a shipped game links, and UMS is the authoring studio that emits
+packages. The hard requirement behind the split is that **a released game must
+build and run with neither UMS source nor UMS binaries present**.
+
+That requirement has been stated in prose in several repositories and enforced
+nowhere. The one real enforcement mechanism —
+`scripts/check-architecture-boundaries.sh` — exists on an unmerged branch of the
+repository being retired.
+
+== Decision
+
+UMS must never appear in a shipped game's dependency graph, in any
+configuration, including dev-dependencies and feature-gated paths.
+
+UMS reads a game's published contract files as **data, by path**. That
+`ums_profiles::compile_idaptik()` takes an `--idaptik-root` argument rather than
+a Cargo dependency is the architecture, not an implementation convenience. It is
+the difference between a studio that reads a game and a studio that is welded to
+one.
+
+`scripts/check-architecture-boundaries.sh` is the executable form of this ADR.
+Its failure is release-blocking.
+
+Two changes to it:
+
+. **Delete the `affective-engine` fallback.** The rename to `enaction-engine` is
+  done, and a fallback is exactly where a check silently passes against a stale
+  tree. A gate that cannot fail is not a gate.
+. **Add a positive assertion**, not only forbidden-dependency patterns. Assert
+  that the compiler still takes a path root. A grep for `--idaptik-root` is
+  crude, but it fails if someone converts the path argument into a crate
+  dependency — which is the actual regression to fear, and the one a
+  forbidden-pattern list would not catch until too late.
+
+The script hard-exits when a sibling repository is absent. It must keep doing
+so. A check that skips when it cannot run is not a check.
+
+=== Where it runs
+
+`.github/workflows/estate-boundaries.yml`, on `workflow_dispatch` and a weekly
+schedule, checking the sibling repositories out into `../`.
+
+**Deliberately not a pull-request gate.** A PR gate that checks out three
+siblings at their `main` would fail whenever any sibling drifts, for reasons
+unrelated to the PR — which teaches the author to ignore it, and an ignored gate
+is worse than no gate. Weekly plus on demand is honest about what this is: a
+drift detector.
+
+The merge gate is the local `Mustfile.a2ml` invariant, which greps this
+repository's own manifests and therefore runs with no sibling present. **The
+local half of every boundary must be checkable in isolation.** The
+cross-repository half is the drift detector.
+
+== Consequences
+
+* The most important architectural property of the estate acquires an owner and
+  a failing test.
+* Two layers of enforcement with different failure modes: one that always runs
+  and blocks merges, one that runs weekly and detects drift.
+* If the weekly job needs cross-repository read access to private repositories,
+  that is a credential decision to be made explicitly rather than by adding a
+  token to make a red job go green.

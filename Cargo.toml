@@ -3,13 +3,21 @@
 #
 # Universal Modding Studio Cargo workspace.
 #
-# Deliberately NOT depending on IDApTIK's `idaptik-core`: UMS integrates with
-# the game through artifacts (the dlc-manifest.json envelope, the idaptik-ffi
-# C ABI, shared Nickel schemas), not a cross-repo Cargo dependency, so neither
-# repo's CI can break the other. LevelData is re-declared locally.
+# Deliberately NOT depending on either game runtime. UMS integrates through
+# game-owned versioned contract artifacts and package loaders. The IDApTIK
+# profile consumes contracts/idaptik/v1 from the sibling game; it does not
+# re-declare ScenarioDefinition or LevelData locally.
 [workspace]
 resolver = "3"
-members = ["crates/ums-ai-edit", "crates/ums-dlc", "crates/ums-profile-sdk"]
+# ums-profile-sdk and ums-profiles are complementary, not competing (ADR-0015).
+# The SDK has the reflection model and no compiler; ums-profiles has the
+# package compiler and no reflection model. Keep both.
+members = [
+    "crates/ums-ai-edit",
+    "crates/ums-dlc",
+    "crates/ums-profile-sdk",
+    "crates/ums-profiles",
+]
 
 [workspace.package]
 version = "0.1.0"

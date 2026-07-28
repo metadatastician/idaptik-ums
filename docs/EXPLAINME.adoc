@@ -22,6 +22,12 @@ Slavia]. UMS owns host-neutral authoring contracts, the profile SDK, edit and
 solver seams, package envelopes and their evidence.
 ====
 
+The newer profile boundary follows the same rule more strictly:
+`crates/ums-profiles` consumes versioned game artifacts. It does not link
+`idaptik-core` or `slavia-core`. `just roundtrip-idaptik` is the evidence that
+the artifact produced here is accepted by the sibling game's actual loader;
+`just slavia-profile-check` is descriptive-profile evidence only.
+
 [NOTE]
 ====
 *Why this file exists.* Until 2026-07-22 the README described an *AffineScript
@@ -189,11 +195,6 @@ Evidence::
 `git ls-files '*.py'` is empty. `.machine_readable/6a2/AGENTIC.a2ml` forbids
 them. `licence-hygiene.yml` gates attributability of every tracked file.
 
-Caveat::
-`dlc/legacy-ts-puzzles/` still carries a directory name from its
-ReScript/TypeScript origin. The 27 files in it are plain JSON data; only the
-path name is stale.
-
 == Where the evidence stops
 
 [cols="2,3"]
@@ -216,9 +217,19 @@ path name is stale.
   to this repo. Its manifest declares
   `every-instruction-has-an-inverse`; nothing has ever checked that.
 
-| Idris2 `ProvenBridge`
-| 2 typed holes and a commented-out `proven` dependency. The ABI is 16/17.
+| Idris2 `abi/Validation.idr`
+| Declares six proof-witness types and a `ValidatedLevel` record with four
+  erased proof fields, and contains **zero top-level function signatures**.
+  Nothing constructs a witness; nothing outside the module mentions
+  `ValidatedLevel`; the extractor returns raw `LevelData`. The invariants are
+  stated, never established. It typechecks because declaring a datatype always
+  does. (`ProvenBridge` itself landed 2026-07-20 and is 17/17 — the earlier
+  "2 typed holes" entry here was stale for five days.)
 
 | UMS → game round trip
-| Never executed end to end.
+| Executed successfully on 2026-07-27: `just roundtrip-idaptik` compiles the
+  profile source, IDApTIK's real loader accepts it, and the run snapshots,
+  restores and replays identically. **Not yet gated in CI**, so it is
+  demonstrated but not defended against regression. ADR-0014's condition is
+  met only when it runs there.
 |===

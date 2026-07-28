@@ -27,16 +27,48 @@
 //! plus the rest). [`mplus`] interleaves, so [`disj`] stays complete even
 //! over infinite relations; [`bind`] sequences a goal over a stream.
 
+use std::cell::Cell;
 use std::collections::BTreeMap;
 use std::fmt;
 use std::rc::Rc;
-use std::sync::atomic::{AtomicU64, Ordering};
 
 // ---------------------------------------------------------------------------
 // Variables
 // ---------------------------------------------------------------------------
 
-static NEXT_VAR: AtomicU64 = AtomicU64::new(0);
+// Variable identity is allocated per thread, not per process.
+//
+// This counter was `static NEXT_VAR: AtomicU64`, shared across every thread in
+// the process. ADR-0015 prohibition 4 forbids global mutable state in anything
+// a kernel reduction depends on, and `Var` derives `Ord` over `id`, so a
+// process-global sequence meant two concurrent queries interleaved their ids
+// and a variable's identity depended on how many unrelated queries had run
+// first.
+//
+// What that did NOT do, today, is change any answer. `reify` renames unbound
+// variables `_0`, `_1`, ... by *encounter order* and never exposes `id`;
+// `Subst` is an Rc-linked assoc list looked up by equality, with no ordering;
+// and the only `BTreeMap<Var, _>` in this module is `reify`'s memo, whose
+// naming is driven by `names.len()` rather than by key order. The hazard was
+// latent. It is one `BTreeSet<Var>` or one `sort_by_key(|v| v.id)` away from
+// becoming a divergent replay, which is exactly the kind of defect that is
+// cheap now and expensive after it has shipped.
+//
+// Deliberately NOT reset per `run`: callers allocate query variables before
+// entering `run` (see `engine::apply`), so resetting on entry would let a
+// pre-run variable collide with an in-run one. Monotonic per thread is enough
+// to remove the cross-thread interleaving without introducing that risk.
+thread_local! {
+    static NEXT_VAR: Cell<u64> = const { Cell::new(0) };
+}
+
+fn next_var_id() -> u64 {
+    NEXT_VAR.with(|c| {
+        let id = c.get();
+        c.set(id + 1);
+        id
+    })
+}
 
 /// A logic variable. Identity-based; the name is only for debugging.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -48,14 +80,14 @@ pub struct Var {
 impl Var {
     pub fn new(name: &'static str) -> Self {
         Var {
-            id: NEXT_VAR.fetch_add(1, Ordering::Relaxed),
+            id: next_var_id(),
             name: Some(name),
         }
     }
 
     pub fn anonymous() -> Self {
         Var {
-            id: NEXT_VAR.fetch_add(1, Ordering::Relaxed),
+            id: next_var_id(),
             name: None,
         }
     }
@@ -311,10 +343,10 @@ pub fn take(n: Option<usize>, stream: Stream) -> Vec<Subst> {
     let mut answers = Vec::new();
     let mut cur = stream;
     loop {
-        if let Some(limit) = n {
-            if answers.len() >= limit {
-                break;
-            }
+        if let Some(limit) = n
+            && answers.len() >= limit
+        {
+            break;
         }
         // Force through immature points without growing the Rust stack.
         loop {

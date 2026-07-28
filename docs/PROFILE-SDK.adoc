@@ -41,11 +41,11 @@ refer to missing vocabularies. Duplicate profile IDs are rejected.
 
 == Source and generation
 
-`profiles/idaptik/profile.ncl` imports the existing Nickel IDApTIK vocabulary
+`profiles/idaptik/v1/descriptor.ncl` imports the existing Nickel IDApTIK vocabulary
 and verb registries. Both the legacy Rust registry and profile reflection are
 generated from those Nickel sources during the staged migration.
 
-`profiles/chronicles-of-slavia/profile.ncl` is a bounded, separate source. Its
+`profiles/slavia/v1/descriptor.ncl` is a bounded, separate source. Its
 terms never enter the IDApTIK registry or universal namespace. Its design was
 checked against the separate `metadatastician/chronicles-of-slavia` Zone A
 sources; that repository remains the game-design authority.
