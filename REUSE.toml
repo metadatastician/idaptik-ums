@@ -74,3 +74,48 @@ path = "dlc/legacy-puzzles/*.json"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Repo-metadata data files whose formats do not admit comment headers
+# (AI-manifest templates; the root allowlist consumed by validators).
+[[annotations]]
+path = ".github/DISCUSSION_TEMPLATE/0.2-AI-MANIFEST.a2ml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ".github/ISSUE_TEMPLATE/0.2-AI-MANIFEST.a2ml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ".machine_readable/root-allow.txt"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+
+[[annotations]]
+path = "profiles/idaptik/v1/descriptor.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "profiles/idaptik/v1/ghost-lobby.ums.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "profiles/slavia/v1/descriptor.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "profiles/slavia/v1/fixtures/zone-a-border-path.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
