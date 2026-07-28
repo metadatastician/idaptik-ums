@@ -1,18 +1,25 @@
-; SPDX-License-Identifier: MPL-2.0
-;; guix.scm — GNU Guix package definition for squisher-corpus
-;; Usage: guix shell -f guix.scm
-
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+;; SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 (use-modules (guix packages)
+             (guix download)
              (guix build-system gnu)
-             (guix licenses))
+             (guix licenses)
+             (gnu packages)
+             (gnu packages rust)
+             (gnu packages zig)
+             (gnu packages build-tools)
+             (gnu packages elixir)
+             (gnu packages erlang)
+             (gnu packages idris))
 
 (package
-  (name "squisher-corpus")
+  (name "universal-modding-studio-env")
   (version "0.1.0")
   (source #f)
   (build-system gnu-build-system)
-  (synopsis "squisher-corpus")
-  (description "squisher-corpus — part of the hyperpolymath ecosystem.")
-  (home-page "https://github.com/hyperpolymath/squisher-corpus")
-  (license ((@@ (guix licenses) license) "PMPL-1.0-or-later"
-             "https://github.com/hyperpolymath/palimpsest-license")))
+  (native-inputs
+   (list rust zig just idris2 elixir erlang))
+  (synopsis "Development environment for Universal Modding Studio")
+  (description "Provides toolchains required by Universal Modding Studio.")
+  (home-page "https://github.com/metadatastician/universal-modding-studio")
+  (license agpl3+))

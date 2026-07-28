@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use std::process::ExitCode;
