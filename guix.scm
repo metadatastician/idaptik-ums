@@ -11,8 +11,9 @@
   (version "0.1.0")
   (source #f)
   (build-system gnu-build-system)
-  (synopsis "squisher-corpus")
-  (description "squisher-corpus — part of the hyperpolymath ecosystem.")
-  (home-page "https://github.com/hyperpolymath/squisher-corpus")
-  (license ((@@ (guix licenses) license) "PMPL-1.0-or-later"
-             "https://github.com/hyperpolymath/palimpsest-license")))
+  (native-inputs
+   (list rust zig just idris2 elixir erlang))
+  (synopsis "Development environment for Universal Modding Studio")
+  (description "Provides toolchains required by Universal Modding Studio.")
+  (home-page "https://github.com/metadatastician/universal-modding-studio")
+  (license agpl3+))

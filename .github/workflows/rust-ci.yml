@@ -62,6 +62,22 @@ jobs:
         with:
           persist-credentials: false
 
+      # The profile compiler reads the game's versioned contract as data, by
+      # path -- it is not a Cargo dependency, and must never become one
+      # (ADR-0016). The contract therefore has to exist for the compiler test
+      # to run. Locally the game is at ../IDApTIK; actions/checkout cannot
+      # write above the workspace, so CI places it in a subdirectory and points
+      # IDAPTIK_ROOT at it.
+      #
+      # This is a read-only checkout of published contract files. It does not
+      # make UMS depend on the game at build time.
+      - name: Checkout the sibling game contract (IDApTIK)
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          repository: metadatastician/IDApTIK
+          path: .sibling/IDApTIK
+          persist-credentials: false
+
       # rust-toolchain.toml pins the channel and components; rustup honours it
       # automatically, so the version is declared in one place.
       - name: Show toolchain
@@ -85,10 +101,57 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
 
       - name: Test suite
+        env:
+          IDAPTIK_ROOT: ${{ github.workspace }}/.sibling/IDApTIK
         run: cargo test --workspace
 
       - name: Replay the shipped sample edit script
         run: cargo run -q -p ums-ai-edit -- check dlc/examples/ai-edit-sample/edit-script.json
+
+      # ADR-0014: a profile's round trip is tested only when an authored
+      # fixture is validated, compiled, loaded by the REAL game loader and
+      # compared. Until this step existed the round trip was demonstrated
+      # locally and defended by nothing.
+      #
+      # Mirrors `just roundtrip-idaptik` exactly; run as raw cargo so CI does
+      # not have to install just. The second command builds the game's own
+      # crate from the sibling checkout -- that is the point, it is the
+      # production loader and not a reimplementation.
+      - name: UMS to IDApTIK round trip through the real game loader
+        env:
+          IDAPTIK_ROOT: ${{ github.workspace }}/.sibling/IDApTIK
+        run: |
+          set -euo pipefail
+          artifact="$(mktemp --suffix=.idaptik-package.json)"
+          repeat="$(mktemp --suffix=.idaptik-package.json)"
+          result="$(mktemp --suffix=.idaptik-result.json)"
+          trap 'rm -f "$artifact" "$repeat" "$result"' EXIT
+          cargo run -q -p ums-profiles --bin ums-profile -- compile-idaptik \
+            --source profiles/idaptik/v1/ghost-lobby.ums.json \
+            --idaptik-root "$IDAPTIK_ROOT" \
+            --output "$artifact"
+          # ADR-0014's deterministic-repeat-output clause.
+          cargo run -q -p ums-profiles --bin ums-profile -- compile-idaptik \
+            --source profiles/idaptik/v1/ghost-lobby.ums.json \
+            --idaptik-root "$IDAPTIK_ROOT" \
+            --output "$repeat"
+          cmp -s "$artifact" "$repeat" || {
+            echo "::error::compiler is not deterministic; repeated compiles differ"
+            exit 1
+          }
+          cargo run -q --manifest-path "$IDAPTIK_ROOT/Cargo.toml" \
+            -p idaptik-core --example package-runner -- "$artifact" > "$result"
+          jq -e '
+            .package_format == "idaptik-package/v1"
+            and .scenario_id == "envelope-001-ghost-lobby"
+            and .seed == 31029276
+            and .replay_equal == true
+            and .package_guarantees_met == true
+            and .snapshot.format == "idaptik-ghost-lobby-runtime-v2"
+            and ([.events[].event] | index("CameraPinged") != null)
+            and ([.cognitive_trace[].stage] | unique | length == 6)
+          ' "$result" >/dev/null
+          echo "roundtrip-idaptik: UMS artifact accepted, executed, snapshotted, restored and replayed identically"
 
       # Supersedes the former puzzle-data.yml, which ran `json.load` over one
       # directory. This validates EVERY artifact against the full bridge

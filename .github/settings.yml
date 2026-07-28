@@ -12,7 +12,7 @@
 # ─── Repository Settings ───────────────────────────────────────────────────────
 
 repository:
-  name: "paint-type"
+  name: "idaptik-ums"
   description: "Cross-platform open-source image editor — capable enough for real work, simple enough to reach for without thinking"
   homepage: "https://github.com/metadatastician/paint-type"
   private: false
@@ -127,7 +127,7 @@ branches:
         contexts:
           - "Cargo check + clippy + fmt"
           - "Cargo test"
-          - "analyze (javascript-typescript, none)"
+          - "CodeQL Analysis"
           - "openssf-compliance"
       enforce_admins: true
       required_signatures: true

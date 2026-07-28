@@ -3,36 +3,92 @@
 
 = Round-trip status
 
-== What is tested
+Last assessed: 2026-07-27.
 
-The IDApTIK edit engine immutably applies and deterministically replays edit
-scripts. The generated Nickel registry and compiled reflection are drift
-checked. The DLC validator accepts every existing in-tree artifact and rejects
-contract mutations. The profile SDK registers both profiles and enforces
-vocabulary/verb isolation.
+== IDApTIK: executed, not yet gated
 
-== What is not proved
+`just roundtrip-idaptik` runs end to end. It compiles
+`profiles/idaptik/v1/ghost-lobby.ums.json` through `ums-profiles`, consuming
+the game-owned `contracts/idaptik/v1` artifacts by path, and hands the exact
+temporary artifact to IDApTIK's production loader
+(`idaptik-core --example package-runner`). The game accepts it, executes a
+grounded camera uplink, snapshots, restores into a fresh simulation, replays
+the tail, and the recipe fails unless events and final state match.
 
-There is no test that compiles a complete UMS model into package bytes, loads
-those bytes through the real IDApTIK loader, exports the resulting canonical
-game model and compares it with the authored state. There is also no Slavia
-loader or compiler integration. Therefore the full UMS-to-game round trip is
-aspirational.
+The `jq` gate asserts the package format, scenario id, seed, `replay_equal`,
+`package_guarantees_met`, the snapshot format, the presence of `CameraPinged`,
+and six distinct cognitive-trace stages.
 
-== Precise next IDApTIK step
+Observed 2026-07-27:
 
-Add a narrow IDApTIK integration crate or test harness that:
+....
+compiled /tmp/tmp.*.idaptik-package.json
+roundtrip-idaptik: UMS artifact accepted, executed, snapshotted, restored
+                   and replayed identically
+....
 
-. reads `profiles/idaptik/tests/minimal-level.json`;
-. replays it through the existing IDApTIK edit backend;
-. invokes a real profile package compiler to emit an `idaptik-scenario/1`
-  package with a v2 UMS manifest;
-. loads that package through IDApTIK's production typed loader;
-. exports the loader's canonical `LevelData`;
-. compares stable IDs, zone geometry, profile-owned vocabulary values and
-  provenance with the post-edit UMS state;
-. repeats the run and asserts byte-identical package output and equivalent
-  loaded state.
+This retires a claim that was advertised and unreachable. The recipe, and the
+`ums-profiles` crate it needs, existed on no `main` branch in either UMS
+repository until the consolidation in ADR-0015.
 
-Only after that fixture passes should the claim advance from aspirational to
-tested. Enaction preview is not a substitute for the loader round trip.
+`rust-ci.yml` now runs the same sequence as a release-blocking step, checking
+IDApTIK out as a sibling and building the game's own crate from it. The exact
+raw-cargo sequence CI uses (not merely the `just` recipe) was verified locally
+on 2026-07-27.
+
+**Observed green in CI on 2026-07-27**, run `30288163489`, step
+"UMS to IDApTIK round trip through the real game loader". The gate is real: it
+checks the game out as a sibling, builds the game's own crate, and fails the
+build if the loader rejects the artifact or the replay diverges.
+
+**Status: gated and green; one ADR-0014 clause remains.** That ADR requires an
+authored fixture to be validated, compiled, loaded by the real game loader
+**and compared with the post-edit model, including deterministic repeat
+output**.
+
+*Deterministic repeat output* — **met**. The recipe and the CI step now compile
+the source twice and require byte-identical artifacts. A compiler that emitted
+a timestamp, iterated an unordered map, or minted a random identifier would
+still satisfy the loader and still be unfit to ship; this is what catches that.
+Verified: repeated compiles are byte-identical.
+
+*Compared with the post-edit model* — **not met**. The gate proves the game
+accepts the artifact and replays it deterministically. It does not compare the
+loader's exported canonical model against the authored UMS state, so it does
+not establish that the authored content survived the trip intact — only that
+whatever arrived is internally consistent.
+
+That last clause is blocked on the game side rather than here: `package-runner`
+emits events, snapshots and a cognitive trace, but not the canonical
+`LevelData` the loader built. Closing it needs IDApTIK to export that model, at
+which point the comparison is straightforward. Until then the honest label is
+**gated**, not **tested**.
+
+== Slavia: validated, no loader
+
+`just slavia-profile-check` validates `profiles/slavia/v1/profile.json` and its
+Border Path fixture through the generic declarative profile protocol, and an
+isolation test prevents Slavia vocabulary reaching UMS core. There is no Slavia
+compiler, loader or runtime adapter, and none is claimed. Slavia's own
+repository agrees.
+
+== What is still not proved
+
+* No test compares the loader's exported canonical model field by field with
+  the authored UMS state. The current gate proves the game *accepts and
+  deterministically replays* the artifact, which is weaker than proving the
+  authored state survived the trip intact.
+* Byte-identical package output across repeated compiles is not asserted.
+* Slavia has no loader round trip of any kind.
+* Enaction preview remains designed only, and is not a substitute for a loader
+  round trip.
+
+== Next steps, in order
+
+. **Observe the gate green.** The step is written; push the branch and let it
+  run. Until then the status is gated, not tested.
+. **Compare the model, not just the outcome.** Export the loader's canonical
+  `LevelData` and diff stable ids, zone geometry, profile-owned vocabulary and
+  provenance against the post-compile UMS state.
+. **Assert artifact determinism.** Compile twice, require identical bytes.
+. Only then may the claim advance to tested.

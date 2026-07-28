@@ -4,8 +4,8 @@
 # IDApTIK profile reflection. The established vocabularies and verbs remain
 # sourced from config/*.ncl during the compatibility stage.
 
-let vocab = import "../../config/vocab.ncl" in
-let verbs = import "../../config/verbs.ncl" in
+let vocab = import "../../../config/vocab.ncl" in
+let verbs = import "../../../config/verbs.ncl" in
 let vocabulary_id = fun domain =>
   if domain == "device_kinds" then "device-kinds"
   else if domain == "guard_ranks" then "guard-ranks"
