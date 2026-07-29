@@ -1,5 +1,5 @@
-; SPDX-License-Identifier: MPL-2.0
-;; guix.scm — GNU Guix package definition for squisher-corpus
+; SPDX-License-Identifier: AGPL-3.0-or-later
+;; guix.scm — GNU Guix package definition for idaptik-ums
 ;; Usage: guix shell -f guix.scm
 
 (use-modules (guix packages)
@@ -7,7 +7,7 @@
              (guix licenses))
 
 (package
-  (name "squisher-corpus")
+  (name "idaptik-ums")
   (version "0.1.0")
   (source #f)
   (build-system gnu-build-system)
