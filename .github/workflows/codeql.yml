@@ -29,7 +29,11 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3.37.3
         with:
-          languages: auto
+          # "auto" is not a value the init action accepts ("Did not recognize
+          # the following languages: auto"). This repo's CodeQL-supported
+          # surfaces are the Rust crates and the Actions workflows themselves;
+          # Idris2 and Zig have no CodeQL extractor.
+          languages: rust,actions
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3.37.3
