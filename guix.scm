@@ -15,5 +15,5 @@
    (list rust zig just idris2 elixir erlang))
   (synopsis "Development environment for Universal Modding Studio")
   (description "Provides toolchains required by Universal Modding Studio.")
-  (home-page "https://github.com/metadatastician/universal-modding-studio")
+  (home-page "https://github.com/metadatastician/idaptik-ums")
   (license agpl3+))
