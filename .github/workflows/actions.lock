@@ -3,6 +3,10 @@
 # Docs: https://gh.io/actions-lockfile
 version: 'v0.0.2'
 workflows:
+    '.github/workflows/governance.yml':
+        - 'hyperpolymath/standards@fcb8669169b4e9f5d9848608df880ae5fae812b4'
+    '.github/workflows/hypatia-scan.yml':
+        - 'hyperpolymath/standards@fcb8669169b4e9f5d9848608df880ae5fae812b4'
     '.github/workflows/codeql.yml':
         - 'actions/checkout@v4.1.1'
         - 'github/codeql-action@v3.37.3'
@@ -29,6 +33,11 @@ workflows:
         - 'actions/checkout@v4.1.1'
         - 'mlugg/setup-zig@v2.0.5'
 dependencies:
+    'hyperpolymath/standards@fcb8669169b4e9f5d9848608df880ae5fae812b4':
+        ref: 'fcb8669169b4e9f5d9848608df880ae5fae812b4'
+        commit: 'sha1-fcb8669169b4e9f5d9848608df880ae5fae812b4'
+        owner_id: 6759885
+        repo_id: 1116521501
     'actions/cache@v4.2.0':
         ref: 'v4.2.0'
         commit: 'sha1-1bd1e32a3bdc45362d1e726936510720a7c30a57'
