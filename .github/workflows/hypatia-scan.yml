@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
+# This workflow is managed by gh actions-lock.
 # SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 name: Hypatia Security Scan
 
@@ -18,5 +19,4 @@ permissions:
 
 jobs:
   scan:
-    timeout-minutes: 10
-    uses: hyperpolymath/standards/.github/workflows/hypatia-scan-reusable.yml@d7c22711e830e1f383846472f6e9b99debdb201e
+    uses: hyperpolymath/standards/.github/workflows/hypatia-scan-reusable.yml@fcb8669169b4e9f5d9848608df880ae5fae812b4
