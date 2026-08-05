@@ -29,6 +29,7 @@ workflows:
     '.github/workflows/rust-ci.yml':
         - 'actions/cache@v4.2.0'
         - 'actions/checkout@v4.1.1'
+    '.github/workflows/secret-scanner.yml': []
     '.github/workflows/zig-ci.yml':
         - 'actions/checkout@v4.1.1'
         - 'mlugg/setup-zig@v2.0.5'
