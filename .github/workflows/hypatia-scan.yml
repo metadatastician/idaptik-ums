@@ -15,8 +15,11 @@ on:
 permissions:
   actions: read
   contents: read
-  security-events: read
+  # write, not read: the reusable declares `security-events: write` (it
+  # uploads SARIF), and a caller granting less than the reusable declares
+  # is a 0-second startup_failure. enaction-engine grants write and is green.
+  security-events: write
 
 jobs:
   scan:
-    uses: hyperpolymath/standards/.github/workflows/hypatia-scan-reusable.yml@fcb8669169b4e9f5d9848608df880ae5fae812b4
+    uses: hyperpolymath/standards/.github/workflows/hypatia-scan-reusable.yml@bd0df9ead7faf0cdfe0e13e7966d91e28d0101d4
