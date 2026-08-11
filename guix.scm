@@ -1,5 +1,5 @@
 ; SPDX-License-Identifier: AGPL-3.0-or-later
-;; guix.scm — GNU Guix package definition for squisher-corpus
+;; guix.scm — GNU Guix package definition for idaptik-ums
 ;; Usage: guix shell -f guix.scm
 
 (use-modules (guix packages)
@@ -7,12 +7,13 @@
              (guix licenses))
 
 (package
-  (name "squisher-corpus")
+  (name "idaptik-ums")
   (version "0.1.0")
   (source #f)
   (build-system gnu-build-system)
-  (synopsis "squisher-corpus")
-  (description "squisher-corpus — part of the hyperpolymath ecosystem.")
-  (home-page "https://github.com/hyperpolymath/squisher-corpus")
-  (license ((@@ (guix licenses) license) "PMPL-1.0-or-later"
-             "https://github.com/hyperpolymath/palimpsest-license")))
+  (native-inputs
+   (list rust zig just idris2 elixir erlang))
+  (synopsis "Development environment for Universal Modding Studio")
+  (description "Provides toolchains required by Universal Modding Studio.")
+  (home-page "https://github.com/metadatastician/idaptik-ums")
+  (license agpl3+))
