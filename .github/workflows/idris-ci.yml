@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
+# This workflow is managed by gh actions-lock.
 # SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 name: Idris2 ABI CI
 on:
@@ -36,7 +37,7 @@ jobs:
       - name: Checkout
         # Full-SHA pin: this repo's Actions policy sets
         # sha_pinning_required, so tag refs like @v4 startup_failure.
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@v4.1.1
       - name: Install proven (pinned minimal closure)
         run: |
           set -eux

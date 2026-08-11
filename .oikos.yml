@@ -29,9 +29,7 @@ analysis:
     - rust
     - idris
     - zig
-    - haskell
-    - typescript
-    - python
+    - affinescript
 
 # Reporting
 reporting:

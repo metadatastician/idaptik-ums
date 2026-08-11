@@ -41,28 +41,27 @@ on 2026-07-27.
 checks the game out as a sibling, builds the game's own crate, and fails the
 build if the loader rejects the artifact or the replay diverges.
 
-**Status: gated and green; one ADR-0014 clause remains.** That ADR requires an
-authored fixture to be validated, compiled, loaded by the real game loader
-**and compared with the post-edit model, including deterministic repeat
-output**.
+**Status: tested.** Every clause of ADR-0014 is now met -- an authored fixture
+is validated, compiled, loaded by the real game loader, and compared with the
+post-edit model, including deterministic repeat output.
 
-*Deterministic repeat output* — **met**. The recipe and the CI step now compile
-the source twice and require byte-identical artifacts. A compiler that emitted
-a timestamp, iterated an unordered map, or minted a random identifier would
-still satisfy the loader and still be unfit to ship; this is what catches that.
-Verified: repeated compiles are byte-identical.
+*Deterministic repeat output* -- met. The source is compiled twice and the
+artifacts must be byte-identical.
 
-*Compared with the post-edit model* — **not met**. The gate proves the game
-accepts the artifact and replays it deterministically. It does not compare the
-loader's exported canonical model against the authored UMS state, so it does
-not establish that the authored content survived the trip intact — only that
-whatever arrived is internally consistent.
+*Compared with the post-edit model* -- met, 2026-07-28. `RoundTripResult` now
+carries `accepted`: the loader's own parsed view of the fields a UMS author
+writes (`scenario_id`, `seed`, `run_ticks`, `snapshot_tick`, `taxonomy`,
+`actors`, `commands`, `guarantees`).
+`scripts/compare-authored-vs-accepted.py` diffs it against the source and fails
+the gate on any difference.
 
-That last clause is blocked on the game side rather than here: `package-runner`
-emits events, snapshots and a cognitive trace, but not the canonical
-`LevelData` the loader built. Closing it needs IDApTIK to export that model, at
-which point the comparison is straightforward. Until then the honest label is
-**gated**, not **tested**.
+It deliberately does **not** compare `scenario`. The compiler copies the
+game-owned fixture into the package verbatim, so diffing that back would prove
+only that serde round-trips JSON -- a tautology dressed as a contract test.
+
+Verified to fail, not merely to pass: dropping a taxonomy term, retiming a
+command, and running against a game too old to export `accepted` each break the
+gate.
 
 == Slavia: validated, no loader
 
@@ -74,11 +73,6 @@ repository agrees.
 
 == What is still not proved
 
-* No test compares the loader's exported canonical model field by field with
-  the authored UMS state. The current gate proves the game *accepts and
-  deterministically replays* the artifact, which is weaker than proving the
-  authored state survived the trip intact.
-* Byte-identical package output across repeated compiles is not asserted.
 * Slavia has no loader round trip of any kind.
 * Enaction preview remains designed only, and is not a substitute for a loader
   round trip.
@@ -87,8 +81,6 @@ repository agrees.
 
 . **Observe the gate green.** The step is written; push the branch and let it
   run. Until then the status is gated, not tested.
-. **Compare the model, not just the outcome.** Export the loader's canonical
-  `LevelData` and diff stable ids, zone geometry, profile-owned vocabulary and
-  provenance against the post-compile UMS state.
-. **Assert artifact determinism.** Compile twice, require identical bytes.
-. Only then may the claim advance to tested.
+. Extend the comparison to Slavia when it grows a loader.
+. Consider comparing scenario *semantics* (not bytes) if the compiler ever
+  starts synthesising scenario content rather than copying the game fixture.

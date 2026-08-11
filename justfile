@@ -162,6 +162,11 @@ roundtrip-idaptik IDAPTIK_ROOT="../IDApTIK":
       and ([.events[].event] | index("CameraPinged") != null)
       and ([.cognitive_trace[].stage] | unique | length == 6)
     ' "$result" >/dev/null
+    # ADR-0014's remaining clause: compare against the post-edit model. The jq
+    # gate above proves acceptance and deterministic replay; neither would
+    # notice a compiler that dropped a taxonomy term or retimed a command.
+    ./scripts/compare-authored-vs-accepted.py \
+      profiles/idaptik/v1/ghost-lobby.ums.json "$result"
     echo "roundtrip-idaptik: UMS artifact accepted, executed, snapshotted, restored and replayed identically"
 
 # Validate the bounded Zone A / Border Path profile through the generic profile
@@ -188,9 +193,9 @@ architecture-check:
 crg-grade:
     #!/usr/bin/env bash
     set -euo pipefail
-    grade=$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' docs/READINESS.md | head -1 || true)
+    grade=$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md | head -1 || true)
     if [ -z "$grade" ]; then
-        echo "error: no '**Current Grade:** <A-F|X>' line in docs/READINESS.md" >&2
+        echo "error: no '**Current Grade:** <A-F|X>' line in READINESS.md" >&2
         exit 1
     fi
     echo "$grade"

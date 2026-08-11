@@ -816,3 +816,107 @@ fn profile_dispatch_refuses_cross_profile_verbs() {
             .is_some_and(|reason| reason.contains("not declared"))
     );
 }
+
+// ---------------------------------------------------------------------------
+// Determinism: variable identity must not leak into answers
+//
+// ADR-0015 prohibition 4 forbids global mutable state. `Var` ids used to come
+// from a process-global AtomicU64, so a variable's identity depended on how
+// many unrelated queries had run first, and two threads interleaved.
+//
+// These pin the property that actually matters -- that no answer can observe
+// an id -- so the hazard cannot quietly become a divergent replay if `reify`
+// or `Subst` is changed later.
+// ---------------------------------------------------------------------------
+
+/// The same query answers identically no matter how many variables were
+/// allocated beforehand. This is the regression guard: it fails if anything
+/// starts exposing `Var.id` in reified output.
+#[test]
+fn answers_do_not_depend_on_prior_variable_allocation() {
+    fn query() -> Vec<Term> {
+        run(None, |q| {
+            disj(vec![
+                eq(q.clone(), Term::Int(1)),
+                eq(q.clone(), Term::Str("two".into())),
+            ])
+        })
+    }
+
+    let first = query();
+
+    // Burn a large, arbitrary number of ids, as an unrelated earlier query
+    // would have. Under the old process-global counter these variables shared
+    // a sequence with everything else in the process.
+    for _ in 0..1000 {
+        let _ = Var::anonymous();
+        let _ = Var::new("noise");
+    }
+
+    let second = query();
+    assert_eq!(first, second, "answers changed after unrelated allocations");
+    assert_eq!(first.len(), 2);
+}
+
+/// An *unbound* query variable reifies to a positional name, not to its id.
+/// This is the specific path by which an id could reach a serialised answer.
+#[test]
+fn unbound_variables_reify_positionally_not_by_id() {
+    let before = run(None, |q| eq(q.clone(), q.clone()));
+    for _ in 0..500 {
+        let _ = Var::anonymous();
+    }
+    let after = run(None, |q| eq(q.clone(), q.clone()));
+    assert_eq!(
+        before, after,
+        "unbound reification changed with allocation count"
+    );
+    assert_eq!(before, vec![Term::Str("_0".into())]);
+}
+
+/// Two threads running the same query get the same answers. Under the shared
+/// AtomicU64 their id sequences interleaved; per-thread allocation removes it.
+#[test]
+fn concurrent_queries_do_not_interleave_identity() {
+    let reference = run(None, |q| eq(q.clone(), Term::Int(7)));
+    let handles: Vec<_> = (0..4)
+        .map(|_| {
+            std::thread::spawn(|| {
+                for _ in 0..50 {
+                    let _ = Var::anonymous();
+                }
+                run(None, |q| eq(q.clone(), Term::Int(7)))
+            })
+        })
+        .collect();
+    for h in handles {
+        assert_eq!(h.join().expect("thread panicked"), reference);
+    }
+}
+
+/// Directly pins the change itself: identity is allocated per thread, so a
+/// freshly spawned thread starts from zero regardless of how many variables
+/// the spawning thread has already made.
+///
+/// Unlike the three tests above -- which characterise a property that held
+/// before the change too, because `reify` normalises -- this one fails against
+/// the previous process-global AtomicU64, where the new thread would continue
+/// the parent's sequence.
+#[test]
+fn variable_identity_is_allocated_per_thread() {
+    for _ in 0..128 {
+        let _ = Var::anonymous();
+    }
+    let parent_next = Var::anonymous().id;
+    assert!(parent_next >= 128, "parent thread should have advanced");
+
+    let child_first = std::thread::spawn(|| Var::anonymous().id)
+        .join()
+        .expect("thread panicked");
+
+    assert_eq!(
+        child_first, 0,
+        "a fresh thread must start its own sequence; got {child_first}, \
+         which means identity is still process-global"
+    );
+}
