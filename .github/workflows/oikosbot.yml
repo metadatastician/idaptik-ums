@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# This workflow is managed by gh actions-lock.
 name: OikosBot Sustainability Analysis
 
 on:
@@ -19,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@v4
 
       # OikosBot's own composite action runs the published CLI container.
       # It replaces a hand-rolled job that could never work: the image tag it
@@ -34,7 +33,7 @@ jobs:
 
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@v3.37.3
+        uses: github/codeql-action/upload-sarif@39a73d65469e0144129775918a2032174234c279 # v3
         with:
           sarif_file: results.sarif
           category: oikosbot

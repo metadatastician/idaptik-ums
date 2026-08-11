@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# This workflow is managed by gh actions-lock.
 name: CodeQL
 
 on:
@@ -24,19 +23,15 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3.37.3
+        uses: github/codeql-action/init@4187e74d05793876e9989daffde9c3e66b4acd07 # v3
         with:
-          # "auto" is not a value the init action accepts ("Did not recognize
-          # the following languages: auto"). This repo's CodeQL-supported
-          # surfaces are the Rust crates and the Actions workflows themselves;
-          # Idris2 and Zig have no CodeQL extractor.
           languages: rust,actions
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3.37.3
+        uses: github/codeql-action/autobuild@4187e74d05793876e9989daffde9c3e66b4acd07 # v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3.37.3
+        uses: github/codeql-action/analyze@4187e74d05793876e9989daffde9c3e66b4acd07 # v3
