@@ -1,0 +1,28 @@
+--  SPDX-License-Identifier: AGPL-3.0-or-later
+--  SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+--
+--  The SPARK reference model for the ZonesOrdered validity proof.
+--  `gnatprove -P spark/ums_zones.gpr --level=2` discharges it;
+--  `gprbuild -P spark/ums_zones.gpr` builds the parity oracle.
+
+project UMS_Zones is
+
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+   for Main use ("ums_zones_oracle.adb");
+
+   package Compiler is
+      for Default_Switches ("Ada") use
+        ("-gnatwa",     --  all warnings
+         "-gnatVa",     --  all validity checks
+         "-gnata");     --  enable assertions and contracts at runtime too
+   end Compiler;
+
+   package Prove is
+      --  Report unproved checks; the gate asserts the count is zero rather
+      --  than trusting gnatprove's exit status alone.
+      for Proof_Switches ("Ada") use ("--level=2", "--report=all");
+   end Prove;
+
+end UMS_Zones;

@@ -25,8 +25,8 @@ and the repo's CI workflows — evidence over intuition, no aspirational grading
 | Generation source of truth (`config/*.ncl`) | C | Alpha-stable | `config-check` typechecks every source AND requires all three `config/bad/bad_*.ncl` negative fixtures to be rejected; `gen-check` diffs generated artifacts and fails when `nickel` is absent rather than skipping. Gated by `config-gen.yml`. | 2026-07-22 |
 | Zig FFI (`ffi/zig/`) | C | Compatibility FFI | 32 integration tests are CI-gated and Zig 0.14.0 is pinned. The exported full-JSON admission endpoint agrees with Idris2 on six shared fixtures. The complete bounded C codec preserves active fields across a rich C→JSON→C→JSON test with byte-stable second serialization. The generated Idris2 ABI artifacts cover all 85 independently enumerated C exports, 27 structs, 27 enum representations and 142 discriminants. Tests compare all layouts, discriminants and function ABI shapes; the compiled shared/static symbol gate consumes the generated 85-symbol manifest. Planted layout, signature and symbol drift each fail. These are executable tests, not universal parser, semantic-type or cross-platform layout proofs. Unified-hexadeca integration remains unstarted because no canonical implementation is locatable. | 2026-08-30 |
 | Licence hygiene gate | C | Alpha-stable | Three steps, each negative-tested: a planted MPL header, a truncated LICENSE and an unattributed JSON file each make it fail. Polarity inverted with the AGPL relicence. | 2026-07-22 |
-| Idris2 ABI (`abi/`) | C | Beta | All 19 modules typecheck, including `Representation`, `ProvenBridge` and the total `CABI` declaration renderer. Raw JSON extraction is private; the exported parser first checks bounded C-value representability, then admits only `ValidatedLevel` values after all four `Dec` procedures construct their witnesses. The extractor executable reports 51/51 checks and the separate representation executable reports 17/17. Successful refinement carries source-preservation equality; canonical optional payloads and all `ItemKind` variants have dependent re-encoding equalities. The renderer generates the complete current 85-function Zig C-export header, compatibility include and symbol manifest, all byte-drift checked. Complete semantic-record-to-C-struct conversion, auxiliary session/player refinement, universal parser equivalence and cross-platform ABI equivalence remain unproved. No `believe_me`, `postulate` or `assert_total`. Caveat: CI builds against a `proven` with `Proven.SafeMath.Proofs` removed, disclosed in `scripts/proven-min.ipkg`. | 2026-08-30 |
-| SPARK/GNATprove reference model (`spark/`) | X | — | Does not exist. Decided in ADR-0003 (§3) and not started; `gnatprove` is not installed on the development machine. | 2026-07-22 |
+| Idris2 ABI (`abi/`) | C | Beta | All 19 modules typecheck, including `Representation`, `ProvenBridge` and the total `CABI` declaration renderer. Raw JSON extraction is private; the exported parser first checks bounded C-value representability, then admits only `ValidatedLevel` values after all four `Dec` procedures construct their witnesses. The extractor executable reports 51/51 checks and the separate representation executable reports 17/17. Successful refinement carries source-preservation equality; canonical optional payloads and all `ItemKind` variants have dependent re-encoding equalities. The renderer generates the complete current 85-function Zig C-export header, compatibility include and symbol manifest, all byte-drift checked. Complete semantic-record-to-C-struct conversion, auxiliary session/player refinement, universal parser equivalence and cross-platform ABI equivalence remain unproved. No `believe_me`, `postulate`, `assert_total`, `assert_smaller`, `idris_crash` or `unsafePerformIO`, and every package module declares `%default total`: `scripts/check-abi-trusted-base.sh` gates both in `idris-ci.yml` (and `just proof-check-abi`), and fails on any `abi/` file that no package declares. Negative-tested with a planted `believe_me`, an undeclared module, a commented-out `%default total`, an undeclared harness and a 20th module. Caveat: CI builds against a `proven` with `Proven.SafeMath.Proofs` removed, disclosed in `scripts/proven-min.ipkg`. | 2026-08-30 |
+| SPARK/GNATprove reference model (`spark/`) | C | Alpha-stable | **Verification conditions discharged locally**: `gnatprove --level=2` (FSF 16.1.0) reports no unproved checks: 19/19 run-time checks, 8/8 assertions, 7/7 termination, and the `Zones_Ordered` postcondition proved. The postcondition states the quadratic specification; the body is the linear sweep. Not linked at runtime (ADR-0003 §3). `just spark-parity` drives 26 shared vectors through the SPARK model and the Rust engine with identical verdicts. Negative-tested: a body that diverges from its postcondition, an empty vector table, a missing prover, and a prover run that proves nothing each fail; the earlier symmetric specification fails to prove. `spark-ci.yml` runs the same proof and parity gates in CI whenever `spark/`, the Rust engine or the gate scripts change. | 2026-10-09 |
 | Zig hexadeca connector | X | Blocked dependency | Does not exist. Estate reconnaissance cannot locate a canonical `unified-hexadeca-api`; Hypatia's project-local 16-transport pattern is not silently copied here. | 2026-08-29 |
 | Interactive studio frontend | X | — | 0% — not started. The engine has no interactive consumer. Supersedes the former "AffineScript shell" row: IDApTIK uses Bevy, but UMS remains an independent authoring application and its portal is currently a design reference. | 2026-07-25 |
 | Reversible VM (`dlc/vm/`, `.affine`) | X | — | Has never compiled. No AffineScript toolchain is wired to this repo; the `.affine` sources have never been exercised by anything, so its declared `every-instruction-has-an-inverse` guarantee has never been checked. | 2026-07-22 |
@@ -70,7 +70,7 @@ What remains:
   refinement remain tested or unmodelled rather than proved.
 - **Not X or E:** every component above the D-line runs real, failing-able
   tests that currently pass, with documented scope.
-- The X-graded components (frontends, SPARK model, hexadeca connector, VM) are
+- The X-graded components (frontends, hexadeca connector, VM) are
   not deployed and gate nothing — but they are why this cannot claim more than
   alpha-unstable, because the studio still has no interactive surface and the
   VM has never compiled.
@@ -92,10 +92,16 @@ stated rather than papered over.
   Python~~ — **resolved 2026-07-22.** `ai_edit/`, `scripts/validate_dlc.py`
   and both test modules are deleted; `git ls-files '*.py'` is empty. ADR-0001
   is superseded by ADR-0003.
-- Two of the six hand-maintained copies of the closed vocabularies are still
-  hand-written: `abi/Types.idr` and `ffi/zig/src/types.zig`. They are checked
-  by tests, not generated from `config/vocab.ncl` — the obvious next extension
-  of `scripts/gen.sh`.
+- `abi/Types.idr` and `ffi/zig/src/types.zig` are still hand-written rather
+  than generated from `config/vocab.ncl` — the last two of the original six
+  copies. They are now **gated** (`crates/ums-dlc/tests/vocab_parity.rs`, 5
+  tests): the four shared vocabularies must match the Nickel source in
+  declaration ORDER, and the Zig `enum(u8)` ordinals must be dense from zero,
+  because those bytes cross the FFI boundary and a reordering that keeps the
+  same members would silently remap every value. Generating them outright is
+  still the better end state; wholesale generation is blocked because both
+  files also carry ABI-only types (`AlertLevel`, `ItemCondition`, the
+  cable/adapter/tool enums) that have no place in an edit vocabulary.
 - The UMS -> game round trip is implemented and CI-gated. A 2026-08-29 local
   run correctly rejected snapshot contract drift from runtime v2 to v3; the
   v3 contract repair is part of ADR-0018's consolidation cutover and must pass
@@ -122,9 +128,8 @@ stated rather than papered over.
 - **DLC bridge C -> B:** keep the implemented cross-repository round trip green
   across versioned game contract changes and add an explicit negative drift
   fixture.
-- **SPARK model X → C:** add `spark/src/ums_zones.ads` per ADR-0003 §3, a
-  parity test against `constraints.rs`, and a proof gate that **fails when
-  `gnatprove` is absent** rather than exiting 0.
+- **SPARK model C → B:** close the fidelity gap: `worldX` may be fractional
+  while `World_Coord` is an integer range.
 - **Frontends X → D:** start `ums-tui` (ratatui, headless so CI can drive it),
   mirroring `idaptik-tui`.
 - **VM X → D:** port `dlc/vm` to Rust so it compiles at all, and make its
