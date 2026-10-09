@@ -11,7 +11,8 @@
 #   parity  the SPARK model and the Rust engine agree on every vector. Needs
 #           only GNAT, which apt provides, so it runs everywhere.
 #   proof   the verification conditions are actually discharged. Needs
-#           gnatprove, which is not in apt, so it comes via Alire.
+#           gnatprove, which is not in apt, so the whole toolchain for this
+#           job comes from Alire.
 #
 # Neither degrades gracefully. A proof gate that exits 0 without a prover
 # certifies nothing while looking green — the estate's most-repeated defect,
@@ -65,7 +66,9 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y gnat gprbuild
-          gnatmake --version | head -1
+          # `sed -n 1p`, not `head -1`: head exits after one line, and under
+          # pipefail a writer that is still printing dies of SIGPIPE (rc 141).
+          gnatmake --version | sed -n 1p
 
       - name: Cache cargo
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
@@ -86,27 +89,44 @@ jobs:
     name: ZonesOrdered verification conditions are discharged
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      ALR_VERSION: 2.1.1
+      # sha256 of alr-2.1.1-bin-x86_64-linux.zip, the release asset's digest.
+      ALR_SHA256: 09c66bcd8c35dd4b97b72c3d9b76e44caa6964a2db35aba069f396f00f1f64c7
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
         with:
           persist-credentials: false
 
-      # gnatprove is not packaged in apt; Alire ships the SPARK toolchain.
-      - name: Set up Alire
-        uses: alire-project/setup-alire@fc4c8ce471aa30b3af0d39ce15add1ee9eaf28f2 # v6.0.0
-
-      # Mirrors the configuration measured locally: GNAT and gprbuild from apt
-      # on PATH, gnatprove from `alr install` in ~/.alire/bin. setup-alire's
-      # own toolchain stays inside alr and is not on PATH outside `alr exec`.
-      - name: Install the SPARK toolchain
+      # gnatprove is not packaged in apt, so the whole toolchain comes from
+      # Alire at matching versions: GNAT 16.1.0, gprbuild 26.0.1 and gnatprove
+      # 16.1.0, all in ~/.alire/bin. Apt's GNAT is not mixed in; on
+      # ubuntu-24.04 it is gnat-13, three majors behind the prover.
+      #
+      # The alr binary is fetched directly and checked against its release
+      # digest. alire-project/setup-alire is not used: it calls
+      # mosteo-actions/alr-arch-checker, actions/cache/restore and
+      # actions/setup-node, which this organisation's action allow-list
+      # rejects before the job starts.
+      #
+      # Measured locally with exactly these commands in an empty HOME: the
+      # proof gate passes cold (35 checks), and a planted mutant (a strict
+      # tier invariant) fails it with rc=1.
+      - name: Install the SPARK toolchain from Alire
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y gnat gprbuild
-          alr -n install gnatprove
+          cd "$RUNNER_TEMP"
+          curl -fsSL -o alr.zip \
+            "https://github.com/alire-project/alire/releases/download/v${ALR_VERSION}/alr-${ALR_VERSION}-bin-x86_64-linux.zip"
+          echo "${ALR_SHA256}  alr.zip" | sha256sum -c -
+          unzip -q alr.zip -d alr
+          ./alr/bin/alr -n settings --global --set toolchain.assistant false
+          ./alr/bin/alr -n install gnat_native gprbuild gnatprove
           echo "$HOME/.alire/bin" >> "$GITHUB_PATH"
-          "$HOME/.alire/bin/gnatprove" --version
+          # `sed -n 1p`, not `head -1`: see the parity job.
+          "$HOME/.alire/bin/gnatprove" --version | sed -n 1p
+          "$HOME/.alire/bin/gcc" --version | sed -n 1p
 
       - name: Discharge the verification conditions
         run: ./scripts/proof-check-spark.sh
