@@ -119,10 +119,19 @@ Both gates were negative-tested:
 | The prover runs but reports no proved check | `proof-check-spark` exits 1 (no vacuous pass)
 | The prover reports an unproved check | `proof-check-spark` exits 1
 | The prover exits non-zero | `proof-check-spark` exits 1
+| A failing assertion waved through with `pragma Annotate (GNATprove, Intentional, …)` | `proof-check-spark` exits 1 (justified is not proved)
+| A false `pragma Assume` at the top of `Zones_Ordered`, making the rest vacuous | `proof-check-spark` exits 1
+| An unprovable but satisfiable `pragma Assume` | `proof-check-spark` exits 1
+| `Zones_Ordered`'s `Post` aspect deleted | `proof-check-spark` exits 1
+| The body of `Zones_Ordered` set to `SPARK_Mode => Off` | `proof-check-spark` exits 1 (a subprogram was not analysed)
 |===
 
-The last three used a stand-in `gnatprove` on `PATH`. They test how the gate
-reads the prover's output, not the proof itself.
+The fourth to sixth rows used a stand-in `gnatprove` on `PATH`. They test how
+the gate reads the prover's output, not the proof itself. The last five ran
+the real prover on a planted change, and each one passed the gate as it was
+before PR #97's review. A `pragma Assume` the prover can discharge is reported
+as `assertion proved` and is not counted as one, so it passes, correctly: it
+widens nothing.
 
 Current state, measured 2026-10-09 with `gnatprove` FSF 16.1.0 / Why3 1.8.2
 (`just proof-check-spark`, summary from `spark/obj/gnatprove/gnatprove.out`):
