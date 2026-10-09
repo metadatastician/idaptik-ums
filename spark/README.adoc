@@ -34,7 +34,7 @@ function Zones_Ordered (Zs : Zone_Array) return Boolean with
   Pre  => Sorted_By_Start (Zs),
   Post => Zones_Ordered'Result =
             (All_Well_Formed (Zs)
-             and then Pairwise_Disjoint (Zs)
+             and then Ordered_Non_Overlapping (Zs)
              and then Tiers_Non_Decreasing (Zs));
 ----
 
