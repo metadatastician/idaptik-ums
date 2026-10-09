@@ -12,6 +12,7 @@ on:
       - 'representation-test.ipkg'
       - 'generated/abi/**'
       - 'scripts/generate-abi-header.sh'
+      - 'scripts/check-abi-trusted-base.sh'
       - 'scripts/proven-min.ipkg'
       - '.github/workflows/idris-ci.yml'
   pull_request:
@@ -22,6 +23,7 @@ on:
       - 'representation-test.ipkg'
       - 'generated/abi/**'
       - 'scripts/generate-abi-header.sh'
+      - 'scripts/check-abi-trusted-base.sh'
       - 'scripts/proven-min.ipkg'
       - '.github/workflows/idris-ci.yml'
   workflow_dispatch:

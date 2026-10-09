@@ -73,23 +73,70 @@ fn idris_constructors(src: &str, name: &str) -> Vec<String> {
     out
 }
 
+/// Zig's reserved words, whitespace-separated. `types.zig` escapes a field
+/// that would collide with one by appending a single underscore (`switch_`).
+const ZIG_KEYWORDS: &str = "addrspace align allowzero and anyframe anytype asm async await \
+     break callconv catch comptime const continue defer else enum errdefer error export extern \
+     fn for if inline linksection noalias noinline nosuspend opaque or orelse packed pub resume \
+     return struct suspend switch test threadlocal try union unreachable usingnamespace var \
+     volatile while";
+
+/// Undoes the Zig keyword escape: `switch_` becomes `switch`.
+///
+/// Only a keyword plus one underscore is unescaped. Any other name that ends
+/// in `_` is returned unchanged, so a stray underscore shows up as drift
+/// instead of being normalised away.
+fn unescape_zig_field(field: &str) -> &str {
+    match field.strip_suffix('_') {
+        Some(base) if ZIG_KEYWORDS.split_whitespace().any(|k| k == base) => base,
+        _ => field,
+    }
+}
+
+/// Panics on a line of a Zig enum body that is not a `field = N,` entry.
+fn unparsed_zig_line(lineno: usize, name: &str, line: &str) -> ! {
+    panic!(
+        "ffi/zig/src/types.zig:{lineno}: cannot read `{line}` in enum `{name}`; \
+         expected `field = N,`, a blank line or a `//` comment"
+    )
+}
+
 /// `field = N,` pairs of a `pub const <name> = enum(u8)`, in order.
+///
+/// Every line of the body must be blank, a `//` comment, or a `field = N,`
+/// entry (a trailing comment is allowed). Anything else panics with its
+/// line number, so a line the parser does not understand can never drop out
+/// of the comparison silently.
 fn zig_enum(src: &str, name: &str) -> Vec<(String, u8)> {
     let needle = format!("pub const {name} = enum(u8) {{");
     let start = src
         .find(&needle)
         .unwrap_or_else(|| panic!("no `{name}` enum in ffi/zig/src/types.zig"));
-    let body = &src[start + needle.len()..];
-    let body = body.split("\n};").next().expect("enum body");
+    let body_start = start + needle.len();
+    // The body's first `lines()` item is the rest of the brace line itself.
+    let brace_line = src[..body_start].lines().count();
+    let body = src[body_start..].split("\n};").next().expect("enum body");
     body.lines()
-        .filter_map(|l| {
-            let l = l.trim().trim_end_matches(',');
-            let (f, t) = l.split_once(" = ")?;
-            // `switch_` — the trailing underscore escapes a Zig keyword.
-            Some((
-                f.trim().trim_end_matches('_').to_string(),
-                t.trim().parse().ok()?,
-            ))
+        .enumerate()
+        .filter_map(|(i, raw)| {
+            let code = raw.split_once("//").map_or(raw, |(code, _)| code).trim();
+            if code.is_empty() {
+                return None;
+            }
+            let (lineno, line) = (brace_line + i, raw.trim());
+            let entry = code.strip_suffix(',').unwrap_or(code);
+            let (field, tag) = entry
+                .split_once('=')
+                .unwrap_or_else(|| unparsed_zig_line(lineno, name, line));
+            let field = field.trim();
+            if field.is_empty() || !field.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+                unparsed_zig_line(lineno, name, line);
+            }
+            let tag: u8 = tag
+                .trim()
+                .parse()
+                .unwrap_or_else(|_| unparsed_zig_line(lineno, name, line));
+            Some((unescape_zig_field(field).to_string(), tag))
         })
         .collect()
 }
@@ -149,6 +196,8 @@ fn zig_ffi_ordinals_are_dense_from_zero() {
     }
 }
 
+/// The generated JSON Schema's `add_device.kind` enum matches the Nickel
+/// source, and every value in it is a string.
 #[test]
 fn the_generated_schema_agrees_too() {
     // Closing the loop: the JSON Schema IS generated from vocab.ncl, so this
@@ -157,9 +206,16 @@ fn the_generated_schema_agrees_too() {
     let schema: Value = serde_json::from_str(&read("schemas/edit-script.schema.json")).unwrap();
     let kinds: Vec<&str> = schema["$defs"]["add_device"]["properties"]["kind"]["enum"]
         .as_array()
-        .unwrap()
+        .expect("schemas/edit-script.schema.json: add_device.kind has no `enum` array")
         .iter()
-        .filter_map(|v| v.as_str())
+        .map(|v| {
+            v.as_str().unwrap_or_else(|| {
+                panic!(
+                    "schemas/edit-script.schema.json: add_device.kind enum holds \
+                     the non-string value {v}"
+                )
+            })
+        })
         .collect();
     assert_eq!(kinds, vocab::DEVICE_KINDS.to_vec());
 }
